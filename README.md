@@ -81,7 +81,7 @@ A React-based web application for creating and managing educational escape room 
 
 1. **Clone the repository** (or navigate to the project directory):
    ```bash
-   cd /Users/xiwei/Downloads/website
+   eg. cd /Users/xiwei/Downloads/website
    ```
 
 2. **Install dependencies**:

@@ -95,57 +95,91 @@ footer {
   margin-bottom: 20px;
 }
 
-/* Modal */
-.modal {
-  position: fixed;
-  z-index: 999;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.4);
-}
-
-.modal-content {
-  background-color: #fff;
-  margin: 10% auto;
-  padding: 20px;
-  border-radius: 8px;
-  width: 350px;
+.loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
   text-align: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.modal-content input {
-  width: 100%;
-  padding: 0.6rem;
-  margin: 0.6rem 0;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--unsw-yellow);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin-top: 1rem;
 }
 
-.modal-content button {
-  width: 100%;
-  padding: 0.7rem;
-  background-color: var(--unsw-charcoal);
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.user-info {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logout-btn {
+  padding: 0.5rem 1rem;
+  background: var(--unsw-charcoal);
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.logout-btn:hover {
+  background: #000;
+}
+
+.dashboard {
+  text-align: center;
+  padding: 2rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.user-details {
+  background: #f9f9f9;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  text-align: left;
+}
+
+.user-details p {
+  margin: 0.5rem 0;
+}
+
+.start-btn {
+  padding: 1rem 2rem;
+  background: var(--unsw-yellow);
+  color: var(--unsw-charcoal);
+  border: none;
+  border-radius: 8px;
+  font-size: 1.2rem;
   font-weight: bold;
   cursor: pointer;
+  margin-top: 1rem;
 }
 
-.modal-content button:hover {
-  background-color: #000;
+.start-btn:hover {
+  background: #e6cf00;
 }
 
-.close-btn {
-  float: right;
-  font-size: 1.2rem;
-  color: #888;
-  cursor: pointer;
-}
-
-.close-btn:hover {
-  color: #000;
+.error-message {
+  color: #d32f2f;
+  background: #ffebee;
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-top: 1rem;
+  font-size: 0.9rem;
 }

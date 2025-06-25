@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Escape Room • Student Dashboard</title>
+  <style>
+    :root {
+      --unsw-yellow: #ffd500;
+      --unsw-yellow-dark: #ffbc00;
+      --unsw-charcoal: #1f1a19;
+      --card-bg: #ffffff;
+      --gray-light: #f0f0f0;
+      --gray-mid: #e0e0e0;
+      --link-blue: #065fd4;
+    }
+    * { box-sizing: border-box; margin:0; padding:0; font-family:Arial,sans-serif; }
+    body {
+      min-height:100vh;
+      display:flex; flex-direction:column;
+      background:var(--gray-light);
+      color:var(--unsw-charcoal);
+    }
+    header {
+      background: linear-gradient(90deg, var(--unsw-yellow), var(--unsw-yellow-dark));
+      padding:1rem 2rem; display:flex; align-items:center;
+      box-shadow:0 3px 6px rgba(0,0,0,0.1);
+    }
+    header img { height:40px; }
+    header h1 {
+      flex:1; text-align:center; font-size:1.6rem; font-weight:600;
+      color:var(--unsw-charcoal);
+    }
+    header a {
+      color:var(--unsw-charcoal); text-decoration:none; font-weight:500;
+      padding:0.3rem 0.6rem; border:2px solid transparent;
+      transition:border 0.2s;
+    }
+    header a:hover, header a:focus {
+      border-color:var(--unsw-charcoal);
+      outline:none;
+    }
+    nav {
+      background:var(--card-bg);
+      box-shadow:0 1px 3px rgba(0,0,0,0.1);
+    }
+    nav ul {
+      display:flex; list-style:none; justify-content:center;
+    }
+    nav a {
+      display:block; padding:0.8rem 1.2rem;
+      color:var(--unsw-charcoal); text-decoration:none; font-weight:500;
+      transition:background 0.2s;
+    }
+    nav a.active {
+      background:var(--unsw-yellow-dark); color:#fff;
+    }
+    nav a:hover, nav a:focus {
+      background:var(--unsw-yellow); color:var(--unsw-charcoal);
+    }
+    main { flex:1; padding:2rem; }
+    .section-title {
+      font-size:1.3rem; margin-bottom:1rem; font-weight:600;
+    }
+    .card-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(260px,1fr));
+      gap:1.5rem; justify-content:center;
+    }
+    .course-card, .task-card {
+      background:var(--card-bg);
+      border-radius:8px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.1);
+      overflow:hidden; display:flex; flex-direction:column;
+      transition:transform 0.2s, box-shadow 0.2s;
+    }
+    .course-card:hover, .task-card:hover,
+    .course-card:focus-within, .task-card:focus-within {
+      transform:translateY(-4px);
+      box-shadow:0 8px 16px rgba(0,0,0,0.15);
+    }
+    /* ↓ 将下面这段替换掉原来的固定高度裁剪规则 ↓ */
+    .course-card img,
+    .task-card img {
+      width: 100%;
+      height: auto;          /* 高度自适应，按比例完整显示 */
+      max-height: 260px;     /* 可选：限制最大高度 */
+      object-fit: contain;   /* 整图等比缩放，留白区域显示背景 */
+      background: var(--gray-mid);
+    }
+    /* ↑ 替换结束 ↑ */
+    .info {
+      padding:1rem; flex:1; display:flex; flex-direction:column;
+    }
+    .info h3 {
+      font-size:1.15rem; font-weight:600; margin-bottom:0.5rem;
+    }
+    .info p {
+      font-size:0.95rem; color:#555; margin-bottom:1rem; flex:1;
+    }
+    .btn {
+      align-self:start;
+      padding:0.6rem 1rem; font-size:0.95rem; font-weight:600;
+      text-decoration:none; text-align:center;
+      border-radius:6px; transition:background 0.2s,color 0.2s;
+    }
+    .btn-primary {
+      background:var(--unsw-charcoal); color:#fff;
+    }
+    .btn-primary:hover, .btn-primary:focus {
+      background:#000; color:#fff;
+    }
+    footer {
+      text-align:center; padding:1rem; font-size:0.85rem;
+      background:var(--card-bg); border-top:1px solid #ddd; color:#777;
+    }
+    @media (max-width:600px) {
+      header h1 { font-size:1.3rem; }
+      nav ul { flex-wrap:wrap; }
+      .card-grid { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="assets/logo.png" alt="UNSW Logo">
+    <h1>Escape Room • Student Dashboard</h1>
+    <a href="index.html">Logout</a>
+  </header>
+  <nav>
+    <ul>
+      <li><a href="student-dashboard.html" class="active" aria-current="page">Home</a></li>
+      <li><a href="student-achievements.html">Achievements</a></li>
+      <li><a href="student-history.html">History</a></li>
+      <li><a href="student-accessibility.html">Accessibility</a></li>
+      <li><a href="student-help.html">Help</a></li>
+    </ul>
+  </nav>
+  <main>
+    <section>
+      <div class="section-title">My Courses</div>
+      <div class="card-grid">
+        <div class="course-card" tabindex="0">
+          <img src="assets/course-chem.jpg" alt="Chemistry Intro Course">
+          <div class="info">
+            <h3>CHEM1010 Chemistry Intro</h3>
+            <p>Joined · 2 tasks remaining</p>
+            <a href="student-tasks.html" class="btn btn-primary" role="button">View Tasks</a>
+          </div>
+        </div>
+        <div class="course-card" tabindex="0">
+          <img src="assets/course-stat.jpg" alt="Statistics Course">
+          <div class="info">
+            <h3>STAT2020 Statistics</h3>
+            <p>Joined · 3 tasks remaining</p>
+            <a href="student-tasks.html" class="btn btn-primary" role="button">View Tasks</a>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section style="margin-top:2.5rem">
+      <div class="section-title">Available Escape Room Tasks</div>
+      <div class="card-grid">
+        <div class="task-card" tabindex="0">
+          <img src="assets/task1.jpg" alt="Lab Escape: Solution Prep">
+          <div class="info">
+            <h3>Lab Escape: Solution Prep</h3>
+            <p>Chemistry Intro · In Progress</p>
+            <a href="student-play.html" class="btn btn-primary" role="button">Continue Game</a>
+          </div>
+        </div>
+        <div class="task-card" tabindex="0">
+          <img src="assets/task2.jpg" alt="Data Analysis Escape: Probability Puzzle">
+          <div class="info">
+            <h3>Data Analysis Escape: Probability</h3>
+            <p>Statistics · Not Started</p>
+            <a href="student-play.html" class="btn btn-primary" role="button">Start Game</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer>
+    &copy; 2025 UNSW Sydney • <a href="https://moodle.telt.unsw.edu.au">Moodle Home</a>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Escape Room Grades</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f9f9f9;
+    }
+
+    .header {
+      background-color: #FFD600;
+      padding: 20px;
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin: 30px;
+      flex-wrap: wrap;
+    }
+
+    .stat-box {
+      background: white;
+      border-radius: 12px;
+      padding: 20px 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+      min-width: 200px;
+    }
+
+    .charts {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 40px;
+      padding: 30px;
+    }
+
+    .chart-container {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .export-btn {
+      margin-left: 5%;
+      margin-bottom: 10px;
+      padding: 10px 18px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .export-btn:hover {
+      background-color: #45A049;
+    }
+
+    table {
+      width: 90%;
+      margin: 20px auto 40px;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th {
+      background: #FFD600;
+      padding: 12px;
+      text-align: left;
+    }
+
+    td {
+      padding: 10px 12px;
+      border-top: 1px solid #eee;
+    }
+
+    tr:nth-child(even) {
+      background: #fdfdfd;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">Escape Room 1 - Performance Overview</div>
+
+<!-- Stats -->
+<div class="stats">
+  <div class="stat-box">Completion Rate<br><strong>88%</strong></div>
+  <div class="stat-box">Avg Score<br><strong>81%</strong></div>
+  <div class="stat-box">Avg Time Spent<br><strong>47s</strong></div>
+  <div class="stat-box">Participants<br><strong>112</strong></div>
+</div>
+
+<!-- Charts -->
+<div class="charts">
+  <div class="chart-container">
+    <canvas id="completionChart" width="300" height="300"></canvas>
+  </div>
+  <div class="chart-container">
+    <canvas id="scoreChart" width="400" height="300"></canvas>
+  </div>
+</div>
+
+<!-- Export Button -->
+<button class="export-btn" onclick="exportCSV()">Export CSV</button>
+
+<!-- Table -->
+<table id="gradesTable">
+  <thead>
+    <tr>
+      <th>Student ID</th>
+      <th>Name</th>
+      <th>Completion</th>
+      <th>Score</th>
+      <th>Time Spent</th>
+      <th>Accuracy</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1001</td>
+      <td>Alice Wang</td>
+      <td>✅</td>
+      <td>85%</td>
+      <td>42s</td>
+      <td>88%</td>
+    </tr>
+    <tr>
+      <td>1002</td>
+      <td>Bob Lin</td>
+      <td>✅</td>
+      <td>77%</td>
+      <td>50s</td>
+      <td>80%</td>
+    </tr>
+    <tr>
+      <td>1003</td>
+      <td>Claire Ho</td>
+      <td>❌</td>
+      <td>–</td>
+      <td>–</td>
+      <td>–</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- Scripts -->
+<script>
+  // Completion Pie Chart
+  const ctx1 = document.getElementById('completionChart').getContext('2d');
+  new Chart(ctx1, {
+    type: 'doughnut',
+    data: {
+      labels: ['Completed', 'Remaining'],
+      datasets: [{
+        data: [88, 12],
+        backgroundColor: ['#42A5F5', '#EF9A9A']
+      }]
+    },
+    options: {
+      plugins: {
+        legend: {
+          display: true,
+          position: 'bottom'
+        }
+      }
+    }
+  });
+
+  // Score Trend Line Chart
+  const ctx2 = document.getElementById('scoreChart').getContext('2d');
+  new Chart(ctx2, {
+    type: 'line',
+    data: {
+      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      datasets: [{
+        label: 'Avg Score (%)',
+        data: [80, 82, 79, 83, 85, 78, 81],
+        fill: false,
+        borderColor: '#42A5F5',
+        tension: 0.3,
+        pointBackgroundColor: '#42A5F5'
+      }]
+    },
+    options: {
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+
+  // Export CSV function
+  function exportCSV() {
+    let csv = "Student ID,Name,Completion,Score,Time Spent,Accuracy\n";
+    const rows = document.querySelectorAll("#gradesTable tbody tr");
+    rows.forEach(row => {
+      const cells = row.querySelectorAll("td");
+      const rowData = Array.from(cells).map(td => td.textContent).join(",");
+      csv += rowData + "\n";
+    });
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "escape_room_1_grades.csv";
+    a.click();
+  }
+</script>
+
+</body>
+</html>

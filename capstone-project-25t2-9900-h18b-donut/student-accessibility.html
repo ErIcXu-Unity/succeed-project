@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Escape Room • Accessibility</title>
+  <style>
+    :root {
+      --unsw-yellow: #ffd500;
+      --unsw-yellow-dark: #ffbc00;
+      --unsw-charcoal: #1f1a19;
+      --card-bg: #ffffff;
+      --gray-light: #f0f0f0;
+      --gray-mid: #e0e0e0;
+      --focus: #065fd4;
+    }
+    * { box-sizing:border-box; margin:0; padding:0; font-family:Arial,sans-serif; }
+    body {
+      display:flex; flex-direction:column; min-height:100vh;
+      background:var(--gray-light); color:var(--unsw-charcoal);
+    }
+
+    /* —— Header —— */
+    header {
+      background: linear-gradient(90deg, var(--unsw-yellow), var(--unsw-yellow-dark));
+      padding:1rem 2rem; display:flex; align-items:center;
+      box-shadow:0 2px 4px rgba(0,0,0,0.1);
+    }
+    header img {
+      height:40px; margin-right:1rem;
+    }
+    header h1 {
+      flex:1; font-size:1.5rem; font-weight:600; text-align:center;
+      color:var(--unsw-charcoal);
+    }
+    header a {
+      color:var(--unsw-charcoal); text-decoration:none; font-weight:500;
+      padding:0.3rem 0.6rem; border:2px solid transparent;
+      transition:border 0.2s;
+    }
+    header a:hover, header a:focus {
+      border-color:var(--unsw-charcoal);
+      outline:none;
+    }
+
+    /* —— Navigation —— */
+    nav {
+      background:var(--card-bg);
+      box-shadow:0 1px 2px rgba(0,0,0,0.1);
+    }
+    nav ul {
+      display:flex; justify-content:center; list-style:none;
+    }
+    nav a {
+      display:block; padding:0.75rem 1.25rem;
+      color:var(--unsw-charcoal); text-decoration:none; font-weight:500;
+      transition:background 0.2s;
+    }
+    nav a.active {
+      background:var(--unsw-yellow-dark); color:#fff;
+    }
+    nav a:hover, nav a:focus {
+      background:var(--unsw-yellow); color:var(--unsw-charcoal);
+    }
+
+    /* —— Main Content —— */
+    main {
+      flex:1; padding:2rem; max-width:900px; margin:0 auto;
+    }
+    .controls {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+      gap:1rem; margin-bottom:2rem;
+    }
+    .control-card {
+      background:var(--card-bg);
+      border-radius:8px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.1);
+      padding:1rem;
+    }
+    .control-card h2 {
+      font-size:1.1rem; margin-bottom:0.5rem;
+    }
+    .control-card button {
+      padding:0.5rem 1rem;
+      background:var(--unsw-charcoal); color:#fff;
+      border:none; border-radius:4px;
+      cursor:pointer; font-size:0.95rem;
+      transition:background 0.2s;
+    }
+    .control-card button:hover, .control-card button:focus {
+      background:#000; outline:none;
+    }
+
+    .sample {
+      background:var(--card-bg);
+      padding:1rem; border-radius:6px;
+      box-shadow:0 1px 4px rgba(0,0,0,0.1);
+    }
+
+    /* —— Footer —— */
+    footer {
+      background:var(--card-bg);
+      border-top:1px solid var(--gray-mid);
+      text-align:center; padding:1rem;
+      font-size:0.85rem; color:#777;
+    }
+
+    /* Focus 指示 */
+    button:focus, a:focus {
+      outline:3px solid var(--focus); outline-offset:2px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="assets/logo.png" alt="UNSW Logo">
+    <h1>Escape Room • Accessibility</h1>
+    <a href="student-dashboard.html">Back to Dashboard</a>
+  </header>
+
+  <nav aria-label="Student Navigation">
+    <ul>
+      <li><a href="student-dashboard.html">Home</a></li>
+      <li><a href="student-achievements.html">Achievements</a></li>
+      <li><a href="student-history.html">History</a></li>
+      <li><a href="student-accessibility.html" class="active" aria-current="page">Accessibility</a></li>
+      <li><a href="student-help.html">Help</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <div class="controls">
+      <div class="control-card" role="region" aria-labelledby="contrast-label">
+        <h2 id="contrast-label">High Contrast Mode</h2>
+        <button id="btn-contrast" aria-pressed="false">Toggle Contrast</button>
+      </div>
+      <div class="control-card" role="region" aria-labelledby="font-label">
+        <h2 id="font-label">Large Font</h2>
+        <button id="btn-font" aria-pressed="false">Toggle Font Size</button>
+      </div>
+      <div class="control-card" role="region" aria-labelledby="colorblind-label">
+        <h2 id="colorblind-label">Colorblind Mode</h2>
+        <button id="btn-colorblind" aria-pressed="false">Toggle Colorblind</button>
+      </div>
+      <div class="control-card" role="region" aria-labelledby="tts-label">
+        <h2 id="tts-label">Text-to-Speech</h2>
+        <button id="btn-tts">🔊 Read Page Aloud</button>
+      </div>
+    </div>
+
+    <section class="sample" aria-live="polite">
+      <h2>Sample Content</h2>
+      <p id="content">
+        Welcome to the Escape Room platform! Here you can solve puzzles to learn Chemistry and Statistics.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    &copy; 2025 UNSW Sydney • <a href="https://moodle.telt.unsw.edu.au">Moodle Home</a>
+  </footer>
+
+  <script>
+    const body = document.body;
+    const btnContrast = document.getElementById('btn-contrast');
+    const btnFont     = document.getElementById('btn-font');
+    const btnColor    = document.getElementById('btn-colorblind');
+    const btnTTS      = document.getElementById('btn-tts');
+    const synth       = window.speechSynthesis;
+
+    function toggleClass(btn, cls) {
+      const active = body.classList.toggle(cls);
+      btn.setAttribute('aria-pressed', active);
+    }
+
+    btnContrast.addEventListener('click', () => toggleClass(btnContrast, 'high-contrast'));
+    btnFont.addEventListener   ('click', () => toggleClass(btnFont,     'font-large'));
+    btnColor.addEventListener  ('click', () => toggleClass(btnColor,    'colorblind'));
+    btnTTS.addEventListener    ('click', () => {
+      if(!synth) return alert('Speech Synthesis not supported');
+      const text = document.getElementById('content').innerText;
+      const utt  = new SpeechSynthesisUtterance(text);
+      synth.cancel();
+      synth.speak(utt);
+    });
+  </script>
+</body>
+</html>

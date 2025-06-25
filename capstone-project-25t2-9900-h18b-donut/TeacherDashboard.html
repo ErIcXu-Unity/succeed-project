@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Teacher Dashboard - Horizontal Menu</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      background: linear-gradient(135deg, #fffde7, #f5f5f5);
+    }
+
+    .header {
+      background-color: #FFD600;
+      padding: 20px;
+      font-size: 28px;
+      font-weight: bold;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .nav {
+      display: flex;
+      justify-content: center;
+      background-color: #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .nav-item {
+      padding: 15px 25px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #333;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      transition: background 0.3s;
+    }
+
+    .nav-item i {
+      margin-right: 8px;
+      color: #FFD600;
+    }
+
+    .nav-item:hover {
+      background-color: #fff7c2;
+    }
+
+    .main-content {
+      padding: 40px;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .stat-box {
+      background: white;
+      border-radius: 12px;
+      padding: 20px 40px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .card-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
+    }
+
+    .card {
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      width: 360px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: 0.3s;
+    }
+
+    .card:hover {
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      transform: translateY(-5px);
+    }
+
+    .card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+    }
+
+    .card-title {
+      text-align: center;
+      font-weight: bold;
+      font-size: 18px;
+      padding: 15px;
+    }
+
+    .card-buttons {
+      display: flex;
+      justify-content: space-around;
+      padding: 15px;
+    }
+
+    .card-buttons button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+
+    .grade-btn {
+      background-color: #4CAF50;
+    }
+
+    .edit-btn {
+      background-color: #2196F3;
+    }
+
+    .card-buttons button:hover {
+      transform: scale(1.05);
+      opacity: 0.9;
+    }
+
+    .add-card {
+      width: 360px;
+      height: 300px;
+      background-color: #fff;
+      border: 4px dashed #FFD600;
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 80px;
+      color: #FFD600;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      transition: 0.3s;
+    }
+
+    .add-card:hover {
+      background-color: #fff9e0;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">Teacher Dashboard</div>
+
+<div class="nav">
+  <div class="nav-item"><i class="fas fa-home"></i> Dashboard</div>
+  <div class="nav-item"><i class="fas fa-users"></i> Students</div>
+  <div class="nav-item"><i class="fas fa-chart-bar"></i> Reports</div>
+  <div class="nav-item"><i class="fas fa-cog"></i> Settings</div>
+</div>
+
+<div class="main-content">
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-box">Total Games: 12</div>
+    <div class="stat-box">Total Students: 86</div>
+    <div class="stat-box">Avg Completion: 75%</div>
+  </div>
+
+  <!-- Cards -->
+  <div class="card-container">
+
+    <!-- Game 1 -->
+    <div class="card">
+      <img src="assets/game01.jpg" alt="Game 1">
+      <div class="card-title">Escape Room 1</div>
+      <div class="card-buttons">
+        <button class="grade-btn" onclick="viewGrades()">
+          <i class="fas fa-chart-line"></i> Grades
+        </button>
+        <button class="edit-btn" onclick="editGame()">
+          <i class="fas fa-edit"></i> Edit
+        </button>
+      </div>
+    </div>
+
+    <!-- Game 2 -->
+    <div class="card">
+      <img src="assets/game02.jpg" alt="Game 2">
+      <div class="card-title">Escape Room 2</div>
+      <div class="card-buttons">
+        <button class="grade-btn" onclick="viewGrades()">
+          <i class="fas fa-chart-line"></i> Grades
+        </button>
+        <button class="edit-btn" onclick="editGame()">
+          <i class="fas fa-edit"></i> Edit
+        </button>
+      </div>
+    </div>
+
+    <!-- Add Card -->
+    <div class="add-card" onclick="createGame()">+</div>
+
+  </div>
+
+</div>
+
+<script>
+  function viewGrades() {
+    alert("Redirect to grades page");
+  }
+  function editGame() {
+    alert("Redirect to edit game page");
+  }
+  function createGame() {
+    alert("Redirect to create game page");
+  }
+</script>
+
+</body>
+</html>

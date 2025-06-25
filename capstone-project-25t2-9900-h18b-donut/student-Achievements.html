@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Escape Room • Achievements</title>
+  <style>
+    :root {
+      --yellow: #ffd500;
+      --yellow-dark: #ffbc00;
+      --charcoal: #1f1a19;
+      --bg-light: #f5f5f5;
+      --card-bg: #ffffff;
+      --gray-mid: #e0e0e0;
+      --focus: #065fd4;
+    }
+    * { box-sizing:border-box; margin:0; padding:0; font-family:Arial,sans-serif; }
+    body {
+      background:var(--bg-light); color:var(--charcoal);
+      display:flex; flex-direction:column; min-height:100vh;
+    }
+    /* Header */
+    header {
+      background: linear-gradient(90deg, var(--yellow), var(--yellow-dark));
+      padding:1rem 2rem; display:flex; align-items:center;
+      box-shadow:0 2px 6px rgba(0,0,0,0.1);
+    }
+    header img { height:40px; margin-right:1rem; }
+    header h1 {
+      flex:1; font-size:1.5rem; font-weight:600; text-align:center;
+    }
+    header a {
+      color:var(--charcoal); text-decoration:none; font-weight:500;
+      padding:0.3rem 0.6rem; border:2px solid transparent;
+      transition:border .2s;
+    }
+    header a:hover, header a:focus {
+      border-color:var(--charcoal); outline:none;
+    }
+    /* Nav */
+    nav {
+      background:var(--card-bg); box-shadow:0 1px 3px rgba(0,0,0,0.1);
+    }
+    nav ul {
+      display:flex; justify-content:center; list-style:none;
+    }
+    nav a {
+      display:block; padding:0.75rem 1.25rem;
+      color:var(--charcoal); text-decoration:none; font-weight:500;
+      transition:background .2s;
+    }
+    nav a.active {
+      background:var(--yellow-dark); color:#fff;
+    }
+    nav a:hover, nav a:focus {
+      background:var(--yellow); color:var(--charcoal);
+    }
+    /* Container */
+    .container {
+      max-width:1000px; margin:2rem auto; padding:0 1rem; flex:1;
+    }
+    /* Profile & Stats */
+    .profile-stats {
+      display:grid;
+      grid-template-columns: auto 1fr;
+      gap:1.5rem;
+      align-items:center;
+      margin-bottom:2rem;
+    }
+    .profile-card, .stats-card {
+      background:var(--card-bg);
+      border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);
+      padding:1rem;
+    }
+    .profile-card {
+      text-align:center;
+      display:flex; flex-direction:column; align-items:center;
+    }
+    .profile-card img {
+      width:120px; height:120px; border-radius:50%;
+      object-fit:cover; margin-bottom:1rem;
+      box-shadow:0 2px 8px rgba(0,0,0,0.2);
+    }
+    .profile-info div { margin:6px 0; font-size:1rem; }
+    .stats-card {
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px,1fr));
+      gap:1rem;
+    }
+    .stat-box {
+      background:var(--bg-light);
+      border-radius:6px; padding:1rem;
+      text-align:center; font-weight:600;
+      box-shadow:0 1px 4px rgba(0,0,0,0.1);
+    }
+    .stat-box span {
+      display:block; font-size:1.3rem; margin-top:0.5rem;
+    }
+    /* Achievements */
+    .achievements {
+      text-align:center; margin-top:2rem;
+    }
+    .achievements h2 {
+      font-size:1.3rem; margin-bottom:1rem; display:inline-flex;
+      align-items:center; gap:0.5rem;
+      font-weight:600;
+    }
+    .badge-container {
+      display:flex; flex-wrap:wrap; justify-content:center;
+      gap:1.5rem;
+    }
+    .badge {
+      width:100px; height:100px; border-radius:50%;
+      background:var(--card-bg);
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      box-shadow:0 2px 8px rgba(0,0,0,0.1);
+      border:3px solid var(--yellow);
+      transition: transform .2s;
+    }
+    .badge:hover, .badge:focus {
+      transform: scale(1.1); outline:none;
+    }
+    .badge-icon { font-size:2rem; }
+    .badge-title {
+      margin-top:0.4rem; font-size:0.9rem; color:#555;
+    }
+    /* Footer */
+    footer {
+      background:var(--card-bg); border-top:1px solid var(--gray-mid);
+      text-align:center; padding:1rem; font-size:0.85rem; color:#777;
+    }
+    /* Focus */
+    button:focus, a:focus {
+      outline:3px solid var(--focus); outline-offset:2px;
+    }
+    @media (max-width:600px) {
+      .profile-stats { grid-template-columns: 1fr; }
+      .stats-card { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <img src="assets/logo.png" alt="UNSW Logo">
+    <h1>Escape Room • Achievements</h1>
+    <a href="student-dashboard.html">Back to Dashboard</a>
+  </header>
+
+  <nav aria-label="Student Navigation">
+    <ul>
+      <li><a href="student-dashboard.html">Home</a></li>
+      <li><a href="student-achievements.html" class="active" aria-current="page">Achievements</a></li>
+      <li><a href="student-history.html">History</a></li>
+      <li><a href="student-accessibility.html">Accessibility</a></li>
+      <li><a href="student-help.html">Help</a></li>
+    </ul>
+  </nav>
+
+  <div class="container">
+
+    <!-- Profile & Stats -->
+    <div class="profile-stats">
+      <div class="profile-card">
+        <img src="assets/avatar.jpg" alt="Student Avatar">
+        <div class="profile-info">
+          <div><strong>Name:</strong> John Doe</div>
+          <div><strong>ID:</strong> 123456</div>
+          <div><strong>Course:</strong> Chemistry Intro</div>
+        </div>
+      </div>
+      <div class="stats-card">
+        <div class="stat-box">
+          Completion Rate
+          <span>92%</span>
+        </div>
+        <div class="stat-box">
+          Total Quizzes
+          <span>15</span>
+        </div>
+        <div class="stat-box">
+          Average Score
+          <span>87%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Achievements -->
+    <div class="achievements">
+      <h2>🏅 Achievements Unlocked</h2>
+      <div class="badge-container">
+        <div class="badge" tabindex="0">
+          <div class="badge-icon">🏆</div>
+          <div class="badge-title">Perfect Score</div>
+        </div>
+        <div class="badge" tabindex="0">
+          <div class="badge-icon">🎯</div>
+          <div class="badge-title">Accuracy Master</div>
+        </div>
+        <div class="badge" tabindex="0">
+          <div class="badge-icon">⏱️</div>
+          <div class="badge-title">Fast Solver</div>
+        </div>
+        <div class="badge" tabindex="0">
+          <div class="badge-icon">📚</div>
+          <div class="badge-title">Quiz Warrior</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    &copy; 2025 UNSW Sydney • <a href="https://moodle.telt.unsw.edu.au">Moodle Home</a>
+  </footer>
+
+</body>
+</html>

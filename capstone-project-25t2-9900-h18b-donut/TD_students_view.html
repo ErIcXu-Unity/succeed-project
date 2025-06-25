@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Student Profile - Alice Wang</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f9f9f9;
+    }
+
+    .top-header {
+      background-color: #FFD600;
+      padding: 20px;
+      font-size: 28px;
+      font-weight: bold;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .nav {
+      display: flex;
+      justify-content: center;
+      background-color: #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .nav-item {
+      padding: 15px 25px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #333;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      transition: background 0.3s;
+    }
+
+    .nav-item i {
+      margin-right: 8px;
+      color: #FFD600;
+    }
+
+    .nav-item:hover {
+      background-color: #fff7c2;
+    }
+
+    .profile-section {
+      max-width: 900px;
+      margin: 40px auto;
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .profile-header {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .profile-header h2 {
+      margin: 0;
+    }
+
+    .info-box {
+      font-size: 16px;
+      margin: 8px 0;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+    }
+
+    th {
+      background: #FFD600;
+      padding: 12px;
+      text-align: left;
+    }
+
+    td {
+      padding: 10px 12px;
+      border-top: 1px solid #eee;
+    }
+
+    tr:nth-child(even) {
+      background: #fdfdfd;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-header">Teacher Dashboard</div>
+
+  <div class="nav">
+    <div class="nav-item"><i class="fas fa-home"></i> Dashboard</div>
+    <div class="nav-item"><i class="fas fa-users"></i> Students</div>
+    <div class="nav-item"><i class="fas fa-chart-bar"></i> Reports</div>
+    <div class="nav-item"><i class="fas fa-cog"></i> Settings</div>
+  </div>
+
+  <div class="profile-section">
+    <div class="profile-header">
+      <h2>Alice Wang</h2>
+      <div>
+        <div class="info-box"><strong>Student ID:</strong> 1001</div>
+        <div class="info-box"><strong>Class:</strong> Class A</div>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Game</th>
+          <th>Completion</th>
+          <th>Score</th>
+          <th>Time Spent</th>
+          <th>Accuracy</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Escape Room 1</td>
+          <td>✅</td>
+          <td>85%</td>
+          <td>42s</td>
+          <td>88%</td>
+        </tr>
+        <tr>
+          <td>Escape Room 2</td>
+          <td>✅</td>
+          <td>78%</td>
+          <td>55s</td>
+          <td>82%</td>
+        </tr>
+        <tr>
+          <td>Escape Room 3</td>
+          <td>❌</td>
+          <td>–</td>
+          <td>–</td>
+          <td>–</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</body>
+</html>

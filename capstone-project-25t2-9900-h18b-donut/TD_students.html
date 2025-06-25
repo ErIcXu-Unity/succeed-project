@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Student List - Escape Room</title>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f9f9f9;
+    }
+
+    .top-header {
+      background-color: #FFD600;
+      padding: 20px;
+      font-size: 28px;
+      font-weight: bold;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .nav {
+      display: flex;
+      justify-content: center;
+      background-color: #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .nav-item {
+      padding: 15px 25px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #333;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      transition: background 0.3s;
+    }
+
+    .nav-item i {
+      margin-right: 8px;
+      color: #FFD600;
+    }
+
+    .nav-item:hover {
+      background-color: #fff7c2;
+    }
+
+    .content-wrapper {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .search-filter {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .search-filter input,
+    .search-filter select {
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    .export-btn {
+      padding: 10px 18px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .export-btn:hover {
+      background-color: #45A049;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th {
+      background: #FFD600;
+      padding: 12px;
+      text-align: left;
+    }
+
+    td {
+      padding: 10px 12px;
+      border-top: 1px solid #eee;
+    }
+
+    tr:nth-child(even) {
+      background: #fdfdfd;
+    }
+
+    .view-btn {
+      background-color: #2196F3;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .view-btn:hover {
+      background-color: #1976D2;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-header">Teacher Dashboard</div>
+
+  <div class="nav">
+    <div class="nav-item"><i class="fas fa-home"></i> Dashboard</div>
+    <div class="nav-item"><i class="fas fa-users"></i> Students</div>
+    <div class="nav-item"><i class="fas fa-chart-bar"></i> Reports</div>
+    <div class="nav-item"><i class="fas fa-cog"></i> Settings</div>
+  </div>
+
+  <div class="content-wrapper">
+    <div class="top-bar">
+      <div class="search-filter">
+        <input type="text" id="searchName" placeholder="Search by name..." onkeyup="filterTable()">
+        <select id="classFilter" onchange="filterTable()">
+          <option value="">All Classes</option>
+          <option value="Class A">Class A</option>
+          <option value="Class B">Class B</option>
+          <option value="Class C">Class C</option>
+        </select>
+      </div>
+      <button class="export-btn" onclick="exportCSV()">Export CSV</button>
+    </div>
+
+    <table id="studentTable">
+      <thead>
+        <tr>
+          <th>Student ID</th>
+          <th>Name</th>
+          <th>Class</th>
+          <th>View</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1001</td>
+          <td>Alice Wang</td>
+          <td>Class A</td>
+          <td><button class="view-btn" onclick="viewStudent('1001')">View</button></td>
+        </tr>
+        <tr>
+          <td>1002</td>
+          <td>Bob Lin</td>
+          <td>Class B</td>
+          <td><button class="view-btn" onclick="viewStudent('1002')">View</button></td>
+        </tr>
+        <tr>
+          <td>1003</td>
+          <td>Claire Ho</td>
+          <td>Class A</td>
+          <td><button class="view-btn" onclick="viewStudent('1003')">View</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    function viewStudent(id) {
+      alert("Redirect to Student " + id + "'s detail page");
+      // window.location.href = 'student-detail.html?id=' + id;
+    }
+
+    function filterTable() {
+      const nameInput = document.getElementById("searchName").value.toLowerCase();
+      const classFilter = document.getElementById("classFilter").value;
+
+      const rows = document.querySelectorAll("#studentTable tbody tr");
+      rows.forEach(row => {
+        const name = row.cells[1].textContent.toLowerCase();
+        const cls = row.cells[2].textContent;
+
+        const nameMatch = name.includes(nameInput);
+        const classMatch = !classFilter || cls === classFilter;
+
+        row.style.display = nameMatch && classMatch ? "" : "none";
+      });
+    }
+
+    function exportCSV() {
+      let csv = "Student ID,Name,Class\n";
+      const rows = document.querySelectorAll("#studentTable tbody tr");
+      rows.forEach(row => {
+        if (row.style.display !== "none") {
+          const cells = row.querySelectorAll("td");
+          csv += [cells[0].textContent, cells[1].textContent, cells[2].textContent].join(",") + "\n";
+        }
+      });
+
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.setAttribute("href", url);
+      a.setAttribute("download", "student_list.csv");
+      a.click();
+    }
+  </script>
+
+</body>
+</html>

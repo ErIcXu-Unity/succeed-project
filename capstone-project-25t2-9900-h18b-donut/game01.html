@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Escape Room - Fire Scenario</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: url('https://i.ibb.co/3dJ1M2W/firelab.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+    }
+
+    .overlay {
+      background: rgba(0, 0, 0, 0.6);
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: -1;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 60px auto;
+      padding: 30px;
+      background: rgba(30, 30, 30, 0.8);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(255, 87, 34, 0.6);
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .locked-icon {
+      font-size: 60px;
+      color: #FF5722;
+      margin-bottom: 20px;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.6; }
+    }
+
+    h1 {
+      font-size: 36px;
+      margin-bottom: 20px;
+      color: #FFD600;
+    }
+
+    .story {
+      font-size: 18px;
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+
+    .step-title {
+      text-align: left;
+      font-size: 20px;
+      font-weight: bold;
+      margin-top: 30px;
+      margin-bottom: 10px;
+      color: #FFEB3B;
+    }
+
+    .question {
+      text-align: left;
+      margin: 20px 0;
+    }
+
+    .question p {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .options label {
+      display: block;
+      margin: 10px 0;
+      padding: 12px;
+      border-radius: 8px;
+      background-color: rgba(255,255,255,0.1);
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: 0.3s;
+    }
+
+    .options label:hover {
+      background-color: rgba(255,255,255,0.2);
+      border-color: #FFD600;
+    }
+
+    .result {
+      font-weight: bold;
+      color: #8BC34A;
+      margin-top: 20px;
+    }
+
+    .achievement {
+      background-color: rgba(255, 235, 59, 0.2);
+      border-left: 6px solid #FFD600;
+      margin-top: 20px;
+      padding: 15px;
+      text-align: left;
+      font-size: 16px;
+    }
+
+    .next-btn {
+      margin-top: 30px;
+      padding: 12px 20px;
+      background-color: #FFD600;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #333;
+    }
+
+    .next-btn:hover {
+      background-color: #FFEB3B;
+    }
+  </style>
+</head>
+<body>
+
+<div class="overlay"></div>
+
+<div class="container" id="page1">
+  <div class="locked-icon"><i class="fas fa-fire"></i></div>
+  <h1>🔥 Emergency: Escape the Lab!</h1>
+  <div class="story">
+    You are locked inside a chemistry building. Smoke fills the air.  
+    Alarms are blaring. Your only way out is to solve puzzles  
+    using your knowledge of chemical reactions. Time is running out!  
+    <br><br><strong>Can you escape in 6 minutes?</strong>
+  </div>
+  <button class="next-btn" onclick="showPage(2)">Enter Lab</button>
+</div>
+
+<!-- Step 1 -->
+<div class="container" id="page2" style="display:none;">
+  <div class="step-title">Step 1: Search the Lab Table</div>
+  <div class="question">
+    <p>Zn + H₂SO₄ → ?</p>
+    <p><strong>Q1: What gas is released?</strong></p>
+    <div class="options">
+      <label onclick="showResult('wrong1')">A. Oxygen</label>
+      <label onclick="showResult('correct1')">B. Hydrogen</label>
+    </div>
+    <div class="result" id="correct1" style="display:none;">
+      ✅ Correct! You found the key and opened the lab door.
+      <div class="achievement">
+        🏆 Achievement: <strong>Lab Breaker</strong><br>
+        First puzzle solved. You’re on your way to freedom!
+      </div>
+      <button class="next-btn" onclick="showPage(3)">Continue</button>
+    </div>
+    <div class="result" id="wrong1" style="display:none; color: red;">
+      ❌ Incorrect! You triggered a small smoke blast! Try again...
+    </div>
+  </div>
+</div>
+
+<!-- Step 2 -->
+<div class="container" id="page3" style="display:none;">
+  <div class="step-title">Step 2: Corridor Smells Like Chemicals</div>
+  <div class="question">
+    <p>You find a mask in a locker — but it’s locked.</p>
+    <p><strong>Q2: Why is heat released when NaOH neutralizes HCl?</strong></p>
+    <div class="options">
+      <label onclick="showResult('wrong2')">A. Breaking bonds absorbs energy</label>
+      <label onclick="showResult('correct2')">B. Forming new bonds releases energy</label>
+    </div>
+    <div class="result" id="correct2" style="display:none;">
+      ✅ Correct! You retrieved the mask and can now proceed safely.
+    </div>
+    <div class="result" id="wrong2" style="display:none; color: red;">
+      ❌ Incorrect! That's not how exothermic reactions work. Try again.
+    </div>
+  </div>
+</div>
+
+<script>
+  function showPage(pageNum) {
+    document.querySelectorAll(".container").forEach(el => el.style.display = 'none');
+    document.getElementById("page" + pageNum).style.display = 'block';
+  }
+
+  function showResult(id) {
+    if (id.startsWith('correct')) {
+      document.getElementById(id).style.display = 'block';
+    } else {
+      document.getElementById(id).style.display = 'block';
+      setTimeout(() => {
+        document.getElementById(id).style.display = 'none';
+      }, 2000);
+    }
+  }
+</script>
+
+</body>
+</html>

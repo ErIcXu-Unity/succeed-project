@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import TeacherDashboard from './components/TeacherDashboard';
 import './App.css';
 
 function App() {
@@ -78,7 +79,7 @@ function App() {
         </div>
       </header>
       <main>
-        {/* Your authenticated application content goes here */}
+        <TeacherDashboard />
       </main>
       <footer>
         &copy; 2025 UNSW Sydney • <a href="https://moodle.telt.unsw.edu.au">Moodle Home</a>

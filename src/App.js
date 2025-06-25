@@ -36,20 +36,20 @@ function App() {
   return (
     <div className="App">
       <header>
-        <img src="assets/logo.png" alt="UNSW Logo" />
+        <img src="/assets/logo.png" alt="UNSW Logo" />
         <h1>escape room</h1>
       </header>
 
       <main>
         <div className="card-group">
           <div className="login-card" onClick={() => openLoginModal('Teacher')}>
-            <img src="assets/teacher.png" alt="Teacher Logo" />
+            <img src="/assets/teacher.png" alt="Teacher Logo" />
             <h2>Teacher Login</h2>
             <div className="login-text">Click to login with Moodle</div>
           </div>
 
           <div className="login-card" onClick={() => openLoginModal('Student')}>
-            <img src="assets/graduation.png" alt="Student Logo" />
+            <img src="/assets/graduation.png" alt="Student Logo" />
             <h2>Student Login</h2>
             <div className="login-text">Click to login with Moodle</div>
           </div>

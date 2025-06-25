@@ -168,29 +168,6 @@ The application is designed to integrate with UNSW Moodle using OAuth2 authentic
 - **Responsive Design**: The application is mobile-friendly and responsive
 - **Accessibility**: Built-in accessibility features for inclusive learning
 
-## Contributing
-
-1. Create feature branches for new functionality
-2. Follow React best practices and component patterns
-3. Ensure responsive design across all components
-4. Test authentication flows before deployment
-5. Update documentation for new features
-
-## Future Enhancements
-
-- Real Moodle OAuth2 integration
-- Advanced escape room builder with drag-and-drop interface
-- Real-time collaboration features
-- Enhanced analytics and reporting
-- Mobile app development
-- API integration for external content
-
-## Support
-
-For technical issues or questions:
-- Contact the development team
-- Refer to UNSW IT Service Centre: +61 2 9385 1333
-- Email: escaperoom-support@unsw.edu.au
 
 ## License
 

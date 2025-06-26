@@ -1,0 +1,182 @@
+:root {
+  --unsw-yellow: #ffd500;
+  --unsw-yellow-dark: #ffbc00;
+  --unsw-charcoal: #1f1a19;
+  --card-bg: #ffffff;
+  --gray-light: #f0f0f0;
+  --gray-mid: #e0e0e0;
+  --focus: #065fd4;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+.student-help {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--gray-light);
+  color: var(--unsw-charcoal);
+}
+
+.student-help header {
+  background: linear-gradient(90deg, var(--unsw-yellow), var(--unsw-yellow-dark));
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.student-help header img {
+  height: 40px;
+  margin-right: 1rem;
+}
+.student-help header h1 {
+  flex: 1;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+.back-link {
+  color: var(--unsw-charcoal);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.3rem 0.6rem;
+  border: 2px solid transparent;
+  transition: border 0.2s;
+}
+.back-link:hover, .back-link:focus {
+  border-color: var(--unsw-charcoal);
+  outline: none;
+}
+
+.student-help nav {
+  background: var(--card-bg);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+.student-help nav ul {
+  display: flex;
+  justify-content: center;
+  list-style: none;
+}
+.student-help nav a {
+  display: block;
+  padding: 0.75rem 1.25rem;
+  color: var(--unsw-charcoal);
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.student-help nav a.active {
+  background: var(--unsw-yellow-dark);
+  color: #fff;
+}
+.student-help nav a:hover, .student-help nav a:focus {
+  background: var(--unsw-yellow);
+  color: var(--unsw-charcoal);
+}
+
+main {
+  flex: 1;
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+.section-title {
+  font-size: 1.25rem;
+  margin: 1.5rem 0 1rem;
+  font-weight: 600;
+}
+
+/* FAQ 折叠 */
+.faq-item {
+  margin-bottom: 1rem;
+}
+.faq-question {
+  background: var(--card-bg);
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.faq-question::after {
+  content: "+";
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+.faq-question.open::after {
+  content: "–";
+}
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+  background: var(--card-bg);
+  border-left: 3px solid var(--unsw-yellow);
+  padding: 0 1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+.faq-answer p {
+  margin: 0.75rem 0;
+}
+
+/* 支持表单 */
+.support-form {
+  background: var(--card-bg);
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-top: 2rem;
+}
+.support-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+.support-form input,
+.support-form textarea {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--gray-mid);
+  border-radius: 4px;
+  font-size: 1rem;
+}
+.support-form button {
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  background: var(--unsw-charcoal);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.support-form button:hover,
+.support-form button:focus {
+  background: #000;
+  outline: none;
+}
+
+/* Focus 可见性 */
+button:focus, a:focus, .faq-question:focus {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+footer {
+  text-align: center;
+  padding: 1rem;
+  background: var(--card-bg);
+  border-top: 1px solid var(--gray-mid);
+  font-size: 0.85rem;
+  color: #777;
+}

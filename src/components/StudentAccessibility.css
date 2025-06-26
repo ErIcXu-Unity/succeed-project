@@ -1,0 +1,151 @@
+:root {
+  --unsw-yellow: #ffd500;
+  --unsw-yellow-dark: #ffbc00;
+  --unsw-charcoal: #1f1a19;
+  --card-bg: #ffffff;
+  --gray-light: #f0f0f0;
+  --gray-mid: #e0e0e0;
+  --focus: #065fd4;
+}
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+.student-accessibility {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--gray-light);
+  color: var(--unsw-charcoal);
+}
+
+.student-accessibility header {
+  background: linear-gradient(90deg, var(--unsw-yellow), var(--unsw-yellow-dark));
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.student-accessibility header img { height: 40px; margin-right: 1rem; }
+.student-accessibility header h1 {
+  flex: 1;
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--unsw-charcoal);
+}
+.back-link {
+  color: var(--unsw-charcoal);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.3rem 0.6rem;
+  border: 2px solid transparent;
+  transition: border 0.2s;
+}
+.back-link:hover, .back-link:focus {
+  border-color: var(--unsw-charcoal);
+  outline: none;
+}
+
+.student-accessibility nav {
+  background: var(--card-bg);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+.student-accessibility nav ul {
+  display: flex;
+  justify-content: center;
+  list-style: none;
+}
+.student-accessibility nav a {
+  display: block;
+  padding: 0.75rem 1.25rem;
+  color: var(--unsw-charcoal);
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.student-accessibility nav a.active {
+  background: var(--unsw-yellow-dark);
+  color: #fff;
+}
+.student-accessibility nav a:hover, .student-accessibility nav a:focus {
+  background: var(--unsw-yellow);
+  color: var(--unsw-charcoal);
+}
+
+main {
+  flex: 1;
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.control-card {
+  background: var(--card-bg);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 1rem;
+}
+.control-card h2 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+.control-card button {
+  padding: 0.5rem 1rem;
+  background: var(--unsw-charcoal);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.2s;
+}
+.control-card button:hover,
+.control-card button:focus {
+  background: #000;
+  outline: none;
+}
+
+.sample {
+  background: var(--card-bg);
+  padding: 1rem;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+.sample h2 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+.sample p { font-size: 1rem; }
+
+footer {
+  background: var(--card-bg);
+  border-top: 1px solid var(--gray-mid);
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.85rem;
+  color: #777;
+}
+
+/* Focus 指示 */
+button:focus, a:focus {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* 全局辅助模式类 */
+.high-contrast {
+  filter: brightness(1.2) contrast(1.5);
+}
+.font-large {
+  font-size: 1.2rem;
+}
+.colorblind {
+  filter: grayscale(1) contrast(1.2);
+}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import TeacherDashboard from './components/TeacherDashboard';
+import TeacherDashboard from './components/TeacherDashboard.jsx';
 import './App.css';
 
 function App() {

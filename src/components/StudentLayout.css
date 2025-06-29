@@ -1,0 +1,59 @@
+/* src/components/StudentLayout.css */
+
+.student-layout {
+  max-width: 1000px;
+  margin: 2rem auto;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+/* 二级头部 */
+.sub-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--unsw-yellow);
+  padding: 1rem 1.5rem;
+}
+.sub-header h2 {
+  margin: 0;
+  color: var(--unsw-charcoal);
+}
+.sub-header .back-to-main {
+  color: var(--unsw-charcoal);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+/* 二级导航 */
+.student-nav ul {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem;
+  background: #fafafa;
+}
+.student-nav li {
+  margin-right: 1rem;
+}
+.student-nav a {
+  padding: 0.5rem 1rem;
+  color: var(--unsw-charcoal);
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+.student-nav a.active {
+  background: var(--unsw-yellow-dark);
+  color: #fff;
+}
+.student-nav a:hover {
+  background: var(--unsw-yellow);
+}
+
+/* 主体内容区域 */
+.student-content {
+  padding: 2rem;
+}

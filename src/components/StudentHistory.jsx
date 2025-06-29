@@ -1,8 +1,8 @@
+// src/components/StudentHistory.jsx
 import React from 'react';
 import './StudentHistory.css';
 
 function StudentHistory() {
-  // Fake completed tasks data; replace with API calls as needed
   const historyItems = [
     {
       id: '1',
@@ -39,43 +39,21 @@ function StudentHistory() {
   ];
 
   return (
-    <div className="student-history">
-      <header>
-        <img src="/assets/logo.png" alt="UNSW Logo" />
-        <h1>Escape Room • History</h1>
-        <a href="#dashboard" className="back-link">Back to Dashboard</a>
-      </header>
-
-      <nav aria-label="Student Navigation">
-        <ul>
-          <li><a href="#home">Home</a></li>
-          <li><a href="#achievements">Achievements</a></li>
-          <li><a href="#history" className="active" aria-current="page">History</a></li>
-          <li><a href="#accessibility">Accessibility</a></li>
-          <li><a href="#help">Help</a></li>
-        </ul>
-      </nav>
-
-      <main>
-        <div className="section-title">Completed Escape Room Tasks</div>
-        <div className="history-grid">
-          {historyItems.map(item => (
-            <div key={item.id} className="history-card">
-              <img src={item.img} alt={item.title} />
-              <div className="history-info">
-                <h3>{item.title}</h3>
-                <p>Course: {item.course}</p>
-                <p>Completed: {item.completed} • Score: {item.score}</p>
-                <a href={`#feedback?task=${item.id}`}>View Feedback</a>
-              </div>
+    <div className="student-history-content">
+      <div className="section-title">Completed Escape Room Tasks</div>
+      <div className="history-grid">
+        {historyItems.map(item => (
+          <div key={item.id} className="history-card">
+            <img src={item.img} alt={item.title} />
+            <div className="history-info">
+              <h3>{item.title}</h3>
+              <p>Course: {item.course}</p>
+              <p>Completed: {item.completed} &middot; Score: {item.score}</p>
+              <a href={`#feedback?task=${item.id}`}>View Feedback</a>
             </div>
-          ))}
-        </div>
-      </main>
-
-      <footer>
-        &copy; 2025 UNSW Sydney • <a href="https://moodle.telt.unsw.edu.au">Moodle Home</a>
-      </footer>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

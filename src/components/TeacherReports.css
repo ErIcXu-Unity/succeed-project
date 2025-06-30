@@ -1,0 +1,107 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f9f9f9;
+}
+
+.reports-page .header {
+  background-color: #FFD600;
+  padding: 20px;
+  font-size: 28px;
+  font-weight: bold;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.nav {
+  display: flex;
+  justify-content: center;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.nav-item {
+  padding: 15px 25px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background 0.3s;
+}
+
+.nav-item i {
+  margin-right: 8px;
+  color: #FFD600;
+}
+
+.nav-item:hover {
+  background-color: #fff7c2;
+}
+
+.content {
+  max-width: 1200px;
+  margin: auto;
+  padding: 30px 20px;
+}
+
+.chart-section {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+.chart-container {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  text-align: center;
+  width: 500px;
+}
+
+.chart-container canvas {
+  margin-top: 15px;
+}
+
+.chart-data {
+  margin-top: 15px;
+  font-size: 15px;
+  text-align: left;
+}
+
+table {
+  width: 100%;
+  margin-top: 10px;
+  border-collapse: collapse;
+}
+
+th {
+  background: #FFD600;
+  padding: 10px;
+  text-align: left;
+}
+
+td {
+  padding: 8px;
+  border-top: 1px solid #eee;
+}
+
+.export-btn {
+  display: block;
+  margin: 0 auto 30px;
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.export-btn:hover {
+  background-color: #45A049;
+}

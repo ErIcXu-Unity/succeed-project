@@ -1,0 +1,66 @@
+/* ===== Layout Container ===== */
+.teacher-layout {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  margin: 0;
+  background: linear-gradient(135deg, #fffde7, #f5f5f5);
+  min-height: 100vh;
+}
+
+/* ===== Header (Top Bar) ===== */
+.teacher-header {
+  background-color: #FFD600;
+  padding: 20px;
+  font-size: 28px;
+  font-weight: bold;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== Navigation Bar ===== */
+.teacher-nav {
+  display: flex;
+  justify-content: center;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+a {
+  text-decoration: none;
+}
+
+.teacher-nav-item {
+  padding: 15px 25px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background 0.3s;
+  text-decoration: none; 
+  
+}
+
+.teacher-nav-item i {
+  margin-right: 8px;
+  color: #FFD600;
+}
+
+.teacher-nav-item:focus,
+.teacher-nav-item:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+
+.teacher-nav-item:hover,
+.teacher-nav-item.active {
+  background-color: #fff7c2;
+}
+
+/* ===== Page Body Wrapper ===== */
+.teacher-main-content {
+  max-width: 1200px;
+  margin: auto;
+  padding: 30px 20px;
+}

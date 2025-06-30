@@ -1,29 +1,26 @@
 // src/App.jsx
 import React, { useState, useEffect } from 'react';
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Navigate,
-  useNavigate
-} from 'react-router-dom';
-
-import TeacherDashboard      from './components/TeacherDashboard.jsx';
-import StudentLayout         from './components/StudentLayout.jsx';
-import StudentDashboard      from './components/StudentDashboard.jsx';
-import StudentAchievements   from './components/StudentAchievements.jsx';
-import StudentHistory        from './components/StudentHistory.jsx';
-import StudentAccessibility  from './components/StudentAccessibility.jsx';
-import StudentHelp           from './components/StudentHelp.jsx';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import TeacherDashboard from './components/TeacherDashboard.jsx';
+import EachgameGrade from './components/EachgameGrade.jsx';
+import TeacherLayout from './components/TeacherLayout.jsx';
+import TeacherReports from './components/TeacherReports.jsx';
+import TeacherStudents from './components/TeacherStudents.jsx';
+import StudentLayout from './components/StudentLayout.jsx';
+import StudentDashboard from './components/StudentDashboard.jsx';
+import StudentAchievements from './components/StudentAchievements.jsx';
+import StudentHistory from './components/StudentHistory.jsx';
+import StudentAccessibility from './components/StudentAccessibility.jsx';
+import StudentHelp from './components/StudentHelp.jsx';
 
 import './App.css';
 
 function AppWrapper() {
   // useNavigate 只能在 Router 内部使用
   const navigate = useNavigate();
-  const [user, setUser]     = useState(null);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState(null);
+  const [error, setError] = useState(null);
 
   const loginWithMoodle = async (role) => {
     setLoading(true);
@@ -35,12 +32,12 @@ function AppWrapper() {
         fullname: role === 'Teacher'
           ? 'Professor Alice Wang'
           : 'Student Bob Lee',
-        email:    role === 'Teacher'
+        email: role === 'Teacher'
           ? 'alice.wang@unsw.edu.au'
           : 'bob.lee@unsw.edu.au',
         username: role === 'Teacher' ? 't12345' : 's67890',
         role,
-        userid:   role === 'Teacher' ? 'T-FAKE-001' : 'S-FAKE-002'
+        userid: role === 'Teacher' ? 'T-FAKE-001' : 'S-FAKE-002'
       };
       localStorage.setItem('moodle_token', fakeToken);
       localStorage.setItem('moodle_user', JSON.stringify(fakeUser));
@@ -48,7 +45,7 @@ function AppWrapper() {
 
       // **登录后立即跳转**
       if (role === 'Teacher') {
-        navigate('/', { replace: true });
+        navigate('/teacher', { replace: true });
       } else {
         navigate('/student/home', { replace: true });
       }
@@ -138,15 +135,22 @@ function AppWrapper() {
       <main>
         <Routes>
           {user.role === 'Teacher' ? (
-            <Route path="/*" element={<TeacherDashboard />} />
+            <>
+              <Route path="/teacher" element={<TeacherLayout />}>
+                <Route index element={<TeacherDashboard />} />
+                <Route path="reports" element={<TeacherReports />} />
+                <Route path="students" element={<TeacherStudents />} />
+                <Route path="gamegrade" element={<EachgameGrade />} />
+              </Route>
+            </>
           ) : (
             <Route path="/student" element={<StudentLayout />}>
               <Route index element={<Navigate to="home" replace />} />
-              <Route path="home"          element={<StudentDashboard />} />
-              <Route path="achievements"  element={<StudentAchievements />} />
-              <Route path="history"       element={<StudentHistory />} />
+              <Route path="home" element={<StudentDashboard />} />
+              <Route path="achievements" element={<StudentAchievements />} />
+              <Route path="history" element={<StudentHistory />} />
               <Route path="accessibility" element={<StudentAccessibility />} />
-              <Route path="help"          element={<StudentHelp />} />
+              <Route path="help" element={<StudentHelp />} />
               <Route path="*" element={<Navigate to="home" replace />} />
             </Route>
           )}

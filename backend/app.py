@@ -66,23 +66,27 @@ class Achievement(db.Model):
 
 class StudentAchievement(db.Model):
     __tablename__ = 'student_achievements'
-    id             = db.Column(db.Integer, primary_key=True)
-    student_id     = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
-    achievement_id = db.Column(db.Integer, db.ForeignKey('achievements.id'), nullable=False)
-    unlocked_at    = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    id               = db.Column(db.Integer, primary_key=True)
+    student_id       = db.Column(db.String(20), db.ForeignKey('students.student_id'), nullable=False)
+    student_name     = db.Column(db.String(80), nullable=False)  # redundant field for easy access
+    achievement_id   = db.Column(db.Integer, db.ForeignKey('achievements.id'), nullable=False)
+    achievement_name = db.Column(db.String(80), nullable=False)  # redundant field for easy access
+    unlocked_at      = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
-    student     = db.relationship('Student', backref='student_achievements')
+    student     = db.relationship('Student', foreign_keys=[student_id], backref='student_achievements')
     achievement = db.relationship('Achievement', backref='student_achievements')
 
 class StudentTaskResult(db.Model):
     __tablename__ = 'student_task_results'
     id           = db.Column(db.Integer, primary_key=True)
-    student_id   = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
+    student_id   = db.Column(db.String(20), db.ForeignKey('students.student_id'), nullable=False)
+    student_name = db.Column(db.String(80), nullable=False)  # redundant field for easy access
     task_id      = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=False)
+    task_name    = db.Column(db.String(80), nullable=False)  # redundant field for easy access
     total_score  = db.Column(db.Integer, nullable=False)
     completed_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), nullable=False)
 
-    student = db.relationship('Student', backref='task_results')
+    student = db.relationship('Student', foreign_keys=[student_id], backref='task_results')
     task    = db.relationship('Task', backref='task_results')
 
 
@@ -95,45 +99,32 @@ def register():
         if not data.get(field):
             return jsonify({'error': f'{field} is required'}), 400
 
-    match = re.match(r'^([A-Za-z]+)(\d{7})@(stu|tea)\.com$', data['username'])
-    if not match:
-        return jsonify({'error': 'invalid username format'}), 400
+    # Validate student ID must be exactly 7 digits
+    if not re.match(r'^\d{7}$', data['id_number']):
+        return jsonify({'error': 'id_number must be 7 digits'}), 400
 
-    suffix    = match.group(3)
-    id_number = data['id_number']
+    # Validate username must be <7digits>@stu.com and match id_number
+    expected_username = f"{data['id_number']}@stu.com"
+    if data['username'] != expected_username:
+        return jsonify({'error': 'username must be <7 digits>@stu.com and match id_number'}), 400
+
+    # Check if student already exists (by student_id or username)
+    exists = Student.query.filter(
+        (Student.student_id == data['id_number']) | (Student.username == data['username'])
+    ).first()
+    if exists:
+        return jsonify({'error': 'student already exists'}), 409
+
     hashed_pw = generate_password_hash(data['password'])
-
-    if suffix == 'stu':
-        exists = Student.query.filter(
-            (Student.student_id == id_number) | (Student.username == data['username'])
-        ).first()
-        if exists:
-            return jsonify({'error': 'student already exists'}), 409
-        student = Student(
-            real_name  = data['real_name'],
-            student_id = id_number,
-            username   = data['username'],
-            password   = hashed_pw
-        )
-        db.session.add(student)
-        db.session.commit()
-        return jsonify({'message': 'student registered'}), 201
-
-    else:
-        exists = Teacher.query.filter(
-            (Teacher.teacher_id == id_number) | (Teacher.username == data['username'])
-        ).first()
-        if exists:
-            return jsonify({'error': 'teacher already exists'}), 409
-        teacher = Teacher(
-            real_name  = data['real_name'],
-            teacher_id = id_number,
-            username   = data['username'],
-            password   = hashed_pw
-        )
-        db.session.add(teacher)
-        db.session.commit()
-        return jsonify({'message': 'teacher registered'}), 201
+    student = Student(
+        real_name  = data['real_name'],
+        student_id = data['id_number'],
+        username   = data['username'],
+        password   = hashed_pw
+    )
+    db.session.add(student)
+    db.session.commit()
+    return jsonify({'message': 'student registered'}), 201
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -148,11 +139,13 @@ def login():
         role = 'tea'
 
     if user and check_password_hash(user.password, password):
-        # return the user’s ID along with role
+        # return the user's student_id/teacher_id along with role
+        user_identifier = user.student_id if role == 'stu' else user.teacher_id
         return jsonify({
             'message': 'login success',
             'role':    role,
-            'user_id': user.id
+            'user_id': user_identifier,  # now returns actual student_id/teacher_id
+            'real_name': user.real_name
         }), 200
 
     return jsonify({'error': 'invalid credentials'}), 401
@@ -188,9 +181,19 @@ def get_questions(task_id):
 def submit_task(task_id):
     data       = request.get_json()
     answers    = data.get('answers')
-    student_id = data.get('student_id')
+    student_id = data.get('student_id')  # now expects actual student_id (7-digit string)
     if not isinstance(answers, dict) or not student_id:
         return jsonify({'error': 'student_id and answers required'}), 400
+
+    # Get student info for redundant fields
+    student = Student.query.filter_by(student_id=student_id).first()
+    if not student:
+        return jsonify({'error': 'student not found'}), 404
+
+    # Get task info for redundant fields
+    task = Task.query.get(task_id)
+    if not task:
+        return jsonify({'error': 'task not found'}), 404
 
     total_score     = 0
     correct_count   = 0
@@ -219,12 +222,16 @@ def submit_task(task_id):
     if existing:
         existing.total_score   = total_score
         existing.completed_at  = datetime.now(timezone.utc)
+        existing.student_name  = student.real_name  # update redundant field
+        existing.task_name     = task.name          # update redundant field
     else:
         new_result = StudentTaskResult(
-            student_id  = student_id,
-            task_id     = task_id,
-            total_score = total_score,
-            completed_at= datetime.now(timezone.utc)
+            student_id   = student_id,
+            student_name = student.real_name,  # redundant field
+            task_id      = task_id,
+            task_name    = task.name,          # redundant field
+            total_score  = total_score,
+            completed_at = datetime.now(timezone.utc)
         )
         db.session.add(new_result)
 
@@ -239,9 +246,11 @@ def submit_task(task_id):
             ).first()
             if not unlocked:
                 sa = StudentAchievement(
-                    student_id     = student_id,
-                    achievement_id = ach.id,
-                    unlocked_at    = datetime.now(timezone.utc)
+                    student_id       = student_id,
+                    student_name     = student.real_name,  # redundant field
+                    achievement_id   = ach.id,
+                    achievement_name = ach.name,           # redundant field
+                    unlocked_at      = datetime.now(timezone.utc)
                 )
                 db.session.add(sa)
                 new_achievements.append({'id': ach.id, 'name': ach.name})
@@ -258,25 +267,29 @@ def submit_task(task_id):
 
 # Reporting Routes
 
-@app.route('/api/students/<int:student_id>/achievements', methods=['GET'])
+@app.route('/api/students/<student_id>/achievements', methods=['GET'])
 def get_student_achievements(student_id):
+    # Now using actual student_id (string) instead of auto-increment ID
     records = StudentAchievement.query.filter_by(student_id=student_id).all()
     return jsonify([
         {
             'id': r.achievement.id,
-            'name': r.achievement.name,
+            'name': r.achievement_name,  # use redundant field
+            'student_name': r.student_name,  # use redundant field
             'unlocked_at': r.unlocked_at.isoformat()
         }
         for r in records
     ]), 200
 
-@app.route('/api/students/<int:student_id>/results', methods=['GET'])
+@app.route('/api/students/<student_id>/results', methods=['GET'])
 def get_student_results(student_id):
+    # Now using actual student_id (string) instead of auto-increment ID
     records = StudentTaskResult.query.filter_by(student_id=student_id).all()
     return jsonify([
         {
-            'task_id':     r.task.id,
-            'task_name':   r.task.name,
+            'task_id':     r.task_id,
+            'task_name':   r.task_name,      # use redundant field
+            'student_name': r.student_name,  # use redundant field
             'score':       r.total_score,
             'completed_at': r.completed_at.isoformat()
         }
@@ -284,19 +297,38 @@ def get_student_results(student_id):
     ]), 200
 
 
-# Main entry: rebuild and seed
+# Main entry
 
 if __name__ == '__main__':
     with app.app_context():
-        # db.dropall()
+        # Recreate schema from scratch each run (development only)
+        # db.drop_all()
         db.create_all()
-        # Seed one achievement per task
-        for task in Task.query.all():
-            ach_name  = f"{task.name} Master"
-            condition = "all_correct"
-            if not Achievement.query.filter_by(name=ach_name).first():
-                ach = Achievement(task_id=task.id, name=ach_name, condition=condition)
-                db.session.add(ach)
+
+        # Seed default teacher accounts
+        default_teachers = [
+            {
+                'real_name': 'Teacher Admin 1',
+                'teacher_id': '1000',
+                'username': 'st1000@tea.com',
+                'password_plain': '123456'
+            },
+            {
+                'real_name': 'Teacher Admin 2',
+                'teacher_id': '1001',
+                'username': 'st1001@tea.com',
+                'password_plain': '123456'
+            }
+        ]
+        for t in default_teachers:
+            if not Teacher.query.filter_by(username=t['username']).first():
+                db.session.add(Teacher(
+                    real_name=t['real_name'],
+                    teacher_id=t['teacher_id'],
+                    username=t['username'],
+                    password=generate_password_hash(t['password_plain'])
+                ))
         db.session.commit()
+        print('All tables recreated and default teacher accounts ensured.')
 
     app.run(debug=True)

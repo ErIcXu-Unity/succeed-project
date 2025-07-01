@@ -9,9 +9,11 @@ export default function StudentLayout() {
       {/* 二级头部 */}
       <div className="sub-header">
         <h2>Escape Room • Student Dashboard</h2>
+        {/*
         <NavLink to="/" className="back-to-main">
           Back to Main
         </NavLink>
+        */}
       </div>
 
       {/* 学生端二级导航 */}

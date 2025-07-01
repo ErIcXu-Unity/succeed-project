@@ -12,7 +12,6 @@
 /* 二级头部 */
 .sub-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   background: var(--unsw-yellow);
   padding: 1rem 1.5rem;
@@ -20,11 +19,6 @@
 .sub-header h2 {
   margin: 0;
   color: var(--unsw-charcoal);
-}
-.sub-header .back-to-main {
-  color: var(--unsw-charcoal);
-  text-decoration: none;
-  font-weight: 500;
 }
 
 /* 二级导航 */

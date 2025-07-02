@@ -12,7 +12,14 @@ from werkzeug.utils import secure_filename
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={
+    r"/*": {
+        "origins": ["http://localhost:3000", "http://127.0.0.1:3000"],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+        "supports_credentials": False
+    }
+})
 
 app.config['SQLALCHEMY_DATABASE_URI']    = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -320,11 +327,11 @@ def create_question(task_id):
         if not data.get(field):
             return jsonify({'error': f'{field} is required'}), 400
     
-    # 验证correct_answer格式
+    # 验证 correct_answer 格式
     if data['correct_answer'].upper() not in ['A', 'B', 'C', 'D']:
         return jsonify({'error': 'correct_answer must be A, B, C, or D'}), 400
     
-    # 验证score为整数
+    # 验证 score 为整数
     try:
         score = int(data['score'])
     except ValueError:
@@ -353,7 +360,7 @@ def create_question(task_id):
         score=score,
         image_path=image_path,
         image_filename=image_filename,
-        created_by=data.get('created_by'),  # 可选：教师ID
+        created_by=data.get('created_by'),  # 可选：教师 ID
         created_at=datetime.now(timezone.utc)
     )
     
@@ -450,4 +457,4 @@ if __name__ == '__main__':
         db.session.commit()
         print('All tables recreated and default teacher accounts ensured.')
 
-    app.run(debug=True)
+    app.run(debug=True, port=5001)

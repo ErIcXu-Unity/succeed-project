@@ -1,11 +1,13 @@
 import os
 import re
+import uuid
 from datetime import datetime, timezone
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 
 load_dotenv()
 
@@ -14,8 +16,38 @@ CORS(app)
 
 app.config['SQLALCHEMY_DATABASE_URI']    = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads', 'questions')
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB 文件大小限制
 
 db = SQLAlchemy(app)
+
+# 配置允许的图片格式
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+def allowed_file(filename):
+    """检查文件扩展名是否允许"""
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def save_question_image(file, task_id):
+    """保存问题图片文件并返回存储路径"""
+    if file and allowed_file(file.filename):
+        # 创建任务特定的目录
+        task_dir = os.path.join(app.config['UPLOAD_FOLDER'], f'task_{task_id}')
+        os.makedirs(task_dir, exist_ok=True)
+        
+        # 生成唯一文件名
+        filename = secure_filename(file.filename)
+        file_ext = filename.rsplit('.', 1)[1].lower()
+        unique_filename = f"{uuid.uuid4().hex}.{file_ext}"
+        
+        # 保存文件
+        file_path = os.path.join(task_dir, unique_filename)
+        file.save(file_path)
+        
+        # 返回相对路径用于数据库存储
+        return f"task_{task_id}/{unique_filename}", filename
+    return None, None
 
 # Models
 
@@ -52,6 +84,10 @@ class Question(db.Model):
     correct_answer  = db.Column(db.String(1), nullable=False)
     difficulty      = db.Column(db.String(20), nullable=False)
     score           = db.Column(db.Integer, nullable=False)
+    image_path      = db.Column(db.String(255), nullable=True)  # 图片文件路径
+    image_filename  = db.Column(db.String(255), nullable=True)  # 原始文件名
+    created_by      = db.Column(db.String(20), db.ForeignKey('teachers.teacher_id'), nullable=True)  # 创建教师
+    created_at      = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)  # 创建时间
 
     task = db.relationship('Task', backref=db.backref('questions', lazy=True))
 
@@ -163,7 +199,7 @@ def get_questions(task_id):
     task = Task.query.get_or_404(task_id)
     result = []
     for q in task.questions:
-        result.append({
+        question_data = {
             'id': q.id,
             'question': q.question,
             'options': {
@@ -174,7 +210,11 @@ def get_questions(task_id):
             },
             'difficulty': q.difficulty,
             'score': q.score
-        })
+        }
+        # 添加图片路径（如果存在）
+        if q.image_path:
+            question_data['image_url'] = f"/uploads/questions/{q.image_path}"
+        result.append(question_data)
     return jsonify(result), 200
 
 @app.route('/api/tasks/<int:task_id>/submit', methods=['POST'])
@@ -263,6 +303,85 @@ def submit_task(task_id):
         'new_achievements': new_achievements,
         'correct_answers':  correct_answers
     }), 200
+
+# Question Management Routes
+
+@app.route('/api/tasks/<int:task_id>/questions', methods=['POST'])
+def create_question(task_id):
+    """创建新问题（支持图片上传）"""
+    # 验证任务存在
+    task = Task.query.get_or_404(task_id)
+    
+    # 获取表单数据
+    data = request.form
+    required_fields = ['question', 'option_a', 'option_b', 'option_c', 'option_d', 'correct_answer', 'difficulty', 'score']
+    
+    for field in required_fields:
+        if not data.get(field):
+            return jsonify({'error': f'{field} is required'}), 400
+    
+    # 验证correct_answer格式
+    if data['correct_answer'].upper() not in ['A', 'B', 'C', 'D']:
+        return jsonify({'error': 'correct_answer must be A, B, C, or D'}), 400
+    
+    # 验证score为整数
+    try:
+        score = int(data['score'])
+    except ValueError:
+        return jsonify({'error': 'score must be an integer'}), 400
+    
+    # 处理图片上传（可选）
+    image_path = None
+    image_filename = None
+    if 'image' in request.files:
+        file = request.files['image']
+        if file.filename:  # 确保文件被选择
+            image_path, image_filename = save_question_image(file, task_id)
+            if not image_path:
+                return jsonify({'error': 'Invalid image file format or size'}), 400
+    
+    # 创建新问题
+    question = Question(
+        task_id=task_id,
+        question=data['question'],
+        option_a=data['option_a'],
+        option_b=data['option_b'],
+        option_c=data['option_c'],
+        option_d=data['option_d'],
+        correct_answer=data['correct_answer'].upper(),
+        difficulty=data['difficulty'],
+        score=score,
+        image_path=image_path,
+        image_filename=image_filename,
+        created_by=data.get('created_by'),  # 可选：教师ID
+        created_at=datetime.now(timezone.utc)
+    )
+    
+    db.session.add(question)
+    db.session.commit()
+    
+    # 返回新创建的问题详情
+    result = {
+        'id': question.id,
+        'question': question.question,
+        'options': {
+            'A': question.option_a,
+            'B': question.option_b,
+            'C': question.option_c,
+            'D': question.option_d
+        },
+        'difficulty': question.difficulty,
+        'score': question.score,
+        'image_path': question.image_path,
+        'created_at': question.created_at.isoformat()
+    }
+    
+    return jsonify(result), 201
+
+@app.route('/uploads/questions/<path:filename>')
+def uploaded_file(filename):
+    """提供问题图片访问服务"""
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 
 # Reporting Routes

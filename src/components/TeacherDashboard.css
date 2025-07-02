@@ -105,17 +105,23 @@
   display: flex;
   justify-content: space-around;
   padding: 15px;
+  gap: 8px;
 }
 
 .card-buttons button {
-  padding: 8px 16px;
+  padding: 8px 12px;
   border: none;
   border-radius: 6px;
   color: white;
   font-weight: bold;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 12px;
   transition: 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  justify-content: center;
 }
 
 .grade-btn {
@@ -126,9 +132,29 @@
   background-color: #2196F3;
 }
 
+.create-btn {
+  background-color: #FF9800;
+}
+
 .card-buttons button:hover {
   transform: scale(1.05);
   opacity: 0.9;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: #666;
+  font-size: 1.2rem;
+}
+
+.loading i {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #4CAF50;
 }
 
 .add-card {

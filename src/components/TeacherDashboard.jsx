@@ -1,14 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './TeacherDashboard.css';
 import { useNavigate } from 'react-router-dom';
+import QuestionCreateModal from './QuestionCreateModal';
 
 const TeacherDashboard = () => {
   const navigate = useNavigate();
-
-  const gameData = [
-    { id: 1, title: 'Escape Room 1', image: '/assets/game01.jpg' },
-    { id: 2, title: 'Escape Room 2', image: '/assets/game02.jpg' }
-  ];
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
 
   const stats = {
     totalGames: 12,
@@ -16,17 +16,61 @@ const TeacherDashboard = () => {
     avgCompletion: 75
   };
 
-  const viewGrades = (gameId) => {
+  // 获取任务列表
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  const fetchTasks = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/tasks');
+      if (response.ok) {
+        const data = await response.json();
+        setTasks(data);
+      } else {
+        console.error('Failed to fetch tasks');
+      }
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const viewGrades = (taskId) => {
     navigate('/teacher/gamegrade');
   };
 
-  const editGame = (gameId) => {
-    alert(`Redirect to edit game page for game ${gameId}`);
+  const editGame = (taskId) => {
+    alert(`Redirect to edit game page for task ${taskId}`);
   };
 
-  const createGame = () => {
-    alert("Redirect to create game page");
+  const createQuestion = (taskId) => {
+    setSelectedTaskId(taskId);
+    setIsModalOpen(true);
   };
+
+  const handleQuestionCreated = (newQuestion) => {
+    console.log('New question created:', newQuestion);
+    // 可以在这里添加成功通知
+    alert('Question created successfully!');
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedTaskId(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="main-content">
+        <div className="loading">
+          <i className="fas fa-spinner fa-spin"></i>
+          Loading...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="main-content">
@@ -37,22 +81,32 @@ const TeacherDashboard = () => {
       </div>
 
       <div className="card-container">
-        {gameData.map((game) => (
-          <div key={game.id} className="card">
-            <img src={game.image} alt={game.title} />
-            <div className="card-title">{game.title}</div>
+        {tasks.map((task) => (
+          <div key={task.id} className="card">
+            <img src="/assets/game01.jpg" alt={task.name} />
+            <div className="card-title">{task.name}</div>
             <div className="card-buttons">
-              <button className="grade-btn" onClick={() => viewGrades(game.id)}>
+              <button className="grade-btn" onClick={() => viewGrades(task.id)}>
                 <i className="fas fa-chart-line"></i> Grades
               </button>
-              <button className="edit-btn" onClick={() => editGame(game.id)}>
+              <button className="edit-btn" onClick={() => editGame(task.id)}>
                 <i className="fas fa-edit"></i> Edit
+              </button>
+              <button className="create-btn" onClick={() => createQuestion(task.id)}>
+                <i className="fas fa-plus"></i> Add Question
               </button>
             </div>
           </div>
         ))}
-        <div className="add-card" onClick={createGame}>+</div>
       </div>
+
+      {/* 问题创建模态框 */}
+      <QuestionCreateModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        onSubmit={handleQuestionCreated}
+        taskId={selectedTaskId}
+      />
     </div>
   );
 };

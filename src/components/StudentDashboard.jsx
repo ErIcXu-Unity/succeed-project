@@ -1,5 +1,6 @@
 // src/components/StudentDashboard.jsx
 import React from 'react';
+import { Link } from 'react-router-dom';
 import './StudentDashboard.css';
 
 function StudentDashboard() {
@@ -22,22 +23,26 @@ function StudentDashboard() {
     }
   ];
 
+  // 为了演示，这里我给每个任务加了一个 description 字段，
+  // 真实数据应该从后端 /api/tasks 接口加载
   const tasks = [
     {
-      id: 'T-001',
+      id: '1',
       title: 'Lab Escape: Solution Prep',
       course: 'Chemistry Intro',
       status: 'In Progress',
       img: '/assets/task1.jpg',
-      alt: 'Lab Escape: Solution Prep'
+      alt: 'Lab Escape: Solution Prep',
+      description: '你是一名化学新生，导师让你为接下来的实验准备溶液…'
     },
     {
-      id: 'T-002',
+      id: '2',
       title: 'Data Analysis Escape: Probability',
       course: 'Statistics',
       status: 'Not Started',
       img: '/assets/task2.jpg',
-      alt: 'Data Analysis Escape: Probability Puzzle'
+      alt: 'Data Analysis Escape: Probability Puzzle',
+      description: '欢迎来到概率迷宫，在这里你需要用统计学方法破解…'
     }
   ];
 
@@ -52,9 +57,9 @@ function StudentDashboard() {
               <div className="info">
                 <h3>{course.title}</h3>
                 <p>Joined &middot; {course.tasksRemaining} tasks remaining</p>
-                <a href="#tasks" className="btn btn-primary" role="button">
+                <Link to={`/student/tasks/${course.id}/tasks`} className="btn btn-primary" role="button">
                   View Tasks
-                </a>
+                </Link>
               </div>
             </div>
           ))}
@@ -70,9 +75,13 @@ function StudentDashboard() {
               <div className="info">
                 <h3>{task.title}</h3>
                 <p>{task.course} &middot; {task.status}</p>
-                <a href="#play" className="btn btn-primary" role="button">
+                <Link
+                  to={`/student/tasks/${task.id}/intro`}
+                  className="btn btn-primary"
+                  role="button"
+                >
                   {task.status === 'Not Started' ? 'Start Game' : 'Continue Game'}
-                </a>
+                </Link>
               </div>
             </div>
           ))}

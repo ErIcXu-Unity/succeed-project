@@ -103,7 +103,7 @@ const ImageUpload = ({ onImageSelect, maxSize = 5 * 1024 * 1024, acceptedFormats
             <i className="fas fa-cloud-upload-alt upload-icon"></i>
             <p>Drag an image here or click to select a file</p>
             <p className="upload-hint">
-            Supported formats:{acceptedFormats.join(', ')} | 最大 {Math.round(maxSize / 1024 / 1024)}MB
+            Supported formats:{acceptedFormats.join(', ')} | Maximum {Math.round(maxSize / 1024 / 1024)}MB
             </p>
           </div>
         </div>

@@ -12,14 +12,7 @@ from werkzeug.utils import secure_filename
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, resources={
-    r"/*": {
-        "origins": ["http://localhost:3000", "http://127.0.0.1:3000"],
-        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
-        "supports_credentials": False
-    }
-})
+CORS(app)
 
 app.config['SQLALCHEMY_DATABASE_URI']    = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -76,8 +69,10 @@ class Teacher(db.Model):
 
 class Task(db.Model):
     __tablename__ = 'tasks'
-    id   = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), unique=True, nullable=False)
+    id           = db.Column(db.Integer, primary_key=True)
+    name         = db.Column(db.String(80), unique=True, nullable=False)
+    introduction = db.Column(db.Text, nullable=True)  # 任务介绍描述
+    image_path   = db.Column(db.String(255), nullable=True)  # 任务背景图片
 
 class Question(db.Model):
     __tablename__ = 'questions'
@@ -199,7 +194,57 @@ def login():
 @app.route('/api/tasks', methods=['GET'])
 def get_tasks():
     tasks = Task.query.all()
-    return jsonify([{'id': t.id, 'name': t.name} for t in tasks]), 200
+    result = []
+    for t in tasks:
+        task_data = {
+            'id': t.id, 
+            'name': t.name,
+            'introduction': t.introduction,
+            'question_count': len(t.questions)
+        }
+        if t.image_path:
+            task_data['image_url'] = f"/uploads/tasks/{t.image_path}"
+        result.append(task_data)
+    return jsonify(result), 200
+
+@app.route('/api/tasks/<int:task_id>', methods=['GET'])
+def get_task_detail(task_id):
+    """获取任务详情"""
+    task = Task.query.get_or_404(task_id)
+    result = {
+        'id': task.id,
+        'name': task.name,
+        'introduction': task.introduction,
+        'question_count': len(task.questions)
+    }
+    if task.image_path:
+        result['image_url'] = f"/uploads/tasks/{task.image_path}"
+    return jsonify(result), 200
+
+@app.route('/api/tasks/<int:task_id>', methods=['PUT'])
+def update_task(task_id):
+    """更新任务信息"""
+    task = Task.query.get_or_404(task_id)
+    data = request.get_json()
+    
+    if 'name' in data:
+        task.name = data['name']
+    if 'introduction' in data:
+        task.introduction = data['introduction']
+    
+    try:
+        db.session.commit()
+        return jsonify({
+            'message': 'Task updated successfully',
+            'task': {
+                'id': task.id,
+                'name': task.name,
+                'introduction': task.introduction
+            }
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/tasks/<int:task_id>/questions', methods=['GET'])
 def get_questions(task_id):
@@ -222,6 +267,28 @@ def get_questions(task_id):
         if q.image_path:
             question_data['image_url'] = f"/uploads/questions/{q.image_path}"
         result.append(question_data)
+    return jsonify(result), 200
+
+@app.route('/api/questions/<int:question_id>/check', methods=['POST'])
+def check_answer(question_id):
+    """检查单个问题的答案"""
+    data = request.get_json()
+    selected_answer = data.get('answer')
+    
+    if not selected_answer:
+        return jsonify({'error': 'answer required'}), 400
+    
+    question = Question.query.get_or_404(question_id)
+    
+    is_correct = selected_answer.upper() == question.correct_answer
+    
+    result = {
+        'correct': is_correct,
+        'correct_answer': question.correct_answer,
+        'explanation': f"The correct answer is {question.correct_answer}",
+        'score': question.score if is_correct else 0
+    }
+    
     return jsonify(result), 200
 
 @app.route('/api/tasks/<int:task_id>/submit', methods=['POST'])
@@ -327,11 +394,11 @@ def create_question(task_id):
         if not data.get(field):
             return jsonify({'error': f'{field} is required'}), 400
     
-    # 验证 correct_answer 格式
+    # 验证correct_answer格式
     if data['correct_answer'].upper() not in ['A', 'B', 'C', 'D']:
         return jsonify({'error': 'correct_answer must be A, B, C, or D'}), 400
     
-    # 验证 score 为整数
+    # 验证score为整数
     try:
         score = int(data['score'])
     except ValueError:
@@ -360,7 +427,7 @@ def create_question(task_id):
         score=score,
         image_path=image_path,
         image_filename=image_filename,
-        created_by=data.get('created_by'),  # 可选：教师 ID
+        created_by=data.get('created_by'),  # 可选：教师ID
         created_at=datetime.now(timezone.utc)
     )
     
@@ -384,6 +451,100 @@ def create_question(task_id):
     }
     
     return jsonify(result), 201
+
+@app.route('/api/tasks/<int:task_id>/questions/batch', methods=['POST'])
+def create_questions_batch(task_id):
+    """批量创建问题"""
+    # 验证任务存在
+    task = Task.query.get_or_404(task_id)
+    
+    data = request.get_json()
+    questions_data = data.get('questions', [])
+    
+    if not questions_data:
+        return jsonify({'error': 'No questions provided'}), 400
+    
+    if len(questions_data) > 5:
+        return jsonify({'error': 'Maximum 5 questions allowed per batch'}), 400
+    
+    created_questions = []
+    errors = []
+    
+    try:
+        for i, q_data in enumerate(questions_data):
+            # 验证每个问题的必填字段
+            required_fields = ['question', 'option_a', 'option_b', 'option_c', 'option_d', 
+                             'correct_answer', 'difficulty', 'score']
+            
+            missing_fields = [field for field in required_fields if not q_data.get(field)]
+            if missing_fields:
+                errors.append(f"Question {i+1}: Missing fields: {', '.join(missing_fields)}")
+                continue
+            
+            # 验证分数
+            try:
+                score = int(q_data['score'])
+            except ValueError:
+                errors.append(f"Question {i+1}: Score must be a number")
+                continue
+            
+            # 验证正确答案
+            if q_data['correct_answer'].upper() not in ['A', 'B', 'C', 'D']:
+                errors.append(f"Question {i+1}: Correct answer must be A, B, C, or D")
+                continue
+            
+            # 创建问题
+            question = Question(
+                task_id=task_id,
+                question=q_data['question'],
+                option_a=q_data['option_a'],
+                option_b=q_data['option_b'],
+                option_c=q_data['option_c'],
+                option_d=q_data['option_d'],
+                correct_answer=q_data['correct_answer'].upper(),
+                difficulty=q_data['difficulty'],
+                score=score,
+                created_by=data.get('created_by'),
+                created_at=datetime.now(timezone.utc)
+            )
+            
+            db.session.add(question)
+            created_questions.append(question)
+        
+        if errors:
+            db.session.rollback()
+            return jsonify({'errors': errors}), 400
+        
+        db.session.commit()
+        
+        # 构建返回数据
+        result = []
+        for question in created_questions:
+            q_data = {
+                'id': question.id,
+                'question': question.question,
+                'options': {
+                    'A': question.option_a,
+                    'B': question.option_b,
+                    'C': question.option_c,
+                    'D': question.option_d
+                },
+                'correct_answer': question.correct_answer,
+                'difficulty': question.difficulty,
+                'score': question.score,
+                'created_by': question.created_by,
+                'created_at': question.created_at.isoformat()
+            }
+            result.append(q_data)
+        
+        return jsonify({
+            'message': f'{len(created_questions)} questions created successfully',
+            'questions': result
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Database error: {str(e)}'}), 500
 
 @app.route('/uploads/questions/<path:filename>')
 def uploaded_file(filename):
@@ -457,4 +618,4 @@ if __name__ == '__main__':
         db.session.commit()
         print('All tables recreated and default teacher accounts ensured.')
 
-    app.run(debug=True, port=5001)
+    app.run(debug=True)

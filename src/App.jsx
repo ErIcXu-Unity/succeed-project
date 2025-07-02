@@ -12,6 +12,9 @@ import StudentAchievements from './components/StudentAchievements.jsx';
 import StudentHistory from './components/StudentHistory.jsx';
 import StudentAccessibility from './components/StudentAccessibility.jsx';
 import StudentHelp from './components/StudentHelp.jsx';
+import TaskIntro from './components/TaskIntro.jsx';
+import TaskQuiz from './components/TaskQuiz.jsx';
+import TaskEditor from './components/TaskEditor.jsx';
 import Login from './components/Login.jsx';
 
 import './App.css';
@@ -89,6 +92,8 @@ function AppWrapper() {
                 <Route path="students" element={<TeacherStudents />} />
                 <Route path="gamegrade" element={<EachgameGrade />} />
               </Route>
+              {/* 任务编辑路由 - 在TeacherLayout外部 */}
+              <Route path="/teacher/tasks/:taskId/edit" element={<TaskEditor />} />
               <Route path="*" element={<Navigate to="/teacher" replace />} />
             </>
           ) : (
@@ -101,6 +106,9 @@ function AppWrapper() {
                 <Route path="accessibility" element={<StudentAccessibility />} />
                 <Route path="help" element={<StudentHelp />} />
               </Route>
+              {/* 任务相关路由 - 在StudentLayout外部 */}
+              <Route path="/student/tasks/:taskId/intro" element={<TaskIntro />} />
+              <Route path="/student/tasks/:taskId/quiz" element={<TaskQuiz />} />
               <Route path="*" element={<Navigate to="/student/home" replace />} />
             </>
           )}

@@ -1,9 +1,13 @@
 // src/components/StudentDashboard.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './StudentDashboard.css';
 
 function StudentDashboard() {
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  // 模拟课程数据
   const courses = [
     {
       id: 'C-1010',
@@ -23,28 +27,37 @@ function StudentDashboard() {
     }
   ];
 
-  // 为了演示，这里我给每个任务加了一个 description 字段，
-  // 真实数据应该从后端 /api/tasks 接口加载
-  const tasks = [
-    {
-      id: '1',
-      title: 'Lab Escape: Solution Prep',
-      course: 'Chemistry Intro',
-      status: 'In Progress',
-      img: '/assets/task1.jpg',
-      alt: 'Lab Escape: Solution Prep',
-      description: '你是一名化学新生，导师让你为接下来的实验准备溶液…'
-    },
-    {
-      id: '2',
-      title: 'Data Analysis Escape: Probability',
-      course: 'Statistics',
-      status: 'Not Started',
-      img: '/assets/task2.jpg',
-      alt: 'Data Analysis Escape: Probability Puzzle',
-      description: '欢迎来到概率迷宫，在这里你需要用统计学方法破解…'
+  // 从API获取真实任务数据
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  const fetchTasks = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/tasks');
+      if (response.ok) {
+        const data = await response.json();
+        setTasks(data);
+      } else {
+        console.error('Failed to fetch tasks');
+      }
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  if (loading) {
+    return (
+      <div className="student-dashboard-content">
+        <div className="loading">
+          <i className="fas fa-spinner fa-spin"></i>
+          Loading...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="student-dashboard-content">
@@ -71,16 +84,16 @@ function StudentDashboard() {
         <div className="card-grid">
           {tasks.map(task => (
             <div key={task.id} className="task-card" tabIndex="0">
-              <img src={task.img} alt={task.alt} />
+              <img src={task.image_url || '/assets/task1.jpg'} alt={task.name} />
               <div className="info">
-                <h3>{task.title}</h3>
-                <p>{task.course} &middot; {task.status}</p>
+                <h3>{task.name}</h3>
+                <p>{task.question_count} questions available</p>
                 <Link
                   to={`/student/tasks/${task.id}/intro`}
                   className="btn btn-primary"
                   role="button"
                 >
-                  {task.status === 'Not Started' ? 'Start Game' : 'Continue Game'}
+                  View Task
                 </Link>
               </div>
             </div>

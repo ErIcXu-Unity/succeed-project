@@ -23,7 +23,7 @@ const TeacherDashboard = () => {
 
   const fetchTasks = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/tasks');
+      const response = await fetch('http://localhost:5000/api/tasks');
       if (response.ok) {
         const data = await response.json();
         setTasks(data);
@@ -42,7 +42,7 @@ const TeacherDashboard = () => {
   };
 
   const editGame = (taskId) => {
-    alert(`Redirect to edit game page for task ${taskId}`);
+    navigate(`/teacher/tasks/${taskId}/edit`);
   };
 
   const createQuestion = (taskId) => {

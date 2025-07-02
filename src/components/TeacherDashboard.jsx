@@ -23,7 +23,7 @@ const TeacherDashboard = () => {
 
   const fetchTasks = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/tasks');
+      const response = await fetch('http://localhost:5001/api/tasks');
       if (response.ok) {
         const data = await response.json();
         setTasks(data);

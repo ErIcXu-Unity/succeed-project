@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import './TeacherReports.css';
 import Chart from 'chart.js/auto';
 
+// 注意：此组件目前使用模拟数据，实际项目中应连接到后端API
 const TeacherReports = () => {
   const completionRef = useRef(null);
   const accuracyRef = useRef(null);

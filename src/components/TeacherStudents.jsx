@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './TeacherStudents.css';
 
+// 注意：此组件目前使用模拟数据，实际项目中应连接到后端API
 const sampleData = [
   { id: '1001', name: 'Alice Wang', class: 'Class A' },
   { id: '1002', name: 'Bob Lin', class: 'Class B' },

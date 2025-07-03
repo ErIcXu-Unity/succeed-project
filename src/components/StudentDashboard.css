@@ -176,6 +176,32 @@ main {
   color: #fff;
 }
 
+.btn-resume {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.btn-resume:hover,
+.btn-resume:focus {
+  background: linear-gradient(135deg, #218838, #1ea581);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.progress-indicator {
+  color: #28a745;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 footer {
   text-align: center;
   padding: 1rem;

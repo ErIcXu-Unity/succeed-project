@@ -3,6 +3,7 @@ import React from 'react';
 import './StudentHistory.css';
 
 function StudentHistory() {
+  // 注意：此组件目前使用模拟数据，实际项目中应连接到后端API
   const historyItems = [
     {
       id: '1',

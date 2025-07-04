@@ -1,53 +1,43 @@
 import os
 import re
-import uuid
+import json
 from datetime import datetime, timezone
 from flask import Flask, request, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.utils import secure_filename
 
-load_dotenv()
+load_dotenv('.env')  # 明确指定.env文件路径
 
 app = Flask(__name__)
-CORS(app)
 
-app.config['SQLALCHEMY_DATABASE_URI']    = os.getenv('DATABASE_URL')
+# 调试信息：检查环境变量是否正确加载
+database_url = os.getenv('DATABASE_URL')
+print(f"🔍 DATABASE_URL loaded: {database_url}")
+
+# 如果无法从.env读取，则手动设置（临时解决方案）
+if not database_url:
+    print("⚠️  从.env文件读取失败，使用手动配置")
+    database_url = "postgresql://postgres:953862@localhost:5432/test-project"
+    print(f"🔧 使用手动配置: {database_url}")
+
+# 配置CORS允许跨域访问
+CORS(app, resources={
+    r"/*": {
+        "origins": ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001", "http://127.0.0.1:3001"],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads', 'questions')
-app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB 文件大小限制
 
 db = SQLAlchemy(app)
 
-# 配置允许的图片格式
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
-def allowed_file(filename):
-    """检查文件扩展名是否允许"""
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-def save_question_image(file, task_id):
-    """保存问题图片文件并返回存储路径"""
-    if file and allowed_file(file.filename):
-        # 创建任务特定的目录
-        task_dir = os.path.join(app.config['UPLOAD_FOLDER'], f'task_{task_id}')
-        os.makedirs(task_dir, exist_ok=True)
-        
-        # 生成唯一文件名
-        filename = secure_filename(file.filename)
-        file_ext = filename.rsplit('.', 1)[1].lower()
-        unique_filename = f"{uuid.uuid4().hex}.{file_ext}"
-        
-        # 保存文件
-        file_path = os.path.join(task_dir, unique_filename)
-        file.save(file_path)
-        
-        # 返回相对路径用于数据库存储
-        return f"task_{task_id}/{unique_filename}", filename
-    return None, None
+# 图片上传功能已移除，因为前端不使用
 
 # Models
 
@@ -122,10 +112,26 @@ class StudentTaskResult(db.Model):
     task_id      = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=False)
     task_name    = db.Column(db.String(80), nullable=False)  # redundant field for easy access
     total_score  = db.Column(db.Integer, nullable=False)
+    started_at   = db.Column(db.DateTime, nullable=True)  # 任务开始时间
     completed_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), nullable=False)
 
     student = db.relationship('Student', foreign_keys=[student_id], backref='task_results')
     task    = db.relationship('Task', backref='task_results')
+
+class StudentTaskProcess(db.Model):
+    __tablename__ = 'student_task_processes'
+    id                   = db.Column(db.Integer, primary_key=True)
+    student_id           = db.Column(db.String(20), db.ForeignKey('students.student_id'), nullable=False)
+    student_name         = db.Column(db.String(80), nullable=False)  # redundant field for easy access
+    task_id              = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=False)
+    task_name            = db.Column(db.String(80), nullable=False)  # redundant field for easy access
+    current_question_index = db.Column(db.Integer, nullable=False, default=0)  # 当前题目索引
+    answers_json         = db.Column(db.Text, nullable=True)  # JSON格式存储已选择的答案
+    saved_at             = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at           = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+
+    student = db.relationship('Student', foreign_keys=[student_id], backref='task_processes')
+    task    = db.relationship('Task', backref='task_processes')
 
 
 # Authentication Routes
@@ -296,6 +302,8 @@ def submit_task(task_id):
     data       = request.get_json()
     answers    = data.get('answers')
     student_id = data.get('student_id')  # now expects actual student_id (7-digit string)
+    started_at = data.get('started_at')  # 任务开始时间
+    
     if not isinstance(answers, dict) or not student_id:
         return jsonify({'error': 'student_id and answers required'}), 400
 
@@ -328,16 +336,27 @@ def submit_task(task_id):
             total_score   += question.score
             correct_count += 1
 
+    # 解析开始时间
+    task_started_at = None
+    if started_at:
+        try:
+            task_started_at = datetime.fromisoformat(started_at.replace('Z', '+00:00'))
+        except:
+            task_started_at = None
+
     # insert or update the student's task result
     existing = StudentTaskResult.query.filter_by(
         student_id=student_id, task_id=task_id
     ).first()
 
+    current_time = datetime.now(timezone.utc)
     if existing:
         existing.total_score   = total_score
-        existing.completed_at  = datetime.now(timezone.utc)
+        existing.completed_at  = current_time
         existing.student_name  = student.real_name  # update redundant field
         existing.task_name     = task.name          # update redundant field
+        if task_started_at:
+            existing.started_at = task_started_at
     else:
         new_result = StudentTaskResult(
             student_id   = student_id,
@@ -345,31 +364,124 @@ def submit_task(task_id):
             task_id      = task_id,
             task_name    = task.name,          # redundant field
             total_score  = total_score,
-            completed_at = datetime.now(timezone.utc)
+            started_at   = task_started_at,
+            completed_at = current_time
         )
         db.session.add(new_result)
 
-    # check full-correct achievement
+    # 检查所有成就
     new_achievements = []
-    if correct_count == questions_count:
-        ach = Achievement.query.filter_by(task_id=task_id).first()
-        if ach:
-            unlocked = StudentAchievement.query.filter_by(
-                student_id     = student_id,
-                achievement_id = ach.id
+    
+    # 1. Perfect Score - 单个任务全部答对
+    if correct_count == questions_count and questions_count > 0:
+        perfect_score_achievement = Achievement.query.filter_by(name='Perfect Score').first()
+        if perfect_score_achievement:
+            existing_achievement = StudentAchievement.query.filter_by(
+                student_id=student_id, achievement_id=perfect_score_achievement.id
             ).first()
-            if not unlocked:
+            if not existing_achievement:
                 sa = StudentAchievement(
-                    student_id       = student_id,
-                    student_name     = student.real_name,  # redundant field
-                    achievement_id   = ach.id,
-                    achievement_name = ach.name,           # redundant field
-                    unlocked_at      = datetime.now(timezone.utc)
+                    student_id=student_id,
+                    student_name=student.real_name,
+                    achievement_id=perfect_score_achievement.id,
+                    achievement_name=perfect_score_achievement.name,
+                    unlocked_at=current_time
                 )
                 db.session.add(sa)
-                new_achievements.append({'id': ach.id, 'name': ach.name})
+                new_achievements.append({'id': perfect_score_achievement.id, 'name': perfect_score_achievement.name})
+
+    # 2. Fast Solver - 快速完成任务（设定10分钟内完成）
+    if task_started_at and current_time:
+        time_taken = (current_time - task_started_at).total_seconds() / 60  # 转换为分钟
+        if time_taken <= 10:  # 10分钟内完成
+            fast_solver_achievement = Achievement.query.filter_by(name='Fast Solver').first()
+            if fast_solver_achievement:
+                existing_achievement = StudentAchievement.query.filter_by(
+                    student_id=student_id, achievement_id=fast_solver_achievement.id
+                ).first()
+                if not existing_achievement:
+                    sa = StudentAchievement(
+                        student_id=student_id,
+                        student_name=student.real_name,
+                        achievement_id=fast_solver_achievement.id,
+                        achievement_name=fast_solver_achievement.name,
+                        unlocked_at=current_time
+                    )
+                    db.session.add(sa)
+                    new_achievements.append({'id': fast_solver_achievement.id, 'name': fast_solver_achievement.name})
 
     db.session.commit()
+
+    # 3. Accuracy Master - 总体准确率达到90%以上（需要在commit后计算）
+    all_results = StudentTaskResult.query.filter_by(student_id=student_id).all()
+    total_questions = 0
+    total_correct = 0
+    
+    for result in all_results:
+        task_questions = Question.query.filter_by(task_id=result.task_id).all()
+        task_total_score = sum(q.score for q in task_questions)
+        
+        if task_total_score > 0:
+            # 计算这个任务的正确题目数
+            task_correct_ratio = result.total_score / task_total_score
+            task_question_count = len(task_questions)
+            
+            total_questions += task_question_count
+            total_correct += int(task_correct_ratio * task_question_count)
+    
+    if total_questions > 0:
+        accuracy_rate = (total_correct / total_questions) * 100
+        if accuracy_rate >= 90:
+            accuracy_master_achievement = Achievement.query.filter_by(name='Accuracy Master').first()
+            if accuracy_master_achievement:
+                existing_achievement = StudentAchievement.query.filter_by(
+                    student_id=student_id, achievement_id=accuracy_master_achievement.id
+                ).first()
+                if not existing_achievement:
+                    sa = StudentAchievement(
+                        student_id=student_id,
+                        student_name=student.real_name,
+                        achievement_id=accuracy_master_achievement.id,
+                        achievement_name=accuracy_master_achievement.name,
+                        unlocked_at=current_time
+                    )
+                    db.session.add(sa)
+                    new_achievements.append({'id': accuracy_master_achievement.id, 'name': accuracy_master_achievement.name})
+
+    # 4. Quiz Warrior - 完成所有四个任务
+    completed_task_count = len(all_results)
+    total_task_count = Task.query.count()
+    
+    if completed_task_count >= total_task_count and total_task_count >= 4:
+        quiz_warrior_achievement = Achievement.query.filter_by(name='Quiz Warrior').first()
+        if quiz_warrior_achievement:
+            existing_achievement = StudentAchievement.query.filter_by(
+                student_id=student_id, achievement_id=quiz_warrior_achievement.id
+            ).first()
+            if not existing_achievement:
+                sa = StudentAchievement(
+                    student_id=student_id,
+                    student_name=student.real_name,
+                    achievement_id=quiz_warrior_achievement.id,
+                    achievement_name=quiz_warrior_achievement.name,
+                    unlocked_at=current_time
+                )
+                db.session.add(sa)
+                new_achievements.append({'id': quiz_warrior_achievement.id, 'name': quiz_warrior_achievement.name})
+
+    db.session.commit()
+
+    # 任务完成后删除进度记录
+    try:
+        progress_record = StudentTaskProcess.query.filter_by(
+            student_id=student_id, task_id=task_id
+        ).first()
+        if progress_record:
+            db.session.delete(progress_record)
+            db.session.commit()
+    except Exception as e:
+        # 进度删除失败不影响主流程
+        print(f"Warning: Failed to delete progress record: {str(e)}")
 
     # return score, new achievements, and the map of correct answers
     return jsonify({
@@ -378,79 +490,134 @@ def submit_task(task_id):
         'correct_answers':  correct_answers
     }), 200
 
-# Question Management Routes
+# Task Progress Routes
 
-@app.route('/api/tasks/<int:task_id>/questions', methods=['POST'])
-def create_question(task_id):
-    """创建新问题（支持图片上传）"""
-    # 验证任务存在
-    task = Task.query.get_or_404(task_id)
+@app.route('/api/tasks/<int:task_id>/save-progress', methods=['POST'])
+def save_task_progress(task_id):
+    """保存答题进度"""
+    data = request.get_json()
+    student_id = data.get('student_id')
+    current_question_index = data.get('current_question_index', 0)
+    answers = data.get('answers', {})
     
-    # 获取表单数据
-    data = request.form
-    required_fields = ['question', 'option_a', 'option_b', 'option_c', 'option_d', 'correct_answer', 'difficulty', 'score']
+    if not student_id:
+        return jsonify({'error': 'student_id required'}), 400
     
-    for field in required_fields:
-        if not data.get(field):
-            return jsonify({'error': f'{field} is required'}), 400
+    # 获取学生和任务信息
+    student = Student.query.filter_by(student_id=student_id).first()
+    if not student:
+        return jsonify({'error': 'student not found'}), 404
     
-    # 验证correct_answer格式
-    if data['correct_answer'].upper() not in ['A', 'B', 'C', 'D']:
-        return jsonify({'error': 'correct_answer must be A, B, C, or D'}), 400
+    task = Task.query.get(task_id)
+    if not task:
+        return jsonify({'error': 'task not found'}), 404
     
-    # 验证score为整数
+    # 查找现有进度记录
+    existing_process = StudentTaskProcess.query.filter_by(
+        student_id=student_id, task_id=task_id
+    ).first()
+    
     try:
-        score = int(data['score'])
-    except ValueError:
-        return jsonify({'error': 'score must be an integer'}), 400
+        if existing_process:
+            # 更新现有记录
+            existing_process.current_question_index = current_question_index
+            existing_process.answers_json = json.dumps(answers)
+            existing_process.updated_at = datetime.now(timezone.utc)
+        else:
+            # 创建新记录
+            new_process = StudentTaskProcess(
+                student_id=student_id,
+                student_name=student.real_name,
+                task_id=task_id,
+                task_name=task.name,
+                current_question_index=current_question_index,
+                answers_json=json.dumps(answers),
+                saved_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(timezone.utc)
+            )
+            db.session.add(new_process)
+        
+        db.session.commit()
+        return jsonify({'message': 'Progress saved successfully'}), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to save progress: {str(e)}'}), 500
+
+@app.route('/api/tasks/<int:task_id>/progress', methods=['GET'])
+def get_task_progress(task_id):
+    """获取答题进度"""
+    student_id = request.args.get('student_id')
     
-    # 处理图片上传（可选）
-    image_path = None
-    image_filename = None
-    if 'image' in request.files:
-        file = request.files['image']
-        if file.filename:  # 确保文件被选择
-            image_path, image_filename = save_question_image(file, task_id)
-            if not image_path:
-                return jsonify({'error': 'Invalid image file format or size'}), 400
+    if not student_id:
+        return jsonify({'error': 'student_id required'}), 400
     
-    # 创建新问题
-    question = Question(
-        task_id=task_id,
-        question=data['question'],
-        option_a=data['option_a'],
-        option_b=data['option_b'],
-        option_c=data['option_c'],
-        option_d=data['option_d'],
-        correct_answer=data['correct_answer'].upper(),
-        difficulty=data['difficulty'],
-        score=score,
-        image_path=image_path,
-        image_filename=image_filename,
-        created_by=data.get('created_by'),  # 可选：教师ID
-        created_at=datetime.now(timezone.utc)
-    )
+    # 查找进度记录
+    process = StudentTaskProcess.query.filter_by(
+        student_id=student_id, task_id=task_id
+    ).first()
     
-    db.session.add(question)
-    db.session.commit()
+    if not process:
+        return jsonify({'has_progress': False}), 200
     
-    # 返回新创建的问题详情
-    result = {
-        'id': question.id,
-        'question': question.question,
-        'options': {
-            'A': question.option_a,
-            'B': question.option_b,
-            'C': question.option_c,
-            'D': question.option_d
-        },
-        'difficulty': question.difficulty,
-        'score': question.score,
-        'image_path': question.image_path,
-        'created_at': question.created_at.isoformat()
-    }
+    try:
+        answers = json.loads(process.answers_json) if process.answers_json else {}
+        return jsonify({
+            'has_progress': True,
+            'current_question_index': process.current_question_index,
+            'answers': answers,
+            'saved_at': process.saved_at.isoformat(),
+            'updated_at': process.updated_at.isoformat()
+        }), 200
+    except Exception as e:
+        return jsonify({'error': f'Failed to load progress: {str(e)}'}), 500
+
+@app.route('/api/tasks/<int:task_id>/progress', methods=['DELETE'])
+def delete_task_progress(task_id):
+    """删除答题进度（完成任务后清理）"""
+    student_id = request.args.get('student_id')
     
-    return jsonify(result), 201
+    if not student_id:
+        return jsonify({'error': 'student_id required'}), 400
+    
+    try:
+        # 查找并删除进度记录
+        process = StudentTaskProcess.query.filter_by(
+            student_id=student_id, task_id=task_id
+        ).first()
+        
+        if process:
+            db.session.delete(process)
+            db.session.commit()
+            return jsonify({'message': 'Progress deleted successfully'}), 200
+        else:
+            return jsonify({'message': 'No progress found'}), 200
+            
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to delete progress: {str(e)}'}), 500
+
+@app.route('/api/students/<student_id>/task-progress', methods=['GET'])
+def get_student_task_progress(student_id):
+    """获取学生所有任务的进度状态"""
+    try:
+        processes = StudentTaskProcess.query.filter_by(student_id=student_id).all()
+        
+        progress_map = {}
+        for process in processes:
+            progress_map[process.task_id] = {
+                'has_progress': True,
+                'current_question_index': process.current_question_index,
+                'saved_at': process.saved_at.isoformat(),
+                'updated_at': process.updated_at.isoformat()
+            }
+        
+        return jsonify(progress_map), 200
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to get progress: {str(e)}'}), 500
+
+# Question Management Routes
 
 @app.route('/api/tasks/<int:task_id>/questions/batch', methods=['POST'])
 def create_questions_batch(task_id):
@@ -552,36 +719,100 @@ def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 
-# Reporting Routes
+# Student Profile and Achievement Routes
+
+@app.route('/api/students/<student_id>/profile', methods=['GET'])
+def get_student_profile(student_id):
+    """获取学生完整档案信息"""
+    # 获取学生基本信息
+    student = Student.query.filter_by(student_id=student_id).first()
+    if not student:
+        return jsonify({'error': 'student not found'}), 404
+    
+    # 获取学生所有任务结果
+    task_results = StudentTaskResult.query.filter_by(student_id=student_id).all()
+    
+    # 计算统计数据
+    total_tasks_completed = len(task_results)
+    total_questions = 0
+    total_correct = 0
+    total_score = 0
+    total_possible_score = 0
+    
+    for result in task_results:
+        total_score += result.total_score
+        
+        # 获取任务的所有问题来计算准确率
+        task_questions = Question.query.filter_by(task_id=result.task_id).all()
+        task_total_score = sum(q.score for q in task_questions)
+        total_possible_score += task_total_score
+        
+        if task_total_score > 0:
+            # 计算这个任务的正确题目数
+            task_correct_ratio = result.total_score / task_total_score
+            task_question_count = len(task_questions)
+            
+            total_questions += task_question_count
+            total_correct += int(task_correct_ratio * task_question_count)
+    
+    # 计算准确率和平均分
+    accuracy_rate = round((total_correct / total_questions * 100), 1) if total_questions > 0 else 0.0
+    average_score = round((total_score / total_possible_score * 100), 1) if total_possible_score > 0 else 0.0
+    
+    return jsonify({
+        'student_info': {
+            'real_name': student.real_name,
+            'student_id': student.student_id,
+            'username': student.username
+        },
+        'statistics': {
+            'accuracy_rate': accuracy_rate,
+            'average_score': average_score,
+            'completed_tasks': total_tasks_completed,
+            'total_questions_answered': total_questions
+        }
+    }), 200
 
 @app.route('/api/students/<student_id>/achievements', methods=['GET'])
 def get_student_achievements(student_id):
-    # Now using actual student_id (string) instead of auto-increment ID
-    records = StudentAchievement.query.filter_by(student_id=student_id).all()
-    return jsonify([
-        {
-            'id': r.achievement.id,
-            'name': r.achievement_name,  # use redundant field
-            'student_name': r.student_name,  # use redundant field
-            'unlocked_at': r.unlocked_at.isoformat()
+    """获取学生成就列表"""
+    # 验证学生存在
+    student = Student.query.filter_by(student_id=student_id).first()
+    if not student:
+        return jsonify({'error': 'student not found'}), 404
+    
+    # 获取所有成就
+    all_achievements = Achievement.query.all()
+    
+    # 获取学生已解锁的成就
+    unlocked_achievements = StudentAchievement.query.filter_by(student_id=student_id).all()
+    unlocked_ids = [ua.achievement_id for ua in unlocked_achievements]
+    
+    # 构建成就列表
+    achievements_data = []
+    for achievement in all_achievements:
+        achievement_info = {
+            'id': achievement.id,
+            'name': achievement.name,
+            'condition': achievement.condition,
+            'unlocked': achievement.id in unlocked_ids,
+            'unlocked_at': None
         }
-        for r in records
-    ]), 200
+        
+        # 如果已解锁，添加解锁时间
+        if achievement.id in unlocked_ids:
+            unlocked_record = next(ua for ua in unlocked_achievements if ua.achievement_id == achievement.id)
+            achievement_info['unlocked_at'] = unlocked_record.unlocked_at.isoformat()
+        
+        achievements_data.append(achievement_info)
+    
+    return jsonify({
+        'achievements': achievements_data,
+        'total_achievements': len(all_achievements),
+        'unlocked_count': len(unlocked_achievements)
+    }), 200
 
-@app.route('/api/students/<student_id>/results', methods=['GET'])
-def get_student_results(student_id):
-    # Now using actual student_id (string) instead of auto-increment ID
-    records = StudentTaskResult.query.filter_by(student_id=student_id).all()
-    return jsonify([
-        {
-            'task_id':     r.task_id,
-            'task_name':   r.task_name,      # use redundant field
-            'student_name': r.student_name,  # use redundant field
-            'score':       r.total_score,
-            'completed_at': r.completed_at.isoformat()
-        }
-        for r in records
-    ]), 200
+# Reporting Routes (removed unused student APIs)
 
 
 # Main entry
@@ -615,7 +846,125 @@ if __name__ == '__main__':
                     username=t['username'],
                     password=generate_password_hash(t['password_plain'])
                 ))
+
+        # Seed default escape room tasks
+        default_tasks = [
+            {
+                'name': 'Chemistry Lab Escape',
+                'introduction': '''🧪 Welcome to the Chemistry Lab Escape Room! 🧪
+
+You wake up locked in Professor Smith's chemistry laboratory after falling asleep during a late-night study session. The automatic security system has been activated and won't unlock until 6 AM - that's 4 hours from now!
+
+But wait... you notice the emergency override panel is glowing. The system will unlock if you can prove your chemistry knowledge by solving a series of chemical calculations correctly.
+
+Your mission: Answer all chemistry questions correctly to prove you belong in this lab and earn your freedom!
+
+🔬 The lab equipment around you holds clues
+⚗️ Each correct answer brings you closer to escape
+🎯 Time is running out - use your chemistry knowledge wisely!
+
+Ready to put your chemistry skills to the test? Let the escape begin!'''
+            },
+            {
+                'name': 'Math Puzzle Room',
+                'introduction': '''🔢 Welcome to the Math Puzzle Room! 🔢
+
+You've been transported to a mysterious dimension where mathematical concepts come to life. The only way back to reality is through the Portal of Numbers, but it's sealed by an ancient mathematical curse!
+
+Legend says that only those who can solve the sacred mathematical puzzles can break the curse and activate the portal. Each correct answer weakens the magical barriers, bringing you one step closer to home.
+
+Your quest: Master the mathematical challenges that guard the portal!
+
+📐 Geometric patterns hold ancient secrets
+🧮 Algebraic formulas are your keys to freedom
+∞ Calculus concepts will unlock the final seal
+📊 Statistical wisdom guides your path
+
+The fate of your return lies in your mathematical prowess. Can you solve your way back to reality?'''
+            },
+            {
+                'name': 'Physics Challenge',
+                'introduction': '''⚡ Welcome to the Physics Challenge Arena! ⚡
+
+You're trapped in Dr. Newton's experimental physics laboratory where the laws of physics themselves have been scrambled! The lab's quantum stabilizer has malfunctioned, creating anomalies throughout the facility.
+
+To restore order and escape, you must solve physics problems that will recalibrate the fundamental forces and restore the natural laws. Each correct answer helps stabilize one aspect of reality in the lab.
+
+Your mission: Solve physics problems to restore the natural order and find your way out!
+
+🚀 Mechanics equations control the door locks
+⚡ Electromagnetic fields power the emergency systems
+🌊 Wave properties control the communication devices
+🔬 Quantum mechanics holds the key to the final exit
+
+Use your understanding of physics to navigate this reality-bending challenge. The laws of nature are counting on you!'''
+            },
+            {
+                'name': 'Statistics Mystery',
+                'introduction': '''📊 Welcome to the Statistics Mystery Case! 📊
+
+You're a detective who has been locked in the Data Analysis Bureau while investigating a complex case. The building's security system requires you to prove your investigative skills by solving statistical problems related to the ongoing case.
+
+The evidence is scattered throughout the room in the form of data sets, probability charts, and statistical reports. Each statistical problem you solve correctly unlocks a piece of crucial evidence and brings you closer to both solving the case AND escaping the building.
+
+Your investigation: Use statistical analysis to uncover the truth and earn your freedom!
+
+🔍 Descriptive statistics reveal hidden patterns
+📈 Probability calculations predict suspect behavior  
+📋 Hypothesis testing validates your theories
+🎯 Confidence intervals confirm your conclusions
+
+Put on your detective hat and let your statistical reasoning guide you through this data-driven mystery!'''
+            }
+        ]
+
+        for task_data in default_tasks:
+            if not Task.query.filter_by(name=task_data['name']).first():
+                task = Task(
+                    name=task_data['name'],
+                    introduction=task_data['introduction']
+                )
+                db.session.add(task)
+                print(f"Created task: {task_data['name']}")
+
+        # Seed default achievements
+        default_achievements = [
+            {
+                'name': 'Perfect Score',
+                'condition': '单个任务全部答对',
+                'task_id': None  # General achievement, not tied to specific task
+            },
+            {
+                'name': 'Accuracy Master',
+                'condition': '总体答题准确率达到90%以上',
+                'task_id': None  # General achievement
+            },
+            {
+                'name': 'Fast Solver',
+                'condition': '快速完成任务（添加时间限制）',
+                'task_id': None  # General achievement
+            },
+            {
+                'name': 'Quiz Warrior',
+                'condition': '完成所有四个任务',
+                'task_id': None  # General achievement
+            }
+        ]
+
+        for ach_data in default_achievements:
+            if not Achievement.query.filter_by(name=ach_data['name']).first():
+                # For general achievements, use the first task's ID as a placeholder
+                placeholder_task = Task.query.first()
+                if placeholder_task:
+                    achievement = Achievement(
+                        name=ach_data['name'],
+                        condition=ach_data['condition'],
+                        task_id=placeholder_task.id  # Using first task as placeholder
+                    )
+                    db.session.add(achievement)
+                    print(f"Created achievement: {ach_data['name']}")
+
         db.session.commit()
-        print('All tables recreated and default teacher accounts ensured.')
+        print('All tables recreated, default teacher accounts and escape room tasks ensured.')
 
     app.run(debug=True)

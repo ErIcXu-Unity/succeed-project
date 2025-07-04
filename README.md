@@ -1,176 +1,305 @@
-# UNSW Escape Room Editor
+# UNSW Escape Room Educational Platform
 
-A React-based web application for creating and managing educational escape room games at the University of New South Wales (UNSW). This platform allows teachers to create interactive escape room challenges and students to participate in learning activities.
+A full-stack web application for creating and managing educational escape room games at the University of New South Wales (UNSW). This platform allows teachers to create interactive escape room challenges and students to participate in gamified learning activities.
 
 ## Features
 
 ### For Teachers
 - **Dashboard Management**: Overview of all escape room games and student progress
 - **Game Creation**: Create and edit escape room scenarios with puzzles and challenges
+- **Question Management**: Add, edit, and organize quiz questions with image support
 - **Student Analytics**: View detailed performance metrics and completion rates
-- **Grade Management**: Track and export student grades and progress reports
+- **Achievement System**: Monitor student achievements and badges
 - **Class Management**: Organize students and monitor their participation
 
 ### For Students
 - **Interactive Gameplay**: Participate in escape room challenges designed for learning
 - **Achievement System**: Earn badges and track progress through completed tasks
-- **Course Integration**: Access escape rooms organized by enrolled courses
+- **Real-time Progress**: Save and resume progress on incomplete tasks
 - **Performance Tracking**: View personal statistics and improvement over time
-- **Accessibility Features**: Built-in accessibility tools for inclusive learning
+- **Network Resilience**: Smart error handling with automatic retry mechanisms
 
 ## Technology Stack
 
-- **Frontend**: React 18, JavaScript ES6+
+### Frontend
+- **Framework**: React 18, JavaScript ES6+
 - **Styling**: CSS3 with CSS Variables
-- **Charts**: Chart.js for data visualization
-- **Icons**: Font Awesome 6.4.0
-- **Authentication**: Moodle OAuth2 integration (currently using fake authentication for development)
+- **State Management**: React Hooks (useState, useEffect)
+- **Routing**: React Router
+- **HTTP Client**: Fetch API with advanced error handling
+
+### Backend
+- **Framework**: Flask (Python)
+- **Database**: PostgreSQL with SQLAlchemy ORM
+- **API**: RESTful APIs with CORS support
+- **Authentication**: Session-based authentication
+- **File Upload**: Image handling for questions
+
+### Database
+- **Primary Database**: PostgreSQL
+- **ORM**: SQLAlchemy
+- **Features**: Automatic schema creation, data relationships, timezone support
 
 ## Project Structure
 
 ```
-/Users/xiwei/Downloads/website/
+capstone-project-25t2-9900-h18b-donut/
+├── backend/                     # Flask backend
+│   ├── app.py                  # Main Flask application
+│   ├── requirements.txt        # Python dependencies
+│   ├── .env                    # Environment variables (create this)
+│   ├── test_api.py            # API testing script
+│   └── uploads/               # File upload directory
+├── src/                        # React frontend
+│   ├── components/            # React components
+│   │   ├── Login.jsx         # Authentication
+│   │   ├── StudentDashboard.jsx
+│   │   ├── StudentAchievements.jsx
+│   │   ├── TaskQuiz.jsx      # Main quiz interface
+│   │   ├── TeacherDashboard.jsx
+│   │   ├── TaskEditor.jsx    # Question management
+│   │   └── ...
+│   ├── App.jsx               # Main React app
+│   └── index.js              # Entry point
 ├── public/
 │   ├── index.html
-│   └── assets/
-│       ├── logo.png
-│       ├── moodle-icon.png
-│       ├── teacher.png
-│       ├── graduation.png
-│       ├── course-chem.jpg
-│       ├── course-stat.jpg
-│       ├── task1.jpg
-│       ├── task2.jpg
-│       ├── game01.jpg
-│       └── game02.jpg
-├── src/
-│   ├── components/
-│   │   ├── TeacherDashboard.js
-│   │   ├── TeacherDashboard.css
-│   │   ├── StudentDashboard.js
-│   │   ├── StudentDashboard.css
-│   │   ├── GradeDashboard.js
-│   │   ├── GradeDashboard.css
-│   │   ├── EscapeRoomGame.js
-│   │   ├── EscapeRoomGame.css
-│   │   ├── StudentGrades.js
-│   │   ├── StudentGrades.css
-│   │   ├── TeacherReports.js
-│   │   ├── TeacherReports.css
-│   │   ├── StudentHistory.js
-│   │   ├── StudentHistory.css
-│   │   └── Achievements.js
-│   ├── App.js
-│   ├── App.css
-│   ├── index.js
-│   └── index.css
-├── server/
-│   └── server.js
-├── package.json
+│   └── assets/               # Static assets
+├── package.json              # Node.js dependencies
 └── README.md
 ```
 
-## Getting Started
+## Prerequisites
 
-### Prerequisites
+Before running this project, ensure you have:
 
-- Node.js (version 16 or higher)
-- npm or yarn package manager
+- **Node.js** (version 16 or higher)
+- **Python** (version 3.8 or higher)
+- **PostgreSQL** (version 12 or higher)
+- **npm** or **yarn** package manager
+- **pip** (Python package installer)
 
-### Installation
+## Installation & Setup
 
-1. **Clone the repository** (or navigate to the project directory):
+### 1. Database Setup (PostgreSQL)
+
+1. **Install PostgreSQL** if not already installed
+2. **Create the database**:
+   ```sql
+   -- Connect to PostgreSQL as superuser
+   CREATE DATABASE "test-project";
+   ```
+3. **Note your PostgreSQL credentials**:
+   - Host: `localhost`
+   - Port: `5432`
+   - Database: `test-project`
+   - Username: `postgres` (or your PostgreSQL username)
+   - Password: (your PostgreSQL password)
+
+### 2. Backend Setup (Flask)
+
+1. **Navigate to backend directory**:
    ```bash
-   eg. cd /Users/xiwei/Downloads/website
+   cd backend
    ```
 
-2. **Install dependencies**:
+2. **Create and activate virtual environment** (recommended):
+   ```bash
+   # Create virtual environment
+   python -m venv venv
+   
+   # Activate virtual environment
+   # On Windows:
+   venv\Scripts\activate
+   # On macOS/Linux:
+   source venv/bin/activate
+   ```
+
+3. **Install Python dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+   Required packages include:
+   - `Flask>=2.0.0` - Web framework
+   - `Flask-SQLAlchemy>=2.5.1` - Database ORM
+   - `Flask-CORS>=3.0.10` - Cross-origin requests
+   - `python-dotenv>=0.19.0` - Environment variables
+   - `Werkzeug>=2.0.0` - WSGI utilities
+   - `psycopg2-binary>=2.9.0` - PostgreSQL driver
+
+4. **Create environment configuration**:
+   Create a `.env` file in the `backend/` directory:
+   ```env
+   DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/test-project
+   ```
+   Replace `YOUR_PASSWORD` with your actual PostgreSQL password.
+
+5. **Test the backend setup**:
+   ```bash
+   python test_api.py
+   ```
+
+6. **Start the Flask server**:
+   ```bash
+   python app.py
+   ```
+
+   Expected output:
+   ```
+   * Running on http://127.0.0.1:5000
+   * Debug mode: on
+   All tables recreated, default teacher accounts and escape room tasks ensured.
+   ```
+
+### 3. Frontend Setup (React)
+
+1. **Navigate to project root directory**:
+   ```bash
+   cd ..  # Back to project root
+   ```
+
+2. **Install Node.js dependencies**:
    ```bash
    npm install
    ```
 
-3. **Install Chart.js for data visualization**:
-   ```bash
-   npm install chart.js
-   ```
-
-4. **Add required assets**:
-   Ensure the following image files are in the `public/assets/` directory:
-   - `logo.png` - UNSW logo
-   - `moodle-icon.png` - Moodle login icon
-   - `teacher.png` - Teacher avatar icon
-   - `graduation.png` - Student avatar icon
-   - Course and task images as needed
-
-### Development
-
-1. **Start the development server**:
+3. **Start the React development server**:
    ```bash
    npm start
    ```
 
-2. **Open your browser** and navigate to:
+   Expected output:
    ```
-   http://localhost:3000
+   webpack compiled with warnings
+   Local:            http://localhost:3000
    ```
 
-3. **Login**: Click the "Login with Moodle" card to simulate authentication
-   - Currently uses fake authentication for development
-   - Logs in as "Professor Alice Wang" with Teacher role
+## Running the Application
 
-### Building for Production
+### Development Mode
 
-1. **Create a production build**:
+1. **Start PostgreSQL** service on your system
+
+2. **Run Backend** (Terminal 1):
+   ```bash
+   cd backend
+   venv\Scripts\activate  # Windows
+   # source venv/bin/activate  # macOS/Linux
+   python app.py
+   ```
+
+3. **Run Frontend** (Terminal 2):
+   ```bash
+   npm start
+   ```
+
+4. **Access the application**:
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:5000
+
+### Testing the Setup
+
+1. **Backend API Test**:
+   ```bash
+   cd backend
+   python test_api.py
+   ```
+
+2. **Verify endpoints**:
+   - Tasks API: http://localhost:5000/api/tasks
+   - Should return JSON with task list
+
+3. **Frontend verification**:
+   - Visit: http://localhost:3000
+   - Should show login page
+
+### Default Accounts
+
+The application comes with pre-seeded accounts:
+
+**Teacher Accounts**:
+- Username: `st1000@tea.com`, Password: `123456`
+- Username: `st1001@tea.com`, Password: `123456`
+
+**Student Accounts**: Register new accounts through the registration page.
+
+## Development Workflow
+
+### VS Code Setup
+1. Open project folder in VS Code
+2. Install recommended extensions:
+   - Python
+   - ES7+ React/Redux/React-Native snippets
+   - PostgreSQL (by Chris Kolkman)
+
+3. Use split terminal for running both frontend and backend
+
+### Making Changes
+- **Backend changes**: Flask auto-reloads (debug=True)
+- **Frontend changes**: React hot-reloads automatically
+- **Database changes**: Modify models in `app.py`, restart Flask
+
+### Troubleshooting
+
+**Common Issues**:
+
+1. **Port already in use**:
+   ```bash
+   # Check what's using port 5000
+   netstat -ano | findstr :5000
+   # Kill the process if needed
+   taskkill /PID <process_id> /F
+   ```
+
+2. **Database connection failed**:
+   - Verify PostgreSQL is running
+   - Check credentials in `.env` file
+   - Ensure database `test-project` exists
+
+3. **Module not found errors**:
+   ```bash
+   # Reinstall dependencies
+   pip install -r requirements.txt
+   npm install
+   ```
+
+4. **CORS errors**:
+   - Ensure backend is running on port 5000
+   - Check Flask-CORS configuration in `app.py`
+
+## API Documentation
+
+### Authentication Endpoints
+- `POST /login` - User authentication
+- `POST /register` - User registration
+
+### Task Management
+- `GET /api/tasks` - List all tasks
+- `GET /api/tasks/<id>` - Get task details
+- `POST /api/tasks/<id>/submit` - Submit task answers
+
+### Student Features
+- `GET /api/students/<id>/achievements` - Get student achievements
+- `GET /api/students/<id>/profile` - Get student profile
+
+### Teacher Features
+- `POST /api/tasks/<id>/questions/batch` - Bulk create questions
+- `GET /api/teachers/<id>/students` - Get teacher's students
+
+## Building for Production
+
+1. **Frontend build**:
    ```bash
    npm run build
    ```
 
-2. **Serve the build** (optional):
-   ```bash
-   npm install -g serve
-   serve -s build
-   ```
-
-## Usage
-
-### Teacher Workflow
-1. Login with Moodle credentials
-2. Access the Teacher Dashboard
-3. View existing escape room games or create new ones
-4. Monitor student progress and grades
-5. Export reports and analytics
-
-### Student Workflow
-1. Login with Moodle credentials
-2. Access the Student Dashboard
-3. View enrolled courses and available escape rooms
-4. Participate in escape room challenges
-5. Track achievements and progress
-
-## Authentication
-
-The application is designed to integrate with UNSW Moodle using OAuth2 authentication. Currently, it uses fake authentication for development purposes.
-
-### Setting up Real Moodle OAuth2 (for production)
-1. Contact UNSW Moodle administrators to register your application
-2. Obtain OAuth2 client credentials
-3. Configure environment variables:
-   ```env
-   REACT_APP_MOODLE_CLIENT_ID=your-client-id
-   MOODLE_CLIENT_SECRET=your-client-secret
-   ```
-4. Update the authentication logic in `src/App.js`
-
-## Development Notes
-
-- **Fake Authentication**: The current implementation uses simulated Moodle login for development
-- **Component Structure**: All HTML pages have been converted to React components
-- **Responsive Design**: The application is mobile-friendly and responsive
-- **Accessibility**: Built-in accessibility features for inclusive learning
-
+2. **Backend deployment**:
+   - Use production WSGI server (e.g., Gunicorn)
+   - Set environment variables for production database
+   - Configure reverse proxy (e.g., Nginx)
 
 ## License
 
 © 2025 UNSW Sydney. All rights reserved.
 
-This project is developed for educational purposes at the University of New South
+This project is developed for educational purposes at the University of New South Wales.

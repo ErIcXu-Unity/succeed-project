@@ -5,31 +5,13 @@ import './StudentDashboard.css';
 
 function StudentDashboard() {
   const [tasks, setTasks] = useState([]);
+  const [taskProgress, setTaskProgress] = useState({});
   const [loading, setLoading] = useState(true);
-  
-  // 模拟课程数据
-  const courses = [
-    {
-      id: 'C-1010',
-      title: 'CHEM1010 Chemistry Intro',
-      joined: true,
-      tasksRemaining: 2,
-      img: '/assets/course-chem.jpg',
-      alt: 'Chemistry Intro Course'
-    },
-    {
-      id: 'S-2020',
-      title: 'STAT2020 Statistics',
-      joined: true,
-      tasksRemaining: 3,
-      img: '/assets/course-stat.jpg',
-      alt: 'Statistics Course'
-    }
-  ];
 
   // 从API获取真实任务数据
   useEffect(() => {
     fetchTasks();
+    fetchTaskProgress();
   }, []);
 
   const fetchTasks = async () => {
@@ -48,6 +30,23 @@ function StudentDashboard() {
     }
   };
 
+  const fetchTaskProgress = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user_data'));
+      if (user?.user_id) {
+        const response = await fetch(`http://localhost:5000/api/students/${user.user_id}/task-progress`);
+        if (response.ok) {
+          const data = await response.json();
+          setTaskProgress(data);
+        } else {
+          console.error('Failed to fetch task progress');
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching task progress:', error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="student-dashboard-content">
@@ -62,42 +61,34 @@ function StudentDashboard() {
   return (
     <div className="student-dashboard-content">
       <section>
-        <div className="section-title">My Courses</div>
-        <div className="card-grid">
-          {courses.map(course => (
-            <div key={course.id} className="course-card" tabIndex="0">
-              <img src={course.img} alt={course.alt} />
-              <div className="info">
-                <h3>{course.title}</h3>
-                <p>Joined &middot; {course.tasksRemaining} tasks remaining</p>
-                <Link to={`/student/tasks/${course.id}/tasks`} className="btn btn-primary" role="button">
-                  View Tasks
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section style={{ marginTop: '2.5rem' }}>
         <div className="section-title">Available Escape Room Tasks</div>
         <div className="card-grid">
-          {tasks.map(task => (
-            <div key={task.id} className="task-card" tabIndex="0">
-              <img src={task.image_url || '/assets/task1.jpg'} alt={task.name} />
-              <div className="info">
-                <h3>{task.name}</h3>
-                <p>{task.question_count} questions available</p>
-                <Link
-                  to={`/student/tasks/${task.id}/intro`}
-                  className="btn btn-primary"
-                  role="button"
-                >
-                  View Task
-                </Link>
+          {tasks.map(task => {
+            const hasProgress = taskProgress[task.id]?.has_progress;
+            return (
+              <div key={task.id} className="task-card" tabIndex="0">
+                <img src={task.image_url || '/assets/task1.jpg'} alt={task.name} />
+                <div className="info">
+                  <h3>{task.name}</h3>
+                  <p>{task.question_count} questions available</p>
+                  {hasProgress && (
+                    <p className="progress-indicator">
+                      <i className="fas fa-clock"></i>
+                      Progress saved - Continue where you left off
+                    </p>
+                  )}
+                  <Link
+                    to={hasProgress ? `/student/tasks/${task.id}/quiz` : `/student/tasks/${task.id}/intro`}
+                    className={`btn ${hasProgress ? 'btn-resume' : 'btn-primary'}`}
+                    role="button"
+                  >
+                    <i className={`fas ${hasProgress ? 'fa-play-circle' : 'fa-eye'}`}></i>
+                    {hasProgress ? 'Resume Challenge' : 'View Task'}
+                  </Link>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
     </div>

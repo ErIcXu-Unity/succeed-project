@@ -820,7 +820,7 @@ def get_student_achievements(student_id):
 if __name__ == '__main__':
     with app.app_context():
         # Recreate schema from scratch each run (development only)
-        # db.drop_all()
+        db.drop_all()
         db.create_all()
 
         # Seed default teacher accounts

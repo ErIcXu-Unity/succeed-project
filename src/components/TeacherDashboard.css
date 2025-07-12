@@ -177,3 +177,153 @@
   background-color: #fff9e0;
   transform: scale(1.05);
 }
+
+/* 新建任务按钮样式 */
+.create-task-section {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.create-task-btn {
+  background: linear-gradient(135deg, #FFD600, #F57C00);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 15px 30px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 16px rgba(255, 214, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.create-task-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 214, 0, 0.4);
+  background: linear-gradient(135deg, #FFC107, #E65100);
+}
+
+.create-task-btn:active {
+  transform: translateY(0);
+}
+
+/* 删除按钮样式 */
+.delete-btn {
+  background-color: #f44336 !important;
+}
+
+.delete-btn:hover {
+  background-color: #d32f2f !important;
+  transform: scale(1.05);
+  opacity: 1 !important;
+}
+
+/* 删除确认对话框样式 */
+.delete-confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.delete-confirm-modal {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.delete-confirm-modal h3 {
+  color: #f44336;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.delete-confirm-modal p {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 30px;
+  font-size: 16px;
+}
+
+.delete-confirm-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background-color: #757575;
+  color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #616161;
+}
+
+.btn-danger {
+  background-color: #f44336;
+  color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: #d32f2f;
+  transform: translateY(-1px);
+}
+
+/* 卡片按钮布局调整 */
+.card-buttons {
+  display: flex;
+  justify-content: space-around;
+  padding: 15px;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.card-buttons button {
+  padding: 6px 8px;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 11px;
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex: 1;
+  justify-content: center;
+  min-width: 70px;
+}

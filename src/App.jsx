@@ -92,7 +92,8 @@ function AppWrapper() {
                 <Route path="students" element={<TeacherStudents />} />
                 <Route path="gamegrade" element={<EachgameGrade />} />
               </Route>
-              {/* 任务编辑路由 - 在TeacherLayout外部 */}
+              {/* 任务管理路由 - 在TeacherLayout外部 */}
+              <Route path="/teacher/tasks/new" element={<TaskEditor />} />
               <Route path="/teacher/tasks/:taskId/edit" element={<TaskEditor />} />
               <Route path="*" element={<Navigate to="/teacher" replace />} />
             </>

@@ -16,7 +16,11 @@ function StudentDashboard() {
 
   const fetchTasks = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/tasks');
+      //const response = await fetch('http://localhost:5000/api/tasks');
+      const user = JSON.parse(localStorage.getItem('user_data'));
+      const role = user?.role === 'tea' ? 'tea' : 'stu';
+      const response = await fetch(`http://localhost:5000/api/tasks?role=${role}`);
+      
       if (response.ok) {
         const data = await response.json();
         setTasks(data);

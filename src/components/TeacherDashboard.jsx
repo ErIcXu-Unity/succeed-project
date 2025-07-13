@@ -26,7 +26,11 @@ const TeacherDashboard = () => {
 
   const fetchTasks = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/tasks');
+      //const response = await fetch('http://localhost:5000/api/tasks');
+      const user = JSON.parse(localStorage.getItem('user_data'));
+      const role = user?.role === 'tea' ? 'tea' : 'stu';
+      const response = await fetch(`http://localhost:5000/api/tasks?role=${role}`);
+
       if (response.ok) {
         const data = await response.json();
         setTasks(data);
@@ -166,15 +170,15 @@ const TeacherDashboard = () => {
               This will permanently remove all questions, student results, and progress data.
             </p>
             <div className="delete-confirm-buttons">
-              <button 
-                className="btn btn-secondary" 
+              <button
+                className="btn btn-secondary"
                 onClick={cancelDelete}
                 disabled={deleting}
               >
                 Cancel
               </button>
-              <button 
-                className="btn btn-danger" 
+              <button
+                className="btn btn-danger"
                 onClick={deleteTask}
                 disabled={deleting}
               >

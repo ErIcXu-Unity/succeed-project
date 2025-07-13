@@ -53,6 +53,7 @@ class Task(db.Model):
     name         = db.Column(db.String(80), unique=True, nullable=False)
     introduction = db.Column(db.Text, nullable=True)  # 任务介绍描述
     image_path   = db.Column(db.String(255), nullable=True)  # 任务背景图片
+    publish_at   = db.Column(db.DateTime, nullable=True) # 发布时间
 
 class Question(db.Model):
     __tablename__ = 'questions'
@@ -189,14 +190,26 @@ def login():
 
 @app.route('/api/tasks', methods=['GET'])
 def get_tasks():
-    tasks = Task.query.all()
+    # tasks = Task.query.all()
+
+    role = request.args.get('role', 'stu')  # 默认为 student
+    now = datetime.now(timezone.utc)
+
+    if role == 'tea':
+        tasks = Task.query.all()  # 老师看到所有任务
+    else:
+        tasks = Task.query.filter(
+            (Task.publish_at == None) | (Task.publish_at <= now)
+        ).all()
+
     result = []
     for t in tasks:
         task_data = {
             'id': t.id, 
             'name': t.name,
             'introduction': t.introduction,
-            'question_count': len(t.questions)
+            'question_count': len(t.questions),
+            'publish_at': t.publish_at.isoformat() if t.publish_at else None
         }
         if t.image_path:
             task_data['image_url'] = f"/uploads/tasks/{t.image_path}"
@@ -221,10 +234,19 @@ def create_task():
         return jsonify({'error': 'Task name already exists'}), 409
     
     try:
+        # 解析发布时间（可选字段）
+        publish_at = None
+        if data.get('publish_at'):
+            try:
+                publish_at = datetime.fromisoformat(data['publish_at'].replace('Z', '+00:00'))
+            except Exception:
+                return jsonify({'error': 'Invalid publish_at datetime format'}), 400
+        
         # 创建新任务
         new_task = Task(
             name=data['name'],
-            introduction=data['introduction']
+            introduction=data['introduction'],
+            publish_at=publish_at
         )
         db.session.add(new_task)
         db.session.commit()
@@ -236,6 +258,7 @@ def create_task():
                 'id': new_task.id,
                 'name': new_task.name,
                 'introduction': new_task.introduction,
+                'publish_at': new_task.publish_at.isoformat() if new_task.publish_at else None,
                 'question_count': 0
             }
         }), 201
@@ -252,7 +275,8 @@ def get_task_detail(task_id):
         'id': task.id,
         'name': task.name,
         'introduction': task.introduction,
-        'question_count': len(task.questions)
+        'question_count': len(task.questions),
+        'publish_at': task.publish_at.isoformat() if task.publish_at else None
     }
     if task.image_path:
         result['image_url'] = f"/uploads/tasks/{task.image_path}"
@@ -268,6 +292,15 @@ def update_task(task_id):
         task.name = data['name']
     if 'introduction' in data:
         task.introduction = data['introduction']
+    if 'publish_at' in data:
+        if data['publish_at']:
+            try:
+                # 兼容 ISO 格式和带 Z 的时间
+                task.publish_at = datetime.fromisoformat(data['publish_at'].replace('Z', '+00:00'))
+            except Exception:
+                return jsonify({'error': 'Invalid publish_at format'}), 400
+        else:
+            task.publish_at = None
     
     try:
         db.session.commit()
@@ -276,7 +309,8 @@ def update_task(task_id):
             'task': {
                 'id': task.id,
                 'name': task.name,
-                'introduction': task.introduction
+                'introduction': task.introduction,
+                'publish_at': task.publish_at.isoformat() if task.publish_at else None
             }
         }), 200
     except Exception as e:

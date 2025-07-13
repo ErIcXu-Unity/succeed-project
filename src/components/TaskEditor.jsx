@@ -12,16 +12,17 @@ const TaskEditor = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  
+  const [publishAt, setPublishAt] = useState('');
+
   // 调试：检查taskId的值
   console.log('TaskEditor Debug - taskId:', taskId, 'type:', typeof taskId);
-  
+
   // 判断是否为新建模式 (taskId为'new'或undefined时都视为新建模式)
   const isCreateMode = taskId === 'new' || taskId === undefined;
-  
+
   // 调试：检查isCreateMode
   console.log('TaskEditor Debug - isCreateMode:', isCreateMode);
-  
+
   // 当前任务ID（新建模式下为null，创建后获得）
   const [currentTaskId, setCurrentTaskId] = useState(isCreateMode ? null : taskId);
 
@@ -39,10 +40,10 @@ const TaskEditor = () => {
 
   useEffect(() => {
     console.log('TaskEditor useEffect - taskId:', taskId, 'isCreateMode:', isCreateMode);
-    
+
     // 清除之前的错误
     setError('');
-    
+
     if (isCreateMode) {
       // 新建模式：直接设置loading为false
       console.log('TaskEditor - Create mode detected');
@@ -56,24 +57,33 @@ const TaskEditor = () => {
 
   const fetchTaskDetails = async () => {
     console.log('fetchTaskDetails called with taskId:', taskId);
-    
+
     if (!taskId || taskId === 'new') {
       console.warn('fetchTaskDetails - Invalid taskId for fetching:', taskId);
       setError('Invalid task ID for fetching details');
       setLoading(false);
       return;
     }
-    
+
     try {
       const response = await fetch(`http://localhost:5000/api/tasks/${taskId}`);
       console.log('fetchTaskDetails - Response:', response.status);
-      
+
       if (response.ok) {
         const data = await response.json();
         console.log('fetchTaskDetails - Success:', data);
         setTask(data);
         setTaskName(data.name);
         setTaskIntroduction(data.introduction || '');
+
+        // 处理 publish_at 字段（用于显示到 datetime-local 输入框）
+        if (data.publish_at) {
+          const formatted = new Date(data.publish_at).toISOString().slice(0, 16); // yyyy-MM-ddTHH:mm
+          setPublishAt(formatted);
+        } else {
+          setPublishAt('');
+        }
+
       } else {
         console.error('fetchTaskDetails - Failed:', response.status);
         setError('Failed to load task details');
@@ -109,7 +119,7 @@ const TaskEditor = () => {
 
     try {
       let taskIdToUse = currentTaskId;
-      
+
       if (isCreateMode) {
         // 新建模式：先创建任务
         const createResponse = await fetch('http://localhost:5000/api/tasks', {
@@ -119,7 +129,8 @@ const TaskEditor = () => {
           },
           body: JSON.stringify({
             name: taskName,
-            introduction: taskIntroduction
+            introduction: taskIntroduction,
+            publish_at: publishAt ? new Date(publishAt).toISOString() : null
           })
         });
 
@@ -131,7 +142,7 @@ const TaskEditor = () => {
         const createData = await createResponse.json();
         taskIdToUse = createData.task.id;
         setCurrentTaskId(taskIdToUse);
-        
+
       } else {
         // 编辑模式：更新任务信息
         const updateResponse = await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
@@ -141,7 +152,8 @@ const TaskEditor = () => {
           },
           body: JSON.stringify({
             name: taskName,
-            introduction: taskIntroduction
+            introduction: taskIntroduction,
+            publish_at: publishAt ? new Date(publishAt).toISOString() : null
           })
         });
 
@@ -172,7 +184,7 @@ const TaskEditor = () => {
 
       // 成功后返回teacher dashboard
       navigate('/teacher');
-      
+
     } catch (error) {
       console.error('Error saving task:', error);
       setError(error.message);
@@ -294,9 +306,19 @@ const TaskEditor = () => {
               className="form-textarea"
               rows="8"
             />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="publishAt">Publish Time</label>
+            <input
+              type="datetime-local"
+              id="publishAt"
+              value={publishAt}
+              onChange={(e) => setPublishAt(e.target.value)}
+              className="form-input"
+            />
             <div className="help-text">
-              This introduction will be shown to students before they start the escape room. 
-              Make it engaging and set the scene for the challenge!
+              Students will only see this task after this time. Leave blank to make it visible immediately.
             </div>
           </div>
         </section>
@@ -305,8 +327,8 @@ const TaskEditor = () => {
         <section className="questions-section">
           <div className="questions-header">
             <h2>Questions ({questions.length}/5)</h2>
-            <button 
-              onClick={addQuestion} 
+            <button
+              onClick={addQuestion}
               className="btn btn-primary"
               disabled={questions.length >= 5}
             >
@@ -326,7 +348,7 @@ const TaskEditor = () => {
                 <div key={index} className="question-card">
                   <div className="question-header">
                     <h3>Question {index + 1}</h3>
-                    <button 
+                    <button
                       onClick={() => removeQuestion(index)}
                       className="remove-btn"
                       title="Remove question"

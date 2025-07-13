@@ -12,16 +12,6 @@ load_dotenv('.env')  # 明确指定.env文件路径
 
 app = Flask(__name__)
 
-# 调试信息：检查环境变量是否正确加载
-database_url = os.getenv('DATABASE_URL')
-print(f"🔍 DATABASE_URL loaded: {database_url}")
-
-# 如果无法从.env读取，则手动设置（临时解决方案）
-if not database_url:
-    print("⚠️  从.env文件读取失败，使用手动配置")
-    database_url = "postgresql://postgres:953862@localhost:5432/test-project"
-    print(f"🔧 使用手动配置: {database_url}")
-
 # 配置CORS允许跨域访问
 CORS(app, resources={
     r"/*": {
@@ -31,7 +21,7 @@ CORS(app, resources={
     }
 })
 
-app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads', 'questions')
 
@@ -213,6 +203,47 @@ def get_tasks():
         result.append(task_data)
     return jsonify(result), 200
 
+@app.route('/api/tasks', methods=['POST'])
+def create_task():
+    """创建新任务"""
+    data = request.get_json()
+    
+    # 验证必填字段
+    if not data.get('name'):
+        return jsonify({'error': 'Task name is required'}), 400
+    
+    if not data.get('introduction'):
+        return jsonify({'error': 'Task introduction is required'}), 400
+    
+    # 检查任务名称唯一性
+    existing_task = Task.query.filter_by(name=data['name']).first()
+    if existing_task:
+        return jsonify({'error': 'Task name already exists'}), 409
+    
+    try:
+        # 创建新任务
+        new_task = Task(
+            name=data['name'],
+            introduction=data['introduction']
+        )
+        db.session.add(new_task)
+        db.session.commit()
+        
+        # 返回新创建的任务信息
+        return jsonify({
+            'message': 'Task created successfully',
+            'task': {
+                'id': new_task.id,
+                'name': new_task.name,
+                'introduction': new_task.introduction,
+                'question_count': 0
+            }
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to create task: {str(e)}'}), 500
+
 @app.route('/api/tasks/<int:task_id>', methods=['GET'])
 def get_task_detail(task_id):
     """获取任务详情"""
@@ -251,6 +282,47 @@ def update_task(task_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/tasks/<int:task_id>', methods=['DELETE'])
+def delete_task(task_id):
+    """删除任务及其相关数据"""
+    # 验证任务存在
+    task = Task.query.get_or_404(task_id)
+    
+    try:
+        # 开始事务 - 级联删除相关数据
+        
+        # 1. 删除学生任务进度
+        StudentTaskProcess.query.filter_by(task_id=task_id).delete()
+        
+        # 2. 删除学生任务结果
+        StudentTaskResult.query.filter_by(task_id=task_id).delete()
+        
+        # 3. 删除相关成就记录（如果成就是任务特定的）
+        task_achievements = Achievement.query.filter_by(task_id=task_id).all()
+        for achievement in task_achievements:
+            # 删除学生获得的这些成就
+            StudentAchievement.query.filter_by(achievement_id=achievement.id).delete()
+            # 删除成就本身
+            db.session.delete(achievement)
+        
+        # 4. 删除任务的所有问题
+        Question.query.filter_by(task_id=task_id).delete()
+        
+        # 5. 最后删除任务本身
+        db.session.delete(task)
+        
+        # 提交事务
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Task deleted successfully',
+            'deleted_task_id': task_id
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to delete task: {str(e)}'}), 500
 
 @app.route('/api/tasks/<int:task_id>/questions', methods=['GET'])
 def get_questions(task_id):
@@ -810,6 +882,61 @@ def get_student_achievements(student_id):
         'achievements': achievements_data,
         'total_achievements': len(all_achievements),
         'unlocked_count': len(unlocked_achievements)
+    }), 200
+
+@app.route('/api/students/<student_id>/history', methods=['GET'])
+def get_student_history(student_id):
+    """获取学生任务历史记录"""
+    # 验证学生存在
+    student = Student.query.filter_by(student_id=student_id).first()
+    if not student:
+        return jsonify({'error': 'student not found'}), 404
+    
+    # 获取学生所有任务结果，按完成时间倒序排列
+    task_results = StudentTaskResult.query.filter_by(student_id=student_id).order_by(StudentTaskResult.completed_at.desc()).all()
+    
+    # 构建历史记录列表
+    history_data = []
+    for result in task_results:
+        # 获取任务信息
+        task = Task.query.get(result.task_id)
+        if task:
+            # 获取任务的所有问题来计算总分
+            task_questions = Question.query.filter_by(task_id=result.task_id).all()
+            total_possible_score = sum(q.score for q in task_questions)
+            
+            # 计算百分比得分
+            score_percentage = round((result.total_score / total_possible_score * 100), 1) if total_possible_score > 0 else 0
+            
+            # 确定课程类型（基于任务名称）
+            course_type = "General"
+            if "Chemistry" in task.name or "Lab" in task.name:
+                course_type = "Chemistry"
+            elif "Math" in task.name or "Puzzle" in task.name:
+                course_type = "Mathematics"
+            elif "Physics" in task.name:
+                course_type = "Physics"
+            elif "Statistics" in task.name:
+                course_type = "Statistics"
+            
+            history_item = {
+                'id': result.id,
+                'task_id': result.task_id,
+                'task_name': task.name,
+                'course_type': course_type,
+                'score': result.total_score,
+                'max_score': total_possible_score,
+                'score_percentage': score_percentage,
+                'completed_at': result.completed_at.isoformat(),
+                'started_at': result.started_at.isoformat() if result.started_at else None,
+                'question_count': len(task_questions)
+            }
+            history_data.append(history_item)
+    
+    return jsonify({
+        'history': history_data,
+        'total_completed': len(history_data),
+        'student_name': student.real_name
     }), 200
 
 # Reporting Routes (removed unused student APIs)

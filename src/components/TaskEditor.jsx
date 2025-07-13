@@ -12,6 +12,18 @@ const TaskEditor = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  
+  // 调试：检查taskId的值
+  console.log('TaskEditor Debug - taskId:', taskId, 'type:', typeof taskId);
+  
+  // 判断是否为新建模式 (taskId为'new'或undefined时都视为新建模式)
+  const isCreateMode = taskId === 'new' || taskId === undefined;
+  
+  // 调试：检查isCreateMode
+  console.log('TaskEditor Debug - isCreateMode:', isCreateMode);
+  
+  // 当前任务ID（新建模式下为null，创建后获得）
+  const [currentTaskId, setCurrentTaskId] = useState(isCreateMode ? null : taskId);
 
   // 初始化空问题模板
   const createEmptyQuestion = () => ({
@@ -26,18 +38,44 @@ const TaskEditor = () => {
   });
 
   useEffect(() => {
-    fetchTaskDetails();
-  }, [taskId]);
+    console.log('TaskEditor useEffect - taskId:', taskId, 'isCreateMode:', isCreateMode);
+    
+    // 清除之前的错误
+    setError('');
+    
+    if (isCreateMode) {
+      // 新建模式：直接设置loading为false
+      console.log('TaskEditor - Create mode detected');
+      setLoading(false);
+    } else {
+      // 编辑模式：获取任务详情
+      console.log('TaskEditor - Edit mode detected, fetching task details');
+      fetchTaskDetails();
+    }
+  }, [taskId, isCreateMode]);
 
   const fetchTaskDetails = async () => {
+    console.log('fetchTaskDetails called with taskId:', taskId);
+    
+    if (!taskId || taskId === 'new') {
+      console.warn('fetchTaskDetails - Invalid taskId for fetching:', taskId);
+      setError('Invalid task ID for fetching details');
+      setLoading(false);
+      return;
+    }
+    
     try {
       const response = await fetch(`http://localhost:5000/api/tasks/${taskId}`);
+      console.log('fetchTaskDetails - Response:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('fetchTaskDetails - Success:', data);
         setTask(data);
         setTaskName(data.name);
         setTaskIntroduction(data.introduction || '');
       } else {
+        console.error('fetchTaskDetails - Failed:', response.status);
         setError('Failed to load task details');
       }
     } catch (error) {
@@ -70,26 +108,52 @@ const TaskEditor = () => {
     setError('');
 
     try {
-      // 1. 更新task介绍
-      const taskUpdateResponse = await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: taskName,
-          introduction: taskIntroduction
-        })
-      });
+      let taskIdToUse = currentTaskId;
+      
+      if (isCreateMode) {
+        // 新建模式：先创建任务
+        const createResponse = await fetch('http://localhost:5000/api/tasks', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: taskName,
+            introduction: taskIntroduction
+          })
+        });
 
-      if (!taskUpdateResponse.ok) {
-        throw new Error('Failed to update task');
+        if (!createResponse.ok) {
+          const errorData = await createResponse.json();
+          throw new Error(errorData.error || 'Failed to create task');
+        }
+
+        const createData = await createResponse.json();
+        taskIdToUse = createData.task.id;
+        setCurrentTaskId(taskIdToUse);
+        
+      } else {
+        // 编辑模式：更新任务信息
+        const updateResponse = await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: taskName,
+            introduction: taskIntroduction
+          })
+        });
+
+        if (!updateResponse.ok) {
+          throw new Error('Failed to update task');
+        }
       }
 
-      // 2. 批量创建问题（如果有）
-      if (questions.length > 0) {
+      // 批量创建问题（如果有）
+      if (questions.length > 0 && taskIdToUse) {
         const user = JSON.parse(localStorage.getItem('user_data'));
-        const questionsResponse = await fetch(`http://localhost:5000/api/tasks/${taskId}/questions/batch`, {
+        const questionsResponse = await fetch(`http://localhost:5000/api/tasks/${taskIdToUse}/questions/batch`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -161,7 +225,7 @@ const TaskEditor = () => {
     );
   }
 
-  if (error && !task) {
+  if (error && !isCreateMode && !task) {
     return (
       <div className="task-editor-container">
         <div className="error">
@@ -182,17 +246,17 @@ const TaskEditor = () => {
           <i className="fas fa-arrow-left"></i>
           Back to Dashboard
         </button>
-        <h1>Edit Task</h1>
+        <h1>{isCreateMode ? 'Create New Task' : 'Edit Task'}</h1>
         <button onClick={handleSave} className="save-btn" disabled={saving}>
           {saving ? (
             <>
               <i className="fas fa-spinner fa-spin"></i>
-              Saving...
+              {isCreateMode ? 'Creating...' : 'Saving...'}
             </>
           ) : (
             <>
               <i className="fas fa-save"></i>
-              Save Task
+              {isCreateMode ? 'Create Task' : 'Save Task'}
             </>
           )}
         </button>

@@ -884,6 +884,61 @@ def get_student_achievements(student_id):
         'unlocked_count': len(unlocked_achievements)
     }), 200
 
+@app.route('/api/students/<student_id>/history', methods=['GET'])
+def get_student_history(student_id):
+    """获取学生任务历史记录"""
+    # 验证学生存在
+    student = Student.query.filter_by(student_id=student_id).first()
+    if not student:
+        return jsonify({'error': 'student not found'}), 404
+    
+    # 获取学生所有任务结果，按完成时间倒序排列
+    task_results = StudentTaskResult.query.filter_by(student_id=student_id).order_by(StudentTaskResult.completed_at.desc()).all()
+    
+    # 构建历史记录列表
+    history_data = []
+    for result in task_results:
+        # 获取任务信息
+        task = Task.query.get(result.task_id)
+        if task:
+            # 获取任务的所有问题来计算总分
+            task_questions = Question.query.filter_by(task_id=result.task_id).all()
+            total_possible_score = sum(q.score for q in task_questions)
+            
+            # 计算百分比得分
+            score_percentage = round((result.total_score / total_possible_score * 100), 1) if total_possible_score > 0 else 0
+            
+            # 确定课程类型（基于任务名称）
+            course_type = "General"
+            if "Chemistry" in task.name or "Lab" in task.name:
+                course_type = "Chemistry"
+            elif "Math" in task.name or "Puzzle" in task.name:
+                course_type = "Mathematics"
+            elif "Physics" in task.name:
+                course_type = "Physics"
+            elif "Statistics" in task.name:
+                course_type = "Statistics"
+            
+            history_item = {
+                'id': result.id,
+                'task_id': result.task_id,
+                'task_name': task.name,
+                'course_type': course_type,
+                'score': result.total_score,
+                'max_score': total_possible_score,
+                'score_percentage': score_percentage,
+                'completed_at': result.completed_at.isoformat(),
+                'started_at': result.started_at.isoformat() if result.started_at else None,
+                'question_count': len(task_questions)
+            }
+            history_data.append(history_item)
+    
+    return jsonify({
+        'history': history_data,
+        'total_completed': len(history_data),
+        'student_name': student.real_name
+    }), 200
+
 # Reporting Routes (removed unused student APIs)
 
 

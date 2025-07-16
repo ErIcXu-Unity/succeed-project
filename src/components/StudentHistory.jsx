@@ -19,7 +19,7 @@ function StudentHistory() {
       console.log('User data from localStorage:', user);
       
       if (!user?.user_id) {
-        setError('用户未登录');
+        setError('User not logged in');
         setLoading(false);
         return;
       }
@@ -37,12 +37,12 @@ function StudentHistory() {
       } else {
         const errorText = await response.text();
         console.error('History fetch error:', errorText);
-        throw new Error(`获取历史记录失败: ${response.status}`);
+        throw new Error(`Failed to fetch history: ${response.status}`);
       }
 
     } catch (error) {
       console.error('Error fetching student history:', error);
-      setError(`无法加载历史记录: ${error.message}`);
+      setError(`Unable to load history: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -113,7 +113,7 @@ function StudentHistory() {
       <div className="student-history-content">
         <div className="loading">
           <i className="fas fa-spinner fa-spin"></i>
-          正在加载您的学习历史记录...
+          Loading your learning history...
         </div>
       </div>
     );
@@ -126,7 +126,7 @@ function StudentHistory() {
           <i className="fas fa-exclamation-triangle"></i>
           <p>{error}</p>
           <button onClick={fetchStudentHistory} className="retry-btn">
-            重试
+            Retry
           </button>
         </div>
       </div>
@@ -136,12 +136,12 @@ function StudentHistory() {
   return (
     <div className="student-history-content">
       <div className="history-header">
-        <h2>🎓 学习历史记录</h2>
-        <p>查看您完成的所有逃脱房间任务</p>
+        <h2>🎓 Learning History</h2>
+        <p>View all completed escape room tasks</p>
         {studentName && (
           <div className="student-info">
-            <span>学生: {studentName}</span>
-            <span>已完成任务: {historyData.length}</span>
+            <span>Student: {studentName}</span>
+            <span>Completed Tasks: {historyData.length}</span>
           </div>
         )}
       </div>
@@ -149,10 +149,10 @@ function StudentHistory() {
       {historyData.length === 0 ? (
         <div className="empty-history">
           <i className="fas fa-clipboard-list"></i>
-          <h3>还没有完成任何任务</h3>
-          <p>完成您的第一个逃脱房间任务来开始学习之旅！</p>
+          <h3>No tasks completed yet</h3>
+          <p>Complete your first escape room task to start your learning journey!</p>
           <Link to="/student/home" className="btn btn-primary">
-            开始任务
+            Start Tasks
           </Link>
         </div>
       ) : (
@@ -188,14 +188,14 @@ function StudentHistory() {
                       </span>
                     </div>
                     <div className="score-details">
-                      得分: {item.score}/{item.max_score} 分
+                      Score: {item.score}/{item.max_score} points
                     </div>
                   </div>
 
                   <div className="task-stats">
                     <div className="stat-item">
                       <i className="fas fa-question-circle"></i>
-                      <span>{item.question_count} 题</span>
+                      <span>{item.question_count} Questions</span>
                     </div>
                     <div className="stat-item">
                       <i className="fas fa-calendar"></i>
@@ -213,17 +213,17 @@ function StudentHistory() {
                       className="btn btn-secondary"
                     >
                       <i className="fas fa-redo"></i>
-                      重做任务
+                      Retry Task
                     </Link>
                     <button 
                       className="btn btn-outline"
                       onClick={() => {
-                        // 这里可以添加查看详细反馈的功能
-                        alert(`查看任务 "${item.task_name}" 的详细反馈功能即将推出！`);
+                        // Feature to view detailed feedback can be added here
+                        alert(`Detailed feedback for task "${item.task_name}" coming soon!`);
                       }}
                     >
                       <i className="fas fa-chart-line"></i>
-                      查看详情
+                      View Details
                     </button>
                   </div>
                 </div>

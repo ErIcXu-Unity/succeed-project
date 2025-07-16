@@ -21,16 +21,16 @@ const TaskIntro = () => {
       
       if (!response.ok) {
         if (response.status === 404) {
-          throw new Error(`任务 ID "${taskId}" 不存在。请检查 URL 是否正确，或从任务列表中选择有效的任务。`);
+          throw new Error(`Task ID "${taskId}" does not exist. Please check if the URL is correct, or select a valid task from the task list.`);
         }
-        throw new Error('获取任务信息失败');
+        throw new Error('Failed to fetch task information');
       }
       
       const taskData = await response.json();
       setTask(taskData);
     } catch (err) {
-      console.error('获取任务详情时出错：', err);
-      setError(err.message || '加载任务信息失败');
+      console.error('Error fetching task details:', err);
+      setError(err.message || 'Failed to load task information');
     } finally {
       setLoading(false);
     }
@@ -45,7 +45,7 @@ const TaskIntro = () => {
       <div className="task-intro-container">
         <div className="loading-spinner">
           <i className="fas fa-spinner fa-spin"></i>
-          <p>加载任务信息中...</p>
+          <p>Loading task information...</p>
         </div>
       </div>
     );
@@ -56,15 +56,15 @@ const TaskIntro = () => {
       <div className="task-intro-container">
         <div className="error-message">
           <i className="fas fa-exclamation-triangle"></i>
-          <p>错误：{error}</p>
+          <p>Error: {error}</p>
           <div className="error-actions">
             <button onClick={() => window.history.back()} className="btn-secondary">
               <i className="fas fa-arrow-left"></i>
-              返回上页
+              Go Back
             </button>
             <button onClick={() => navigate('/student')} className="btn-primary">
               <i className="fas fa-home"></i>
-              返回任务列表
+              Back to Task List
             </button>
           </div>
         </div>
@@ -77,9 +77,9 @@ const TaskIntro = () => {
       <div className="task-intro-container">
         <div className="error-message">
           <i className="fas fa-question-circle"></i>
-          <p>未找到任务信息</p>
+          <p>Task information not found</p>
           <button onClick={() => window.history.back()} className="btn-secondary">
-            返回
+            Go Back
           </button>
         </div>
       </div>
@@ -93,20 +93,20 @@ const TaskIntro = () => {
         <header className="task-header">
           <h1 className="task-title">{task.name}</h1>
           <div className="task-meta">
-            <span className="question-count">📝 {task.question_count} 道题目</span>
+            <span className="question-count">📝 {task.question_count} Questions</span>
           </div>
         </header>
 
         {/* 任务介绍 */}
         <section className="task-description">
-          <h2>🎯 任务说明</h2>
+          <h2>🎯 Task Description</h2>
           <div className="description-content">
             {task.introduction ? (
               task.introduction.split('\n').map((line, index) => (
                 <p key={index}>{line}</p>
               ))
             ) : (
-              <p>暂无任务介绍</p>
+              <p>No task description available</p>
             )}
           </div>
         </section>
@@ -114,7 +114,7 @@ const TaskIntro = () => {
         {/* 视频播放区域 */}
         {task.video_type && task.video_url && (
           <section className="task-video">
-            <h2>🎬 任务视频</h2>
+            <h2>🎬 Task Video</h2>
             <div className="video-container">
               <VideoPlayer task={task} />
             </div>
@@ -129,7 +129,7 @@ const TaskIntro = () => {
               className="btn-secondary"
             >
               <i className="fas fa-arrow-left"></i>
-              返回
+              Go Back
             </button>
             
             {task.question_count > 0 ? (
@@ -138,12 +138,12 @@ const TaskIntro = () => {
                 className="btn-primary start-quiz-btn"
               >
                 <i className="fas fa-play"></i>
-                开始测验
+                Start Quiz
               </button>
             ) : (
               <div className="no-questions-notice">
                 <i className="fas fa-info-circle"></i>
-                <span>此任务暂无题目</span>
+                <span>This task has no questions yet</span>
               </div>
             )}
           </div>
@@ -151,12 +151,12 @@ const TaskIntro = () => {
 
         {/* 提示信息 */}
         <section className="task-tips">
-          <h3>💡 答题提示</h3>
+          <h3>💡 Quiz Tips</h3>
           <ul className="tips-list">
-            <li>🎯 仔细阅读每道题目，理解题意后再作答</li>
-            <li>⏰ 答题过程中会记录您的用时</li>
-            <li>🏆 正确率越高，获得的分数越多</li>
-            <li>📊 完成后可查看详细的答题报告</li>
+            <li>🎯 Read each question carefully and understand before answering</li>
+            <li>⏰ Your response time will be recorded during the quiz</li>
+            <li>🏆 Higher accuracy means higher scores</li>
+            <li>📊 View detailed quiz report after completion</li>
           </ul>
         </section>
       </div>

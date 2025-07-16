@@ -283,7 +283,7 @@ const TaskEditor = () => {
       }
 
       // 保存成功提示
-      alert(`✅ ${isCreateMode ? '任务创建成功！' : '任务更新成功！'}`);
+      alert(`✅ ${isCreateMode ? 'Task created successfully!' : 'Task updated successfully!'}`);
       
       // 延迟跳转，让用户看到成功信息
       setTimeout(() => {

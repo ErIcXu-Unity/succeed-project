@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import VideoPlayer from './VideoPlayer';
 import './TaskQuiz.css';
 
 const TaskQuiz = () => {
@@ -438,6 +439,8 @@ const TaskQuiz = () => {
           Question {currentQuestionIndex + 1} of {questions.length}
         </span>
       </div>
+
+      <VideoPlayer task={task} />
 
       {/* 题目导航 */}
       <div className="question-navigation">

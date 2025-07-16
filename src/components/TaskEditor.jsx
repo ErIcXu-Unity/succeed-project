@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import VideoUpload from './VideoUpload';
 import './TaskEditor.css';
 
 const TaskEditor = () => {
@@ -319,6 +320,22 @@ const TaskEditor = () => {
             />
             <div className="help-text">
               Students will only see this task after this time. Leave blank to make it visible immediately.
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>Task Video (Optional)</label>
+            <VideoUpload 
+              taskId={currentTaskId || taskId}
+              onVideoSelect={(result) => {
+                console.log('Video uploaded:', result);
+              }}
+              onYouTubeUrl={(result) => {
+                console.log('YouTube URL saved:', result);
+              }}
+            />
+            <div className="help-text">
+              Upload a video file or provide a YouTube link to help students understand the task better.
             </div>
           </div>
         </section>

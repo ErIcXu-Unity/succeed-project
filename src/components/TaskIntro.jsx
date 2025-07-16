@@ -1,6 +1,7 @@
 // src/components/TaskIntro.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import VideoPlayer from './VideoPlayer';
 import './TaskIntro.css';
 
 const TaskIntro = () => {
@@ -77,6 +78,8 @@ const TaskIntro = () => {
             <img src={task.image_url} alt={task.name} />
           </div>
         )}
+
+        <VideoPlayer task={task} />
 
         <div className="task-description">
           <h2>Mission Briefing</h2>

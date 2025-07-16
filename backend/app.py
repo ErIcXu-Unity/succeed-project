@@ -8,11 +8,11 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
 
-load_dotenv('.env')  # 明确指定.env文件路径
+load_dotenv('.env')  # 明确指定.env 文件路径
 
 app = Flask(__name__)
 
-# 配置CORS允许跨域访问
+# 配置 CORS 允许跨域访问
 CORS(app, resources={
     r"/*": {
         "origins": ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001", "http://127.0.0.1:3001"],
@@ -24,6 +24,7 @@ CORS(app, resources={
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads', 'questions')
+app.config['VIDEO_UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads', 'videos')
 
 db = SQLAlchemy(app)
 
@@ -53,6 +54,9 @@ class Task(db.Model):
     name         = db.Column(db.String(80), unique=True, nullable=False)
     introduction = db.Column(db.Text, nullable=True)  # 任务介绍描述
     image_path   = db.Column(db.String(255), nullable=True)  # 任务背景图片
+    video_path   = db.Column(db.String(255), nullable=True)  # 本地视频文件路径
+    video_url    = db.Column(db.String(500), nullable=True)  # YouTube 链接
+    video_type   = db.Column(db.String(20), nullable=True)   # 'local' 或 'youtube'
     publish_at   = db.Column(db.DateTime, nullable=True) # 发布时间
 
 class Question(db.Model):
@@ -117,7 +121,7 @@ class StudentTaskProcess(db.Model):
     task_id              = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=False)
     task_name            = db.Column(db.String(80), nullable=False)  # redundant field for easy access
     current_question_index = db.Column(db.Integer, nullable=False, default=0)  # 当前题目索引
-    answers_json         = db.Column(db.Text, nullable=True)  # JSON格式存储已选择的答案
+    answers_json         = db.Column(db.Text, nullable=True)  # JSON 格式存储已选择的答案
     saved_at             = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at           = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
@@ -213,6 +217,15 @@ def get_tasks():
         }
         if t.image_path:
             task_data['image_url'] = f"/uploads/tasks/{t.image_path}"
+        
+        # 添加视频信息
+        if t.video_type:
+            task_data['video_type'] = t.video_type
+            if t.video_type == 'local' and t.video_path:
+                task_data['video_url'] = f"/uploads/videos/{t.video_path}"
+            elif t.video_type == 'youtube' and t.video_url:
+                task_data['video_url'] = t.video_url
+        
         result.append(task_data)
     return jsonify(result), 200
 
@@ -280,6 +293,15 @@ def get_task_detail(task_id):
     }
     if task.image_path:
         result['image_url'] = f"/uploads/tasks/{task.image_path}"
+    
+    # 添加视频信息
+    if task.video_type:
+        result['video_type'] = task.video_type
+        if task.video_type == 'local' and task.video_path:
+            result['video_url'] = f"/uploads/videos/{task.video_path}"
+        elif task.video_type == 'youtube' and task.video_url:
+            result['video_url'] = task.video_url
+    
     return jsonify(result), 200
 
 @app.route('/api/tasks/<int:task_id>', methods=['PUT'])
@@ -496,10 +518,10 @@ def submit_task(task_id):
                 db.session.add(sa)
                 new_achievements.append({'id': perfect_score_achievement.id, 'name': perfect_score_achievement.name})
 
-    # 2. Fast Solver - 快速完成任务（设定10分钟内完成）
+    # 2. Fast Solver - 快速完成任务（设定 10 分钟内完成）
     if task_started_at and current_time:
         time_taken = (current_time - task_started_at).total_seconds() / 60  # 转换为分钟
-        if time_taken <= 10:  # 10分钟内完成
+        if time_taken <= 10:  # 10 分钟内完成
             fast_solver_achievement = Achievement.query.filter_by(name='Fast Solver').first()
             if fast_solver_achievement:
                 existing_achievement = StudentAchievement.query.filter_by(
@@ -518,7 +540,7 @@ def submit_task(task_id):
 
     db.session.commit()
 
-    # 3. Accuracy Master - 总体准确率达到90%以上（需要在commit后计算）
+    # 3. Accuracy Master - 总体准确率达到 90% 以上（需要在 commit 后计算）
     all_results = StudentTaskResult.query.filter_by(student_id=student_id).all()
     total_questions = 0
     total_correct = 0
@@ -824,6 +846,92 @@ def uploaded_file(filename):
     """提供问题图片访问服务"""
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
+# Video Upload Routes
+
+@app.route('/api/tasks/<int:task_id>/video', methods=['POST'])
+def upload_task_video(task_id):
+    """上传任务视频文件"""
+    task = Task.query.get_or_404(task_id)
+    
+    if 'video' not in request.files:
+        return jsonify({'error': 'No video file provided'}), 400
+    
+    file = request.files['video']
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+    
+    # 验证文件类型
+    allowed_extensions = {'mp4', 'avi', 'mov', 'wmv', 'webm'}
+    if not ('.' in file.filename and file.filename.rsplit('.', 1)[1].lower() in allowed_extensions):
+        return jsonify({'error': 'Invalid video format. Allowed: mp4, avi, mov, wmv, webm'}), 400
+    
+    # 验证文件大小 (最大 100MB)
+    max_size = 100 * 1024 * 1024  # 100MB
+    if request.content_length and request.content_length > max_size:
+        return jsonify({'error': 'Video file too large. Maximum size: 100MB'}), 400
+    
+    try:
+        # 创建安全的文件名
+        file_extension = file.filename.rsplit('.', 1)[1].lower()
+        filename = f"task_{task_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{file_extension}"
+        video_path = os.path.join(app.config['VIDEO_UPLOAD_FOLDER'], filename)
+        
+        # 确保目录存在
+        os.makedirs(app.config['VIDEO_UPLOAD_FOLDER'], exist_ok=True)
+        
+        # 保存文件
+        file.save(video_path)
+        
+        # 更新数据库
+        task.video_path = filename
+        task.video_type = 'local'
+        task.video_url = None  # 清除 YouTube 链接
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Video uploaded successfully',
+            'video_url': f'/uploads/videos/{filename}',
+            'video_type': 'local'
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to upload video: {str(e)}'}), 500
+
+@app.route('/api/tasks/<int:task_id>/youtube', methods=['POST'])
+def save_youtube_url(task_id):
+    """保存 YouTube 视频链接"""
+    task = Task.query.get_or_404(task_id)
+    data = request.get_json()
+    
+    youtube_url = data.get('youtube_url')
+    if not youtube_url:
+        return jsonify({'error': 'YouTube URL is required'}), 400
+    
+    # 简单的 YouTube URL 验证
+    if 'youtube.com/watch' not in youtube_url and 'youtu.be/' not in youtube_url:
+        return jsonify({'error': 'Invalid YouTube URL'}), 400
+    
+    try:
+        # 更新数据库
+        task.video_url = youtube_url
+        task.video_type = 'youtube'
+        task.video_path = None  # 清除本地视频路径
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'YouTube URL saved successfully',
+            'video_url': youtube_url,
+            'video_type': 'youtube'
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to save YouTube URL: {str(e)}'}), 500
+
+@app.route('/uploads/videos/<path:filename>')
+def uploaded_video(filename):
+    """提供视频文件访问服务"""
+    return send_from_directory(app.config['VIDEO_UPLOAD_FOLDER'], filename)
+
 
 # Student Profile and Achievement Routes
 
@@ -1097,7 +1205,7 @@ Put on your detective hat and let your statistical reasoning guide you through t
             },
             {
                 'name': 'Accuracy Master',
-                'condition': '总体答题准确率达到90%以上',
+                'condition': '总体答题准确率达到 90% 以上',
                 'task_id': None  # General achievement
             },
             {

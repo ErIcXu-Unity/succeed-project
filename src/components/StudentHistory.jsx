@@ -26,7 +26,7 @@ function StudentHistory() {
 
       console.log('Fetching history for user:', user.user_id);
 
-      const response = await fetch(`http://localhost:5000/api/students/${user.user_id}/history`);
+              const response = await fetch(`http://localhost:5001/api/students/${user.user_id}/history`);
       console.log('History response status:', response.status);
       
       if (response.ok) {

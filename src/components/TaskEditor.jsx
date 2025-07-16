@@ -66,7 +66,7 @@ const TaskEditor = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/tasks/${taskId}`);
+              const response = await fetch(`http://localhost:5001/api/tasks/${taskId}`);
       console.log('fetchTaskDetails - Response:', response.status);
 
       if (response.ok) {
@@ -122,7 +122,7 @@ const TaskEditor = () => {
 
       if (isCreateMode) {
         // 新建模式：先创建任务
-        const createResponse = await fetch('http://localhost:5000/api/tasks', {
+        const createResponse = await fetch('http://localhost:5001/api/tasks', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -145,7 +145,7 @@ const TaskEditor = () => {
 
       } else {
         // 编辑模式：更新任务信息
-        const updateResponse = await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
+        const updateResponse = await fetch(`http://localhost:5001/api/tasks/${taskId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -165,7 +165,7 @@ const TaskEditor = () => {
       // 批量创建问题（如果有）
       if (questions.length > 0 && taskIdToUse) {
         const user = JSON.parse(localStorage.getItem('user_data'));
-        const questionsResponse = await fetch(`http://localhost:5000/api/tasks/${taskIdToUse}/questions/batch`, {
+        const questionsResponse = await fetch(`http://localhost:5001/api/tasks/${taskIdToUse}/questions/batch`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

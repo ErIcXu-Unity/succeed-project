@@ -16,7 +16,7 @@ const TaskIntro = () => {
 
   const fetchTaskDetail = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/tasks/${taskId}`);
+                  const response = await fetch(`http://localhost:5001/api/tasks/${taskId}`);
       if (response.ok) {
         const data = await response.json();
         setTask(data);

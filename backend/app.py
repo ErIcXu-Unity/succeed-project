@@ -1128,4 +1128,4 @@ Put on your detective hat and let your statistical reasoning guide you through t
         db.session.commit()
         print('All tables recreated, default teacher accounts and escape room tasks ensured.')
 
-    app.run(debug=True)
+    app.run(debug=True, port=5001)

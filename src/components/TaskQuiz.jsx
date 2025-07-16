@@ -24,14 +24,14 @@ const TaskQuiz = () => {
         const user = JSON.parse(localStorage.getItem('user_data'));
 
         // 获取任务详情
-        const taskResponse = await fetch(`http://localhost:5000/api/tasks/${taskId}`);
+        const taskResponse = await fetch(`http://localhost:5001/api/tasks/${taskId}`);
         if (taskResponse.ok) {
           const taskData = await taskResponse.json();
           setTask(taskData);
         }
 
         // 获取问题列表
-        const questionsResponse = await fetch(`http://localhost:5000/api/tasks/${taskId}/questions`);
+        const questionsResponse = await fetch(`http://localhost:5001/api/tasks/${taskId}/questions`);
         if (questionsResponse.ok) {
           const questionsData = await questionsResponse.json();
           setQuestions(questionsData);
@@ -42,7 +42,7 @@ const TaskQuiz = () => {
 
           // 尝试恢复答题进度
           if (user?.user_id) {
-            const progressResponse = await fetch(`http://localhost:5000/api/tasks/${taskId}/progress?student_id=${user.user_id}`);
+            const progressResponse = await fetch(`http://localhost:5001/api/tasks/${taskId}/progress?student_id=${user.user_id}`);
             if (progressResponse.ok) {
               const progressData = await progressResponse.json();
               if (progressData.has_progress) {
@@ -110,7 +110,7 @@ const TaskQuiz = () => {
     setSaving(true);
     try {
       const user = JSON.parse(localStorage.getItem('user_data'));
-      const response = await fetch(`http://localhost:5000/api/tasks/${taskId}/save-progress`, {
+      const response = await fetch(`http://localhost:5001/api/tasks/${taskId}/save-progress`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -152,7 +152,7 @@ const TaskQuiz = () => {
   // 网络连接检查
   const checkNetworkConnection = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/tasks', {
+              const response = await fetch('http://localhost:5001/api/tasks', {
         method: 'GET',
         signal: AbortSignal.timeout(5000) // 5秒超时
       });
@@ -199,7 +199,7 @@ const TaskQuiz = () => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
 
-      const response = await fetch(`http://localhost:5000/api/tasks/${taskId}/submit`, {
+      const response = await fetch(`http://localhost:5001/api/tasks/${taskId}/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -260,7 +260,7 @@ const TaskQuiz = () => {
             return submitAllAnswers(retryCount + 1);
           }
         } else {
-          alert('🌐 多次尝试失败。请检查：\n• 后端服务器是否运行在 localhost:5000\n• 网络连接是否正常\n• 防火墙设置');
+          alert('🌐 多次尝试失败。请检查：\n• 后端服务器是否运行在 localhost:5001\n• 网络连接是否正常\n• 防火墙设置');
         }
       } else {
         // 其他错误

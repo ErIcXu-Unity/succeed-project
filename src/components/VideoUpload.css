@@ -316,4 +316,35 @@
 
 .upload-progress {
   animation: fadeIn 0.3s ease-out;
+}
+
+/* 新建模式提示样式 */
+.mode-notice {
+  background-color: #e7f3ff;
+  border: 1px solid #b3d9ff;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 15px;
+  color: #1565c0;
+  font-size: 14px;
+}
+
+.create-mode-warning {
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 10px;
+  color: #856404;
+  font-size: 14px;
+}
+
+/* 禁用状态样式 */
+.drop-zone.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.drop-zone.disabled .drop-zone-content {
+  pointer-events: none;
 } 

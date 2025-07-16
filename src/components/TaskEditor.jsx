@@ -15,6 +15,9 @@ const TaskEditor = () => {
   const [error, setError] = useState('');
   const [publishAt, setPublishAt] = useState('');
 
+  // 视频信息状态（用于新建模式下保存视频）
+  const [pendingVideo, setPendingVideo] = useState(null);
+
   // 调试：检查taskId的值
   console.log('TaskEditor Debug - taskId:', taskId, 'type:', typeof taskId);
 
@@ -114,6 +117,36 @@ const TaskEditor = () => {
     setQuestions(newQuestions);
   };
 
+  // 保存待处理的视频
+  const savePendingVideo = async (taskId, videoInfo) => {
+    try {
+      if (videoInfo.type === 'local') {
+        // 本地视频需要重新上传（因为之前没有真实的taskId）
+        console.log('Local video needs to be re-uploaded with real taskId');
+        // 这种情况下，用户需要重新选择文件，所以我们暂时跳过
+        // 实际上，这种情况很复杂，需要保存文件数据
+      } else if (videoInfo.type === 'youtube') {
+        // YouTube链接可以直接保存
+        const response = await fetch(`http://localhost:5001/api/tasks/${taskId}/youtube`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ youtube_url: videoInfo.url }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Failed to save YouTube video:', errorData);
+        } else {
+          console.log('YouTube video saved successfully');
+        }
+      }
+    } catch (error) {
+      console.error('Error saving pending video:', error);
+    }
+  };
+
   const saveTask = async () => {
     setSaving(true);
     setError('');
@@ -143,6 +176,12 @@ const TaskEditor = () => {
         const createData = await createResponse.json();
         taskIdToUse = createData.task.id;
         setCurrentTaskId(taskIdToUse);
+
+        // 新建模式：如果有待保存的视频，现在保存它
+        if (pendingVideo) {
+          console.log('Saving pending video with taskId:', taskIdToUse);
+          await savePendingVideo(taskIdToUse, pendingVideo);
+        }
 
       } else {
         // 编辑模式：更新任务信息
@@ -327,11 +366,15 @@ const TaskEditor = () => {
             <label>Task Video (Optional)</label>
             <VideoUpload 
               taskId={currentTaskId || taskId}
-              onVideoSelect={(result) => {
+              onVideoUploaded={(result) => {
                 console.log('Video uploaded:', result);
-              }}
-              onYouTubeUrl={(result) => {
-                console.log('YouTube URL saved:', result);
+                
+                // 如果是新建模式，保存视频信息待稍后处理
+                if (isCreateMode && !currentTaskId) {
+                  setPendingVideo(result);
+                  console.log('Pending video saved for later:', result);
+                }
+                // 编辑模式下，VideoUpload组件已经处理了保存
               }}
             />
             <div className="help-text">

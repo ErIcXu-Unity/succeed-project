@@ -1,268 +1,422 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import './VideoUpload.css';
 
-const VideoUpload = ({ onVideoSelect, onYouTubeUrl, taskId, currentVideo }) => {
-  const [dragActive, setDragActive] = useState(false);
-  const [preview, setPreview] = useState(null);
-  const [error, setError] = useState('');
+const VideoUpload = ({ taskId, onVideoUploaded }) => {
+  const [uploadMode, setUploadMode] = useState('local'); // 'local' 或 'youtube'
+  const [selectedFile, setSelectedFile] = useState(null);
   const [youtubeUrl, setYoutubeUrl] = useState('');
-  const [uploadType, setUploadType] = useState('local'); // 'local' 或 'youtube'
   const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef(null);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [currentVideo, setCurrentVideo] = useState(null);
 
+  // 检查是否为新建模式
+  const isCreateMode = !taskId || taskId === 'new';
+
+  // 获取当前任务的视频信息（仅在编辑模式下）
+  useEffect(() => {
+    const fetchTaskVideo = async () => {
+      if (isCreateMode) return;
+      
+      try {
+        const response = await fetch(`http://localhost:5001/api/tasks/${taskId}`);
+        if (response.ok) {
+          const taskData = await response.json();
+          if (taskData.video_path || taskData.video_url) {
+            setCurrentVideo({
+              type: taskData.video_type,
+              path: taskData.video_path,
+              url: taskData.video_url
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching task video:', error);
+      }
+    };
+
+    fetchTaskVideo();
+  }, [taskId, isCreateMode]);
+
+  // 支持的视频格式
+  const SUPPORTED_FORMATS = ['mp4', 'avi', 'mov', 'wmv', 'webm'];
+  const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+
+  // 验证文件
   const validateFile = (file) => {
-    // 检查文件大小 (最大100MB)
-    const maxSize = 100 * 1024 * 1024;
-    if (file.size > maxSize) {
-      return '视频文件大小不能超过100MB';
+    if (!file) return false;
+
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+    if (!SUPPORTED_FORMATS.includes(fileExtension)) {
+      setError(`不支持的文件格式。支持的格式：${SUPPORTED_FORMATS.join(', ')}`);
+      return false;
     }
 
-    // 检查文件格式
-    const allowedTypes = ['video/mp4', 'video/avi', 'video/mov', 'video/wmv', 'video/webm'];
-    if (!allowedTypes.includes(file.type)) {
-      return '只支持MP4, AVI, MOV, WMV, WEBM格式的视频文件';
+    if (file.size > MAX_FILE_SIZE) {
+      setError('文件大小超过 100MB 限制');
+      return false;
     }
 
-    return null;
+    return true;
   };
 
-  const handleFile = async (file) => {
-    const errorMsg = validateFile(file);
-    if (errorMsg) {
-      setError(errorMsg);
+  // 验证 YouTube URL
+  const validateYouTubeUrl = (url) => {
+    const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[\w-]+/;
+    return youtubeRegex.test(url);
+  };
+
+  // 处理文件选择
+  const handleFileSelect = (file) => {
+    setError('');
+    setSuccess('');
+
+    if (!validateFile(file)) return;
+
+    setSelectedFile(file);
+    
+    // 创建预览 URL
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+  };
+
+  // 拖拽事件处理
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      handleFileSelect(files[0]);
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  // 文件输入改变
+  const handleFileInputChange = (e) => {
+    if (e.target.files.length > 0) {
+      handleFileSelect(e.target.files[0]);
+    }
+  };
+
+  // 上传本地视频文件
+  const uploadLocalVideo = async () => {
+    if (!selectedFile) return;
+
+    // 新建模式：暂时不支持本地文件（需要复杂的文件保存逻辑）
+    if (isCreateMode) {
+      setError('新建任务时暂不支持本地视频文件。请先保存任务，然后编辑任务来添加本地视频。');
       return;
     }
 
-    setError('');
     setUploading(true);
+    setError('');
+    setSuccess('');
+
+    const formData = new FormData();
+    formData.append('video', selectedFile);
 
     try {
-      // 创建FormData上传文件
-      const formData = new FormData();
-      formData.append('video', file);
-
       const response = await fetch(`http://localhost:5001/api/tasks/${taskId}/video`, {
         method: 'POST',
-        body: formData
+        body: formData,
       });
 
       if (response.ok) {
         const result = await response.json();
-        setPreview(result.video_url);
-        onVideoSelect && onVideoSelect(result);
-        alert('视频上传成功！');
+        setSuccess('视频上传成功！');
+        setCurrentVideo({
+          type: 'local',
+          path: result.video_path,
+          url: null
+        });
+        
+        // 通知父组件
+        if (onVideoUploaded) {
+          onVideoUploaded({
+            type: 'local',
+            path: result.video_path
+          });
+        }
       } else {
         const errorData = await response.json();
         setError(errorData.error || '上传失败');
       }
     } catch (error) {
-      setError('上传过程中发生错误');
       console.error('Upload error:', error);
+      setError('网络错误，请重试');
     } finally {
       setUploading(false);
     }
   };
 
-  const handleYouTubeSubmit = async () => {
-    if (!youtubeUrl.trim()) {
-      setError('请输入YouTube链接');
+  // 保存 YouTube 链接
+  const saveYouTubeUrl = async () => {
+    if (!youtubeUrl) return;
+
+    if (!validateYouTubeUrl(youtubeUrl)) {
+      setError('请输入有效的 YouTube 链接');
       return;
     }
 
-    setError('');
+    // 新建模式：收集信息，不立即保存
+    if (isCreateMode) {
+      setSuccess('YouTube 链接已设置！将在保存任务时一并保存。');
+      setCurrentVideo({
+        type: 'youtube',
+        path: null,
+        url: youtubeUrl
+      });
+      
+      // 通知父组件
+      if (onVideoUploaded) {
+        onVideoUploaded({
+          type: 'youtube',
+          url: youtubeUrl
+        });
+      }
+      return;
+    }
+
+    // 编辑模式：立即保存
     setUploading(true);
+    setError('');
+    setSuccess('');
 
     try {
       const response = await fetch(`http://localhost:5001/api/tasks/${taskId}/youtube`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ youtube_url: youtubeUrl })
+        body: JSON.stringify({ youtube_url: youtubeUrl }),
       });
 
       if (response.ok) {
-        const result = await response.json();
-        onYouTubeUrl && onYouTubeUrl(result);
-        setPreview(youtubeUrl);
-        alert('YouTube链接保存成功！');
+        setSuccess('YouTube 链接保存成功！');
+        setCurrentVideo({
+          type: 'youtube',
+          path: null,
+          url: youtubeUrl
+        });
+        
+        // 通知父组件
+        if (onVideoUploaded) {
+          onVideoUploaded({
+            type: 'youtube',
+            url: youtubeUrl
+          });
+        }
       } else {
         const errorData = await response.json();
         setError(errorData.error || '保存失败');
       }
     } catch (error) {
-      setError('保存过程中发生错误');
-      console.error('YouTube save error:', error);
+      console.error('Save error:', error);
+      setError('网络错误，请重试');
     } finally {
       setUploading(false);
     }
   };
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFile(e.dataTransfer.files[0]);
+  // 清除选择
+  const clearSelection = () => {
+    setSelectedFile(null);
+    setPreviewUrl('');
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
     }
   };
 
-  const handleDrag = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  };
-
-  const openFileDialog = () => {
-    fileInputRef.current?.click();
-  };
-
-  const removeVideo = () => {
-    setPreview(null);
+  // 切换上传模式
+  const handleModeChange = (mode) => {
+    setUploadMode(mode);
     setError('');
+    setSuccess('');
+    clearSelection();
     setYoutubeUrl('');
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
   };
 
   return (
     <div className="video-upload-container">
-      <div className="upload-type-selector">
-        <label className={uploadType === 'local' ? 'active' : ''}>
-          <input
-            type="radio"
-            value="local"
-            checked={uploadType === 'local'}
-            onChange={(e) => setUploadType(e.target.value)}
-          />
-          <i className="fas fa-upload"></i>
-          本地视频文件
-        </label>
-        <label className={uploadType === 'youtube' ? 'active' : ''}>
-          <input
-            type="radio"
-            value="youtube"
-            checked={uploadType === 'youtube'}
-            onChange={(e) => setUploadType(e.target.value)}
-          />
-          <i className="fab fa-youtube"></i>
-          YouTube链接
-        </label>
-      </div>
-
-      {uploadType === 'local' && (
-        <div className="local-upload-section">
-          {!preview && (
-            <div
-              className={`upload-area ${dragActive ? 'drag-active' : ''}`}
-              onDragEnter={handleDrag}
-              onDragLeave={handleDrag}
-              onDragOver={handleDrag}
-              onDrop={handleDrop}
-              onClick={openFileDialog}
-            >
-              <div className="upload-content">
-                <i className="fas fa-video upload-icon"></i>
-                <p>拖拽视频文件到此处或点击选择文件</p>
-                <p className="upload-hint">
-                  支持格式: MP4, AVI, MOV, WMV, WEBM | 最大100MB
-                </p>
-              </div>
+      <h3>任务视频 (可选)</h3>
+      
+      {/* 模式提示 */}
+      {isCreateMode && (
+        <div className="mode-notice">
+          💡 新建任务模式：YouTube 链接将在保存任务时一并保存。本地视频请先保存任务后再添加。
+        </div>
+      )}
+      
+      {/* 当前视频显示 */}
+      {currentVideo && (
+        <div className="current-video">
+          <h4>当前视频:</h4>
+          {currentVideo.type === 'local' ? (
+            <div className="current-video-info">
+              📁 本地视频文件: {currentVideo.path}
+            </div>
+          ) : (
+            <div className="current-video-info">
+              🎬 YouTube 视频: {currentVideo.url}
             </div>
           )}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="video/*"
-            onChange={(e) => e.target.files[0] && handleFile(e.target.files[0])}
-            style={{ display: 'none' }}
-          />
         </div>
       )}
 
-      {uploadType === 'youtube' && (
-        <div className="youtube-upload-section">
-          <div className="form-group">
-            <label htmlFor="youtube-url">YouTube视频链接</label>
+      {/* 上传模式选择 */}
+      <div className="upload-mode-selector">
+        <button
+          className={uploadMode === 'local' ? 'active' : ''}
+          onClick={() => handleModeChange('local')}
+          disabled={uploading}
+        >
+          📁 本地视频文件
+        </button>
+        <button
+          className={uploadMode === 'youtube' ? 'active' : ''}
+          onClick={() => handleModeChange('youtube')}
+          disabled={uploading}
+        >
+          🎬 YouTube 链接
+        </button>
+      </div>
+
+      {/* 本地文件上传 */}
+      {uploadMode === 'local' && (
+        <div className="local-upload-section">
+          {isCreateMode && (
+            <div className="create-mode-warning">
+              ⚠️ 新建任务时暂不支持本地视频。请使用 YouTube 链接，或先保存任务后再编辑添加本地视频。
+            </div>
+          )}
+          <div
+            className={`drop-zone ${isDragOver ? 'drag-over' : ''} ${isCreateMode ? 'disabled' : ''}`}
+            onDrop={isCreateMode ? null : handleDrop}
+            onDragOver={isCreateMode ? null : handleDragOver}
+            onDragLeave={isCreateMode ? null : handleDragLeave}
+          >
             <input
-              id="youtube-url"
+              type="file"
+              accept="video/*"
+              onChange={handleFileInputChange}
+              style={{ display: 'none' }}
+              id="video-file-input"
+              disabled={uploading || isCreateMode}
+            />
+            <label htmlFor="video-file-input" className="drop-zone-content">
+              {selectedFile ? (
+                <div className="file-selected">
+                  <div className="file-info">
+                    📹 {selectedFile.name}
+                    <br />
+                    <small>{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</small>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      clearSelection();
+                    }}
+                    className="clear-file"
+                    disabled={uploading}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ) : (
+                <div className="drop-zone-placeholder">
+                  <div className="upload-icon">📁</div>
+                  <p>{isCreateMode ? '新建模式下暂不支持本地视频' : '点击选择视频文件或拖拽到此处'}</p>
+                  <small>支持格式: {SUPPORTED_FORMATS.join(', ')}</small>
+                  <small>最大文件大小: 100MB</small>
+                </div>
+              )}
+            </label>
+          </div>
+
+          {/* 视频预览 */}
+          {previewUrl && !isCreateMode && (
+            <div className="video-preview">
+              <h4>预览:</h4>
+              <video
+                src={previewUrl}
+                controls
+                style={{ width: '100%', maxWidth: '400px', height: 'auto' }}
+              />
+            </div>
+          )}
+
+          {/* 上传按钮 */}
+          {selectedFile && !isCreateMode && (
+            <button
+              onClick={uploadLocalVideo}
+              disabled={uploading}
+              className="upload-button"
+            >
+              {uploading ? '上传中...' : '上传视频'}
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* YouTube 链接输入 */}
+      {uploadMode === 'youtube' && (
+        <div className="youtube-section">
+          <div className="youtube-input-group">
+            <input
               type="url"
               value={youtubeUrl}
               onChange={(e) => setYoutubeUrl(e.target.value)}
-              placeholder="https://www.youtube.com/watch?v=... 或 https://youtu.be/..."
+              placeholder="请输入 YouTube 视频链接 (例: https://www.youtube.com/watch?v=...)"
               className="youtube-input"
+              disabled={uploading}
             />
             <button
-              type="button"
-              onClick={handleYouTubeSubmit}
+              onClick={saveYouTubeUrl}
               disabled={uploading || !youtubeUrl.trim()}
-              className="youtube-save-btn"
+              className="save-youtube-button"
             >
-              {uploading ? (
-                <>
-                  <i className="fas fa-spinner fa-spin"></i>
-                  保存中...
-                </>
-              ) : (
-                <>
-                  <i className="fab fa-youtube"></i>
-                  保存YouTube链接
-                </>
-              )}
+              {uploading ? '保存中...' : (isCreateMode ? '设置链接' : '保存链接')}
             </button>
           </div>
-        </div>
-      )}
-
-      {error && (
-        <div className="upload-error">
-          <i className="fas fa-exclamation-triangle"></i>
-          {error}
-        </div>
-      )}
-
-      {uploading && uploadType === 'local' && (
-        <div className="upload-progress">
-          <i className="fas fa-spinner fa-spin"></i>
-          上传中，请稍候...
-        </div>
-      )}
-
-      {preview && (
-        <div className="video-preview">
-          {uploadType === 'local' ? (
-            <div className="local-video-preview">
-              <video controls width="100%" style={{ maxHeight: '300px' }}>
-                <source src={preview} type="video/mp4" />
-                您的浏览器不支持视频标签。
-              </video>
-              <button type="button" className="remove-btn" onClick={removeVideo}>
-                <i className="fas fa-times"></i>
-                移除视频
-              </button>
-            </div>
-          ) : (
+          
+          {/* YouTube 预览 */}
+          {youtubeUrl && validateYouTubeUrl(youtubeUrl) && (
             <div className="youtube-preview">
-              <div className="youtube-info">
-                <i className="fab fa-youtube"></i>
-                <span>YouTube视频已设置</span>
-                <a href={preview} target="_blank" rel="noopener noreferrer">
-                  <i className="fas fa-external-link-alt"></i>
-                  查看视频
-                </a>
+              <h4>预览:</h4>
+              <div className="youtube-embed">
+                <iframe
+                  src={youtubeUrl.replace('watch?v=', 'embed/')}
+                  title="YouTube 视频预览"
+                  frameBorder="0"
+                  allowFullScreen
+                />
               </div>
-              <button type="button" className="remove-btn" onClick={removeVideo}>
-                <i className="fas fa-times"></i>
-                移除链接
-              </button>
             </div>
           )}
+        </div>
+      )}
+
+      {/* 状态消息 */}
+      {error && <div className="error-message">❌ {error}</div>}
+      {success && <div className="success-message">✅ {success}</div>}
+      
+      {/* 上传进度 */}
+      {uploading && (
+        <div className="upload-progress">
+          <div className="progress-text">正在处理...</div>
         </div>
       )}
     </div>

@@ -17,6 +17,8 @@ const TaskEditor = () => {
 
   // 视频信息状态（用于新建模式下保存视频）
   const [pendingVideo, setPendingVideo] = useState(null);
+  // 新增：用于编辑模式下同步最新视频
+  const [currentVideo, setCurrentVideo] = useState(null);
 
   // 调试：检查taskId的值
   console.log('TaskEditor Debug - taskId:', taskId, 'type:', typeof taskId);
@@ -88,6 +90,9 @@ const TaskEditor = () => {
           setPublishAt('');
         }
 
+        // 加载现有问题列表
+        await fetchExistingQuestions();
+
       } else {
         console.error('fetchTaskDetails - Failed:', response.status);
         setError('Failed to load task details');
@@ -97,6 +102,32 @@ const TaskEditor = () => {
       setError('Error loading task details');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 获取现有问题列表
+  const fetchExistingQuestions = async () => {
+    try {
+      const response = await fetch(`http://localhost:5001/api/tasks/${taskId}/questions`);
+      if (response.ok) {
+        const questionsData = await response.json();
+        console.log('Existing questions loaded:', questionsData);
+        // 将后端格式转换为前端格式
+        const formattedQuestions = questionsData.map(q => ({
+          id: q.id,
+          question: q.question,
+          option_a: q.options.A,
+          option_b: q.options.B,
+          option_c: q.options.C,
+          option_d: q.options.D,
+          correct_answer: q.correct_answer || 'A',
+          difficulty: q.difficulty || 'Easy',
+          score: q.score || 5
+        }));
+        setQuestions(formattedQuestions);
+      }
+    } catch (error) {
+      console.error('Error loading existing questions:', error);
     }
   };
 
@@ -185,25 +216,54 @@ const TaskEditor = () => {
 
       } else {
         // 编辑模式：更新任务信息
+        // 构建更新数据，包含现有的视频信息
+        const updateData = {
+          name: taskName,
+          introduction: taskIntroduction,
+          publish_at: publishAt ? new Date(publishAt).toISOString() : null
+        };
+
+        // 优先用currentVideo（刚刚上传/更换的视频），否则用task里的
+        if (currentVideo && currentVideo.type) {
+          updateData.video_type = currentVideo.type;
+          if (currentVideo.type === 'local' && currentVideo.path) {
+            updateData.video_path = currentVideo.path;
+            updateData.video_url = null;
+          } else if (currentVideo.type === 'youtube' && currentVideo.url) {
+            updateData.video_url = currentVideo.url;
+            updateData.video_path = null;
+          }
+        } else if (task && (task.video_type || task.video_url || task.video_path)) {
+          updateData.video_type = task.video_type;
+          if (task.video_type === 'local' && task.video_path) {
+            updateData.video_path = task.video_path;
+          } else if (task.video_type === 'youtube' && task.video_url) {
+            updateData.video_url = task.video_url;
+          }
+        }
+
         const updateResponse = await fetch(`http://localhost:5001/api/tasks/${taskId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            name: taskName,
-            introduction: taskIntroduction,
-            publish_at: publishAt ? new Date(publishAt).toISOString() : null
-          })
+          body: JSON.stringify(updateData)
         });
 
         if (!updateResponse.ok) {
           throw new Error('Failed to update task');
         }
+
+        // 更新本地task状态，包含返回的视频信息
+        const updateResult = await updateResponse.json();
+        if (updateResult.task) {
+          setTask(updateResult.task);
+        }
       }
 
-      // 批量创建问题（如果有）
-      if (questions.length > 0 && taskIdToUse) {
+      // 批量创建新问题（只创建没有ID的问题）
+      const newQuestions = questions.filter(q => !q.id);
+      if (newQuestions.length > 0 && taskIdToUse) {
         const user = JSON.parse(localStorage.getItem('user_data'));
         const questionsResponse = await fetch(`http://localhost:5001/api/tasks/${taskIdToUse}/questions/batch`, {
           method: 'POST',
@@ -211,7 +271,7 @@ const TaskEditor = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            questions: questions,
+            questions: newQuestions,
             created_by: user?.user_id
           })
         });
@@ -222,8 +282,13 @@ const TaskEditor = () => {
         }
       }
 
-      // 成功后返回teacher dashboard
-      navigate('/teacher');
+      // 保存成功提示
+      alert(`✅ ${isCreateMode ? '任务创建成功！' : '任务更新成功！'}`);
+      
+      // 延迟跳转，让用户看到成功信息
+      setTimeout(() => {
+        navigate('/teacher');
+      }, 1000);
 
     } catch (error) {
       console.error('Error saving task:', error);
@@ -373,8 +438,10 @@ const TaskEditor = () => {
                 if (isCreateMode && !currentTaskId) {
                   setPendingVideo(result);
                   console.log('Pending video saved for later:', result);
+                } else {
+                  // 编辑模式：同步最新视频到currentVideo
+                  setCurrentVideo(result);
                 }
-                // 编辑模式下，VideoUpload组件已经处理了保存
               }}
             />
             <div className="help-text">

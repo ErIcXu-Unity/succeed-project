@@ -1,186 +1,230 @@
-.video-player {
+/* 简洁的视频播放器样式 - 采用教师端预览风格 */
+.simple-video-player {
   margin: 1.5rem 0;
   background: white;
   border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   border: 1px solid #e1e5e9;
 }
 
-.video-header {
+/* 视频信息头部 */
+.video-info-header {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 1rem 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.video-info-header i {
+  font-size: 1.3rem;
+  color: #495057;
+}
+
+.video-info-header span {
   font-weight: 600;
+  color: #495057;
   font-size: 1.1rem;
 }
 
-.youtube-player .video-header {
-  background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
-}
-
-.video-header i {
-  font-size: 1.2rem;
-}
-
-.video-wrapper {
+/* YouTube 视频容器 */
+.youtube-video-container {
   position: relative;
   width: 100%;
-  background: #000;
-}
-
-/* YouTube 视频样式 */
-.youtube-player .video-wrapper {
-  position: relative;
-  width: 100%;
-  height: 0;
-  padding-bottom: 56.25%; /* 16:9 宽高比 */
-}
-
-.youtube-player iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border: none;
-}
-
-/* 本地视频样式 */
-.local-player video {
-  width: 100%;
-  height: auto;
-  display: block;
-  max-height: 500px;
-}
-
-.local-player video:focus {
-  outline: none;
-}
-
-/* 错误状态 */
-.error-player {
-  background: #f8d7da;
-  border-color: #f5c6cb;
-}
-
-.video-error {
-  padding: 2rem;
   text-align: center;
-  color: #721c24;
 }
 
-.video-error i {
+.youtube-video-container iframe {
+  max-width: 100%;
+  margin: 0 auto;
+  display: block;
+}
+
+/* 本地视频容器 */
+.local-video-container {
+  position: relative;
+  width: 100%;
+  text-align: center;
+}
+
+.local-video-container video {
+  margin: 0 auto;
+  display: block;
+}
+
+/* 无视频提示 */
+.no-video-notice {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #6c757d;
+}
+
+.no-video-notice i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #dee2e6;
+  display: block;
+}
+
+.no-video-notice p {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #6c757d;
+}
+
+/* 错误提示样式 */
+.video-error-simple {
+  text-align: center;
+  padding: 2rem;
+  color: #dc3545;
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 8px;
+}
+
+.video-error-simple i {
   font-size: 2rem;
   margin-bottom: 1rem;
   display: block;
 }
 
-.video-error p {
-  font-size: 1.1rem;
-  font-weight: 500;
+.video-error-simple p {
   margin: 0;
+  font-size: 1rem;
 }
 
-/* 加载状态 */
-.video-loading {
-  display: flex;
+/* 视频加载失败回退样式 */
+.video-error-fallback {
+  text-align: center;
+  padding: 2rem;
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 8px;
+  margin-top: 1rem;
+  color: #721c24;
+}
+
+.video-error-fallback i {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  display: block;
+  color: #dc3545;
+}
+
+.video-error-fallback p {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+}
+
+.video-error-fallback a {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 3rem;
-  background: #f8f9fa;
-  color: #6c757d;
+  gap: 0.5rem;
+  color: #007bff;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  background: #e3f2fd;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
-.video-loading i {
-  font-size: 2rem;
-  margin-right: 1rem;
+.video-error-fallback a:hover {
+  background: #bbdefb;
+  transform: translateY(-1px);
+}
+
+.video-error-fallback a i {
+  font-size: 1rem;
+  margin: 0;
+  display: inline;
+  color: #007bff;
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .video-player {
+  .simple-video-player {
     margin: 1rem 0;
+    padding: 1rem;
     border-radius: 8px;
   }
   
-  .video-header {
-    padding: 0.75rem 1rem;
+  .video-info-header {
     font-size: 1rem;
   }
   
-  .video-header i {
-    font-size: 1rem;
+  .video-info-header i {
+    font-size: 1.1rem;
   }
   
-  .local-player video {
-    max-height: 300px;
+  .youtube-video-container iframe {
+    height: 300px !important;
+  }
+  
+  .local-video-container video {
+    max-width: 100% !important;
+    max-height: 300px !important;
+  }
+  
+  .no-video-notice {
+    padding: 2rem 1rem;
+  }
+  
+  .no-video-notice i {
+    font-size: 2rem;
   }
 }
 
 @media (max-width: 480px) {
-  .video-header {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.9rem;
+  .simple-video-player {
+    border-radius: 6px;
   }
   
-  .video-error {
-    padding: 1.5rem;
+  .youtube-video-container iframe {
+    height: 250px !important;
   }
   
-  .video-error i {
-    font-size: 1.5rem;
+  .local-video-container video {
+    max-height: 250px !important;
   }
-}
-
-/* 动画效果 */
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.video-player {
-  animation: slideIn 0.4s ease-out;
 }
 
 /* 悬停效果 */
-.video-player:hover {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
+.simple-video-player:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
   transition: all 0.3s ease;
 }
 
-/* 视频控件自定义 */
-.local-player video::-webkit-media-controls-panel {
-  background-color: rgba(0, 0, 0, 0.8);
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .simple-video-player {
+    background: #1f2937;
+    border-color: #374151;
+    color: #f9fafb;
+  }
+  
+  .video-info-header {
+    border-bottom-color: #4b5563;
+  }
+  
+  .video-info-header i,
+  .video-info-header span {
+    color: #f9fafb;
+  }
+  
+  .no-video-notice {
+    color: #9ca3af;
+  }
+  
+  .no-video-notice i {
+    color: #6b7280;
+  }
 }
 
-.local-player video::-webkit-media-controls-play-button {
-  background-color: #007bff;
-  border-radius: 50%;
-}
-
-/* 全屏样式 */
-.video-player:-webkit-full-screen {
-  width: 100%;
-  height: 100%;
-}
-
-.video-player:-moz-full-screen {
-  width: 100%;
-  height: 100%;
-}
-
-.video-player:fullscreen {
-  width: 100%;
-  height: 100%;
+/* 平滑动画 */
+.simple-video-player * {
+  transition: all 0.2s ease;
 } 

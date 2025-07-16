@@ -298,6 +298,7 @@ def get_task_detail(task_id):
     if task.video_type:
         result['video_type'] = task.video_type
         if task.video_type == 'local' and task.video_path:
+            result['video_path'] = task.video_path
             result['video_url'] = f"/uploads/videos/{task.video_path}"
         elif task.video_type == 'youtube' and task.video_url:
             result['video_url'] = task.video_url
@@ -324,16 +325,44 @@ def update_task(task_id):
         else:
             task.publish_at = None
     
+    # 处理视频相关字段 - 确保不会丢失现有的视频信息
+    # 只有在明确提供视频信息时才更新
+    if 'video_type' in data:
+        task.video_type = data['video_type']
+        if data['video_type'] == 'local' and 'video_path' in data:
+            task.video_path = data['video_path']
+            task.video_url = None  # 清除 YouTube 链接
+        elif data['video_type'] == 'youtube' and 'video_url' in data:
+            task.video_url = data['video_url']
+            task.video_path = None  # 清除本地视频路径
+        elif data['video_type'] is None:
+            # 清除所有视频信息
+            task.video_type = None
+            task.video_path = None
+            task.video_url = None
+    
     try:
         db.session.commit()
+        
+        # 构建返回的 task 信息，包含视频信息
+        task_response = {
+            'id': task.id,
+            'name': task.name,
+            'introduction': task.introduction,
+            'publish_at': task.publish_at.isoformat() if task.publish_at else None
+        }
+        
+        # 添加视频信息到响应中
+        if task.video_type:
+            task_response['video_type'] = task.video_type
+            if task.video_type == 'local' and task.video_path:
+                task_response['video_url'] = f"/uploads/videos/{task.video_path}"
+            elif task.video_type == 'youtube' and task.video_url:
+                task_response['video_url'] = task.video_url
+        
         return jsonify({
             'message': 'Task updated successfully',
-            'task': {
-                'id': task.id,
-                'name': task.name,
-                'introduction': task.introduction,
-                'publish_at': task.publish_at.isoformat() if task.publish_at else None
-            }
+            'task': task_response
         }), 200
     except Exception as e:
         db.session.rollback()
@@ -885,7 +914,7 @@ def upload_task_video(task_id):
         # 更新数据库
         task.video_path = filename
         task.video_type = 'local'
-        task.video_url = None  # 清除 YouTube 链接
+        task.video_url = f'/uploads/videos/{filename}'  # 设置本地视频访问路径
         db.session.commit()
         
         return jsonify({
@@ -931,6 +960,42 @@ def save_youtube_url(task_id):
 def uploaded_video(filename):
     """提供视频文件访问服务"""
     return send_from_directory(app.config['VIDEO_UPLOAD_FOLDER'], filename)
+
+@app.route('/api/tasks/<int:task_id>/video', methods=['DELETE'])
+def delete_task_video(task_id):
+    """删除任务的视频"""
+    task = Task.query.get_or_404(task_id)
+    
+    try:
+        # 如果是本地视频，删除文件
+        if task.video_type == 'local' and task.video_path:
+            video_file_path = os.path.join(app.config['VIDEO_UPLOAD_FOLDER'], os.path.basename(task.video_path))
+            if os.path.exists(video_file_path):
+                os.remove(video_file_path)
+                print(f"Deleted video file: {video_file_path}")
+        
+        # 清除数据库中的视频信息
+        task.video_path = None
+        task.video_url = None
+        task.video_type = None
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Video deleted successfully',
+            'task': {
+                'id': task.id,
+                'name': task.name,
+                'video_path': task.video_path,
+                'video_url': task.video_url,
+                'video_type': task.video_type
+            }
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error deleting video: {e}")
+        return jsonify({'error': 'Failed to delete video'}), 500
 
 
 # Student Profile and Achievement Routes

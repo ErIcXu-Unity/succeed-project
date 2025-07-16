@@ -55,6 +55,12 @@ const QuestionCreateModal = ({ isOpen, onClose, onSubmit, taskId }) => {
         formDataToSend.append(key, formData[key]);
       });
       
+      // 添加当前用户ID
+      const user = JSON.parse(localStorage.getItem('user_data'));
+      if (user && user.user_id) {
+        formDataToSend.append('created_by', user.user_id);
+      }
+      
       // 添加图片文件（如果有）
       if (selectedImage) {
         formDataToSend.append('image', selectedImage);

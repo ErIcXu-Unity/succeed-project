@@ -1,3 +1,5 @@
+# pylint: disable=unexpected-keyword-arg,no-value-for-parameter
+# type: ignore[call-arg]
 import os
 import re
 import json

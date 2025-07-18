@@ -9,6 +9,9 @@ const TeacherDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState(null);
 
   const stats = {
     totalGames: 12,
@@ -23,7 +26,11 @@ const TeacherDashboard = () => {
 
   const fetchTasks = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/tasks');
+      //const response = await fetch('http://localhost:5000/api/tasks');
+      const user = JSON.parse(localStorage.getItem('user_data'));
+      const role = user?.role === 'tea' ? 'tea' : 'stu';
+      const response = await fetch(`http://localhost:5000/api/tasks?role=${role}`);
+
       if (response.ok) {
         const data = await response.json();
         setTasks(data);
@@ -43,6 +50,47 @@ const TeacherDashboard = () => {
 
   const editGame = (taskId) => {
     navigate(`/teacher/tasks/${taskId}/edit`);
+  };
+
+  const createNewTask = () => {
+    navigate('/teacher/tasks/new');
+  };
+
+  const confirmDeleteTask = (task) => {
+    setTaskToDelete(task);
+    setShowDeleteConfirm(true);
+  };
+
+  const deleteTask = async () => {
+    if (!taskToDelete) return;
+
+    setDeleting(true);
+    try {
+      const response = await fetch(`http://localhost:5000/api/tasks/${taskToDelete.id}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        // 删除成功，刷新任务列表
+        await fetchTasks();
+        alert(`Task "${taskToDelete.name}" deleted successfully!`);
+      } else {
+        const errorData = await response.json();
+        alert(`Failed to delete task: ${errorData.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      alert('Error deleting task. Please try again.');
+    } finally {
+      setDeleting(false);
+      setShowDeleteConfirm(false);
+      setTaskToDelete(null);
+    }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteConfirm(false);
+    setTaskToDelete(null);
   };
 
   const createQuestion = (taskId) => {
@@ -80,6 +128,14 @@ const TeacherDashboard = () => {
         <div className="stat-box">Avg Completion: {stats.avgCompletion}%</div>
       </div>
 
+      {/* 新建任务按钮 */}
+      <div className="create-task-section">
+        <button className="create-task-btn" onClick={createNewTask}>
+          <i className="fas fa-plus-circle"></i>
+          Create New Task
+        </button>
+      </div>
+
       <div className="card-container">
         {tasks.map((task) => (
           <div key={task.id} className="card">
@@ -95,10 +151,53 @@ const TeacherDashboard = () => {
               <button className="create-btn" onClick={() => createQuestion(task.id)}>
                 <i className="fas fa-plus"></i> Add Question
               </button>
+              <button className="delete-btn" onClick={() => confirmDeleteTask(task)}>
+                <i className="fas fa-trash"></i> Delete
+              </button>
             </div>
           </div>
         ))}
       </div>
+
+      {/* 删除确认对话框 */}
+      {showDeleteConfirm && (
+        <div className="delete-confirm-overlay">
+          <div className="delete-confirm-modal">
+            <h3>Confirm Delete</h3>
+            <p>
+              Are you sure you want to delete the task "{taskToDelete?.name}"?
+              <br />
+              This will permanently remove all questions, student results, and progress data.
+            </p>
+            <div className="delete-confirm-buttons">
+              <button
+                className="btn btn-secondary"
+                onClick={cancelDelete}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-danger"
+                onClick={deleteTask}
+                disabled={deleting}
+              >
+                {deleting ? (
+                  <>
+                    <i className="fas fa-spinner fa-spin"></i>
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <i className="fas fa-trash"></i>
+                    Delete Task
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 问题创建模态框 */}
       <QuestionCreateModal

@@ -26,7 +26,7 @@ function StudentAchievements() {
       console.log('Fetching profile for user:', user.user_id);
 
       // 获取学生档案信息
-      const profileResponse = await fetch(`http://localhost:5000/api/students/${user.user_id}/profile`);
+              const profileResponse = await fetch(`http://localhost:5001/api/students/${user.user_id}/profile`);
       console.log('Profile response status:', profileResponse.status);
       
       if (profileResponse.ok) {
@@ -42,7 +42,7 @@ function StudentAchievements() {
       console.log('Fetching achievements for user:', user.user_id);
 
       // 获取学生成就信息  
-      const achievementsResponse = await fetch(`http://localhost:5000/api/students/${user.user_id}/achievements`);
+              const achievementsResponse = await fetch(`http://localhost:5001/api/students/${user.user_id}/achievements`);
       console.log('Achievements response status:', achievementsResponse.status);
       
       if (achievementsResponse.ok) {

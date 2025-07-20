@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import VideoUpload from './VideoUpload';
+import IntegratedQuestionModal from './IntegratedQuestionModal';
+import QuestionPreview from './QuestionPreview';
 import './TaskEditor.css';
 
 const TaskEditor = () => {
@@ -14,16 +17,24 @@ const TaskEditor = () => {
   const [error, setError] = useState('');
   const [publishAt, setPublishAt] = useState('');
 
-  // 调试：检查taskId的值
+  // 视频信息状态（用于新建模式下保存视频）
+  const [pendingVideo, setPendingVideo] = useState(null);
+  // 新增：用于编辑模式下同步最新视频
+  const [currentVideo, setCurrentVideo] = useState(null);
+  
+  // 问题创建模态框状态
+  const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
+
+  // 调试：检查 taskId 的值
   console.log('TaskEditor Debug - taskId:', taskId, 'type:', typeof taskId);
 
-  // 判断是否为新建模式 (taskId为'new'或undefined时都视为新建模式)
+  // 判断是否为新建模式 (taskId 为'new'或 undefined 时都视为新建模式)
   const isCreateMode = taskId === 'new' || taskId === undefined;
 
-  // 调试：检查isCreateMode
+  // 调试：检查 isCreateMode
   console.log('TaskEditor Debug - isCreateMode:', isCreateMode);
 
-  // 当前任务ID（新建模式下为null，创建后获得）
+  // 当前任务 ID（新建模式下为 null，创建后获得）
   const [currentTaskId, setCurrentTaskId] = useState(isCreateMode ? null : taskId);
 
   // 初始化空问题模板
@@ -45,7 +56,7 @@ const TaskEditor = () => {
     setError('');
 
     if (isCreateMode) {
-      // 新建模式：直接设置loading为false
+      // 新建模式：直接设置 loading 为 false
       console.log('TaskEditor - Create mode detected');
       setLoading(false);
     } else {
@@ -66,7 +77,7 @@ const TaskEditor = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/tasks/${taskId}`);
+              const response = await fetch(`http://localhost:5001/api/tasks/${taskId}`);
       console.log('fetchTaskDetails - Response:', response.status);
 
       if (response.ok) {
@@ -84,6 +95,9 @@ const TaskEditor = () => {
           setPublishAt('');
         }
 
+        // 加载现有问题列表
+        await fetchExistingQuestions();
+
       } else {
         console.error('fetchTaskDetails - Failed:', response.status);
         setError('Failed to load task details');
@@ -96,21 +110,108 @@ const TaskEditor = () => {
     }
   };
 
-  const addQuestion = () => {
-    if (questions.length < 5) {
-      setQuestions([...questions, createEmptyQuestion()]);
+  // 获取现有问题列表
+  const fetchExistingQuestions = async () => {
+    try {
+      const response = await fetch(`http://localhost:5001/api/tasks/${taskId}/questions`);
+      if (response.ok) {
+        const questionsData = await response.json();
+        console.log('Existing questions loaded:', questionsData);
+        // 保持完整的问题数据，支持所有问题类型
+        const formattedQuestions = questionsData.map(q => ({
+          id: q.id,
+          question: q.question,
+          question_type: q.question_type || 'single_choice',
+          question_data: q.question_data ? JSON.parse(q.question_data) : null,
+          // Legacy single choice fields
+          option_a: q.options?.A || q.option_a,
+          option_b: q.options?.B || q.option_b,
+          option_c: q.options?.C || q.option_c,
+          option_d: q.options?.D || q.option_d,
+          correct_answer: q.correct_answer || 'A',
+          difficulty: q.difficulty || 'Easy',
+          score: q.score || 5,
+          description: q.description,
+          image_url: q.image_url,
+          video_type: q.video_type,
+          video_url: q.video_url
+        }));
+        setQuestions(formattedQuestions);
+      }
+    } catch (error) {
+      console.error('Error loading existing questions:', error);
     }
   };
 
-  const removeQuestion = (index) => {
-    const newQuestions = questions.filter((_, i) => i !== index);
-    setQuestions(newQuestions);
+  const addQuestion = () => {
+    if (questions.length < 5) {
+      setIsQuestionModalOpen(true);
+    }
   };
 
-  const updateQuestion = (index, field, value) => {
-    const newQuestions = [...questions];
-    newQuestions[index][field] = value;
-    setQuestions(newQuestions);
+  const removeQuestion = async (questionId) => {
+    if (window.confirm('确定要删除这个问题吗？')) {
+      try {
+        // 如果问题有 ID，说明已经保存到数据库，需要调用删除 API
+        if (questionId) {
+          const response = await fetch(`http://localhost:5001/api/questions/${questionId}`, {
+            method: 'DELETE'
+          });
+          
+          if (!response.ok) {
+            throw new Error('删除问题失败');
+          }
+        }
+        
+        // 重新加载问题列表
+        await fetchExistingQuestions();
+        
+      } catch (error) {
+        console.error('删除问题时出错：', error);
+        alert('删除问题失败，请重试');
+      }
+    }
+  };
+
+  const handleQuestionCreated = (result) => {
+    console.log('新问题创建成功：', result);
+    // 重新加载问题列表
+    fetchExistingQuestions();
+    alert('问题创建成功！');
+  };
+
+  const handleQuestionModalClose = () => {
+    setIsQuestionModalOpen(false);
+  };
+
+  // 保存待处理的视频
+  const savePendingVideo = async (taskId, videoInfo) => {
+    try {
+      if (videoInfo.type === 'local') {
+        // 本地视频需要重新上传（因为之前没有真实的 taskId）
+        console.log('Local video needs to be re-uploaded with real taskId');
+        // 这种情况下，用户需要重新选择文件，所以我们暂时跳过
+        // 实际上，这种情况很复杂，需要保存文件数据
+      } else if (videoInfo.type === 'youtube') {
+        // YouTube 链接可以直接保存
+        const response = await fetch(`http://localhost:5001/api/tasks/${taskId}/youtube`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ youtube_url: videoInfo.url }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Failed to save YouTube video:', errorData);
+        } else {
+          console.log('YouTube video saved successfully');
+        }
+      }
+    } catch (error) {
+      console.error('Error saving pending video:', error);
+    }
   };
 
   const saveTask = async () => {
@@ -122,7 +223,7 @@ const TaskEditor = () => {
 
       if (isCreateMode) {
         // 新建模式：先创建任务
-        const createResponse = await fetch('http://localhost:5000/api/tasks', {
+        const createResponse = await fetch('http://localhost:5001/api/tasks', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -143,35 +244,70 @@ const TaskEditor = () => {
         taskIdToUse = createData.task.id;
         setCurrentTaskId(taskIdToUse);
 
+        // 新建模式：如果有待保存的视频，现在保存它
+        if (pendingVideo) {
+          console.log('Saving pending video with taskId:', taskIdToUse);
+          await savePendingVideo(taskIdToUse, pendingVideo);
+        }
+
       } else {
         // 编辑模式：更新任务信息
-        const updateResponse = await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
+        // 构建更新数据，包含现有的视频信息
+        const updateData = {
+          name: taskName,
+          introduction: taskIntroduction,
+          publish_at: publishAt ? new Date(publishAt).toISOString() : null
+        };
+
+        // 优先用 currentVideo（刚刚上传/更换的视频），否则用 task 里的
+        if (currentVideo && currentVideo.type) {
+          updateData.video_type = currentVideo.type;
+          if (currentVideo.type === 'local' && currentVideo.path) {
+            updateData.video_path = currentVideo.path;
+            updateData.video_url = null;
+          } else if (currentVideo.type === 'youtube' && currentVideo.url) {
+            updateData.video_url = currentVideo.url;
+            updateData.video_path = null;
+          }
+        } else if (task && (task.video_type || task.video_url || task.video_path)) {
+          updateData.video_type = task.video_type;
+          if (task.video_type === 'local' && task.video_path) {
+            updateData.video_path = task.video_path;
+          } else if (task.video_type === 'youtube' && task.video_url) {
+            updateData.video_url = task.video_url;
+          }
+        }
+
+        const updateResponse = await fetch(`http://localhost:5001/api/tasks/${taskId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            name: taskName,
-            introduction: taskIntroduction,
-            publish_at: publishAt ? new Date(publishAt).toISOString() : null
-          })
+          body: JSON.stringify(updateData)
         });
 
         if (!updateResponse.ok) {
           throw new Error('Failed to update task');
         }
+
+        // 更新本地 task 状态，包含返回的视频信息
+        const updateResult = await updateResponse.json();
+        if (updateResult.task) {
+          setTask(updateResult.task);
+        }
       }
 
-      // 批量创建问题（如果有）
-      if (questions.length > 0 && taskIdToUse) {
+      // 批量创建新问题（只创建没有 ID 的问题）
+      const newQuestions = questions.filter(q => !q.id);
+      if (newQuestions.length > 0 && taskIdToUse) {
         const user = JSON.parse(localStorage.getItem('user_data'));
-        const questionsResponse = await fetch(`http://localhost:5000/api/tasks/${taskIdToUse}/questions/batch`, {
+        const questionsResponse = await fetch(`http://localhost:5001/api/tasks/${taskIdToUse}/questions/batch`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            questions: questions,
+            questions: newQuestions,
             created_by: user?.user_id
           })
         });
@@ -182,8 +318,13 @@ const TaskEditor = () => {
         }
       }
 
-      // 成功后返回teacher dashboard
-      navigate('/teacher');
+      // 保存成功提示
+      alert(`✅ ${isCreateMode ? 'Task created successfully!' : 'Task updated successfully!'}`);
+      
+      // 延迟跳转，让用户看到成功信息
+      setTimeout(() => {
+        navigate('/teacher');
+      }, 1000);
 
     } catch (error) {
       console.error('Error saving task:', error);
@@ -207,13 +348,18 @@ const TaskEditor = () => {
     // 验证问题
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i];
-      if (!q.question.trim()) {
+      if (!(q.question || '').trim()) {
         setError(`Question ${i + 1}: Question text is required`);
         return false;
       }
-      if (!q.option_a.trim() || !q.option_b.trim() || !q.option_c.trim() || !q.option_d.trim()) {
-        setError(`Question ${i + 1}: All options are required`);
-        return false;
+      
+      // 只验证单选题的选项，其他类型的问题可能没有这些字段
+      if (q.question_type === 'single_choice' || !q.question_type) {
+        if (!(q.option_a || '').trim() || !(q.option_b || '').trim() || 
+            !(q.option_c || '').trim() || !(q.option_d || '').trim()) {
+          setError(`Question ${i + 1}: All options are required for single choice questions`);
+          return false;
+        }
       }
     }
 
@@ -321,6 +467,28 @@ const TaskEditor = () => {
               Students will only see this task after this time. Leave blank to make it visible immediately.
             </div>
           </div>
+
+          <div className="form-group">
+            <label>Task Video (Optional)</label>
+            <VideoUpload 
+              taskId={currentTaskId || taskId}
+              onVideoUploaded={(result) => {
+                console.log('Video uploaded:', result);
+                
+                // 如果是新建模式，保存视频信息待稍后处理
+                if (isCreateMode && !currentTaskId) {
+                  setPendingVideo(result);
+                  console.log('Pending video saved for later:', result);
+                } else {
+                  // 编辑模式：同步最新视频到 currentVideo
+                  setCurrentVideo(result);
+                }
+              }}
+            />
+            <div className="help-text">
+              Upload a video file or provide a YouTube link to help students understand the task better.
+            </div>
+          </div>
         </section>
 
         {/* Questions Section */}
@@ -345,11 +513,11 @@ const TaskEditor = () => {
           ) : (
             <div className="questions-list">
               {questions.map((question, index) => (
-                <div key={index} className="question-card">
+                <div key={question.id || index} className="question-card">
                   <div className="question-header">
                     <h3>Question {index + 1}</h3>
                     <button
-                      onClick={() => removeQuestion(index)}
+                      onClick={() => removeQuestion(question.id)}
                       className="remove-btn"
                       title="Remove question"
                     >
@@ -357,104 +525,21 @@ const TaskEditor = () => {
                     </button>
                   </div>
 
-                  <div className="form-group">
-                    <label>Question Text</label>
-                    <textarea
-                      value={question.question}
-                      onChange={(e) => updateQuestion(index, 'question', e.target.value)}
-                      placeholder="Enter your question here..."
-                      className="form-textarea"
-                      rows="3"
-                    />
-                  </div>
-
-                  <div className="options-grid">
-                    <div className="form-group">
-                      <label>Option A</label>
-                      <input
-                        type="text"
-                        value={question.option_a}
-                        onChange={(e) => updateQuestion(index, 'option_a', e.target.value)}
-                        placeholder="Option A"
-                        className="form-input"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Option B</label>
-                      <input
-                        type="text"
-                        value={question.option_b}
-                        onChange={(e) => updateQuestion(index, 'option_b', e.target.value)}
-                        placeholder="Option B"
-                        className="form-input"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Option C</label>
-                      <input
-                        type="text"
-                        value={question.option_c}
-                        onChange={(e) => updateQuestion(index, 'option_c', e.target.value)}
-                        placeholder="Option C"
-                        className="form-input"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Option D</label>
-                      <input
-                        type="text"
-                        value={question.option_d}
-                        onChange={(e) => updateQuestion(index, 'option_d', e.target.value)}
-                        placeholder="Option D"
-                        className="form-input"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="question-settings">
-                    <div className="form-group">
-                      <label>Correct Answer</label>
-                      <select
-                        value={question.correct_answer}
-                        onChange={(e) => updateQuestion(index, 'correct_answer', e.target.value)}
-                        className="form-select"
-                      >
-                        <option value="A">A</option>
-                        <option value="B">B</option>
-                        <option value="C">C</option>
-                        <option value="D">D</option>
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label>Difficulty</label>
-                      <select
-                        value={question.difficulty}
-                        onChange={(e) => updateQuestion(index, 'difficulty', e.target.value)}
-                        className="form-select"
-                      >
-                        <option value="Easy">Easy</option>
-                        <option value="Medium">Medium</option>
-                        <option value="Hard">Hard</option>
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label>Points</label>
-                      <input
-                        type="number"
-                        value={question.score}
-                        onChange={(e) => updateQuestion(index, 'score', parseInt(e.target.value) || 0)}
-                        min="1"
-                        max="10"
-                        className="form-input"
-                      />
-                    </div>
-                  </div>
+                  <QuestionPreview question={question} />
                 </div>
               ))}
             </div>
           )}
         </section>
       </div>
+      
+      {/* 问题创建模态框 */}
+      <IntegratedQuestionModal
+        isOpen={isQuestionModalOpen}
+        onClose={handleQuestionModalClose}
+        onSubmit={handleQuestionCreated}
+        taskId={currentTaskId || taskId}
+      />
     </div>
   );
 };

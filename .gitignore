@@ -3,3 +3,24 @@ __pycache__
 backend/.env
 backend/venv/
 
+# Build directory
+build/
+
+# Upload directories (videos, images, etc.)
+backend/uploads/
+
+# Video files
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+
+# System files
+.DS_Store
+*/.DS_Store
+
+# Test files
+test_*.mp4
+test_*.mov
+

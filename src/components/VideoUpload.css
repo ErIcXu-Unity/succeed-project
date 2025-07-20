@@ -1,0 +1,464 @@
+.video-upload-container {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid #e1e5e9;
+  border-radius: 8px;
+  background: #f8f9fa;
+}
+
+/* 上传类型选择器 */
+.upload-type-selector {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+}
+
+.upload-type-selector label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  color: #495057;
+  background: transparent;
+}
+
+.upload-type-selector label:hover {
+  background: #e9ecef;
+}
+
+.upload-type-selector label.active {
+  background: #007bff;
+  color: white;
+}
+
+.upload-type-selector input[type="radio"] {
+  display: none;
+}
+
+.upload-type-selector i {
+  font-size: 1.1rem;
+}
+
+/* 本地文件上传区域 */
+.local-upload-section {
+  margin-top: 1rem;
+}
+
+.upload-area {
+  border: 2px dashed #ced4da;
+  border-radius: 8px;
+  padding: 3rem 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.upload-area:hover {
+  border-color: #007bff;
+  background: #f8f9ff;
+}
+
+.upload-area.drag-active {
+  border-color: #007bff;
+  background: #e3f2fd;
+  transform: scale(1.02);
+}
+
+.upload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.upload-icon {
+  font-size: 3rem;
+  color: #6c757d;
+  margin-bottom: 1rem;
+}
+
+.upload-area:hover .upload-icon {
+  color: #007bff;
+}
+
+.upload-hint {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-top: 0.5rem;
+}
+
+/* YouTube 上传区域 */
+.youtube-upload-section {
+  margin-top: 1rem;
+}
+
+.youtube-upload-section .form-group {
+  margin-bottom: 0;
+}
+
+.youtube-upload-section label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #495057;
+}
+
+.youtube-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.youtube-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.youtube-save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.youtube-save-btn:hover:not(:disabled) {
+  background: #c82333;
+  transform: translateY(-1px);
+}
+
+.youtube-save-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+/* 错误消息 */
+.upload-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f8d7da;
+  color: #721c24;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-top: 1rem;
+  border: 1px solid #f5c6cb;
+}
+
+/* 上传进度 */
+.upload-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #d1ecf1;
+  color: #0c5460;
+  border-radius: 4px;
+  margin-top: 1rem;
+  border: 1px solid #bee5eb;
+}
+
+.upload-progress i {
+  color: #17a2b8;
+}
+
+/* 视频预览 */
+.video-preview {
+  margin-top: 1rem;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #dee2e6;
+}
+
+.local-video-preview {
+  position: relative;
+}
+
+.local-video-preview video {
+  width: 100%;
+  display: block;
+}
+
+.youtube-preview {
+  padding: 1rem;
+}
+
+.youtube-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.youtube-info i {
+  font-size: 1.5rem;
+  color: #dc3545;
+}
+
+.youtube-info span {
+  font-weight: 500;
+  color: #495057;
+}
+
+.youtube-info a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #007bff;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.youtube-info a:hover {
+  text-decoration: underline;
+}
+
+/* 移除按钮 */
+.remove-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  transition: all 0.3s ease;
+}
+
+.youtube-preview .remove-btn {
+  position: relative;
+  top: auto;
+  right: auto;
+  background: #dc3545;
+  border-radius: 4px;
+  width: auto;
+  height: auto;
+  padding: 0.5rem 1rem;
+  gap: 0.5rem;
+}
+
+.remove-btn:hover {
+  background: rgba(220, 53, 69, 0.9);
+  transform: scale(1.1);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .upload-type-selector {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .upload-area {
+    padding: 2rem 1rem;
+  }
+  
+  .upload-icon {
+    font-size: 2rem;
+  }
+  
+  .youtube-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.video-preview {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.upload-error {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.upload-progress {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* 新建模式提示样式 */
+.mode-notice {
+  background-color: #e7f3ff;
+  border: 1px solid #b3d9ff;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 15px;
+  color: #1565c0;
+  font-size: 14px;
+}
+
+.create-mode-warning {
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 10px;
+  color: #856404;
+  font-size: 14px;
+}
+
+/* 禁用状态样式 */
+.drop-zone.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.drop-zone.disabled .drop-zone-content {
+  pointer-events: none;
+}
+
+/* 当前视频显示样式 */
+.current-video {
+  background: white;
+  border: 2px solid #28a745;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.1);
+}
+
+.current-video h4 {
+  margin: 0 0 1rem 0;
+  color: #28a745;
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.current-video-info {
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.video-info-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.video-icon {
+  font-size: 1.2rem;
+}
+
+.video-title {
+  font-weight: 600;
+  color: #495057;
+}
+
+.video-details {
+  margin-bottom: 1rem;
+}
+
+.video-details p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.video-details strong {
+  color: #495057;
+}
+
+.video-preview {
+  margin-top: 1rem;
+}
+
+.video-preview h5 {
+  margin: 0 0 0.5rem 0;
+  color: #495057;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.video-preview video {
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.youtube-embed iframe {
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.video-actions {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+}
+
+.remove-video-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.remove-video-btn:hover {
+  background: #c82333;
+  transform: translateY(-1px);
+}
+
+.video-error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+} 

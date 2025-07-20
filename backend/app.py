@@ -8,11 +8,11 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
 
-load_dotenv('.env')  # 明确指定.env文件路径
+load_dotenv('.env')  # 明确指定.env 文件路径
 
 app = Flask(__name__)
 
-# 配置CORS允许跨域访问
+# 配置 CORS 允许跨域访问
 CORS(app, resources={
     r"/*": {
         "origins": ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001", "http://127.0.0.1:3001"],
@@ -24,6 +24,7 @@ CORS(app, resources={
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads', 'questions')
+app.config['VIDEO_UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads', 'videos')
 
 db = SQLAlchemy(app)
 
@@ -53,6 +54,9 @@ class Task(db.Model):
     name         = db.Column(db.String(80), unique=True, nullable=False)
     introduction = db.Column(db.Text, nullable=True)  # 任务介绍描述
     image_path   = db.Column(db.String(255), nullable=True)  # 任务背景图片
+    video_path   = db.Column(db.String(255), nullable=True)  # 本地视频文件路径
+    video_url    = db.Column(db.String(500), nullable=True)  # YouTube 链接
+    video_type   = db.Column(db.String(20), nullable=True)   # 'local' 或 'youtube'
     publish_at   = db.Column(db.DateTime, nullable=True) # 发布时间
 
 class Question(db.Model):
@@ -60,15 +64,27 @@ class Question(db.Model):
     id              = db.Column(db.Integer, primary_key=True)
     task_id         = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=False)
     question        = db.Column(db.Text, nullable=False)
-    option_a        = db.Column(db.String(255), nullable=False)
-    option_b        = db.Column(db.String(255), nullable=False)
-    option_c        = db.Column(db.String(255), nullable=False)
-    option_d        = db.Column(db.String(255), nullable=False)
-    correct_answer  = db.Column(db.String(1), nullable=False)
+    
+    # Question type and data
+    question_type   = db.Column(db.String(50), nullable=False, default='single_choice')  # 问题类型
+    question_data   = db.Column(db.Text, nullable=True)  # JSON格式存储问题特定数据
+    
+    # Legacy single choice fields (kept for backward compatibility)
+    option_a        = db.Column(db.String(255), nullable=True)
+    option_b        = db.Column(db.String(255), nullable=True)
+    option_c        = db.Column(db.String(255), nullable=True)
+    option_d        = db.Column(db.String(255), nullable=True)
+    correct_answer  = db.Column(db.String(1), nullable=True)
+    
     difficulty      = db.Column(db.String(20), nullable=False)
     score           = db.Column(db.Integer, nullable=False)
     image_path      = db.Column(db.String(255), nullable=True)  # 图片文件路径
     image_filename  = db.Column(db.String(255), nullable=True)  # 原始文件名
+    video_path      = db.Column(db.String(255), nullable=True)  # 视频文件路径
+    video_filename  = db.Column(db.String(255), nullable=True)  # 原始视频文件名
+    video_url       = db.Column(db.String(500), nullable=True)  # YouTube 视频链接
+    video_type      = db.Column(db.String(20), nullable=True)   # 'local' 或 'youtube'
+    description     = db.Column(db.Text, nullable=True)         # 文字描述/解释
     created_by      = db.Column(db.String(20), db.ForeignKey('teachers.teacher_id'), nullable=True)  # 创建教师
     created_at      = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)  # 创建时间
 
@@ -117,7 +133,7 @@ class StudentTaskProcess(db.Model):
     task_id              = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=False)
     task_name            = db.Column(db.String(80), nullable=False)  # redundant field for easy access
     current_question_index = db.Column(db.Integer, nullable=False, default=0)  # 当前题目索引
-    answers_json         = db.Column(db.Text, nullable=True)  # JSON格式存储已选择的答案
+    answers_json         = db.Column(db.Text, nullable=True)  # JSON 格式存储已选择的答案
     saved_at             = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at           = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
@@ -150,7 +166,7 @@ def register():
     if exists:
         return jsonify({'error': 'student already exists'}), 409
 
-    hashed_pw = generate_password_hash(data['password'])
+    hashed_pw = generate_password_hash(data['password'], method='pbkdf2:sha256')
     student = Student(
         real_name  = data['real_name'],
         student_id = data['id_number'],
@@ -213,6 +229,15 @@ def get_tasks():
         }
         if t.image_path:
             task_data['image_url'] = f"/uploads/tasks/{t.image_path}"
+        
+        # 添加视频信息
+        if t.video_type:
+            task_data['video_type'] = t.video_type
+            if t.video_type == 'local' and t.video_path:
+                task_data['video_url'] = f"/uploads/videos/{t.video_path}"
+            elif t.video_type == 'youtube' and t.video_url:
+                task_data['video_url'] = t.video_url
+        
         result.append(task_data)
     return jsonify(result), 200
 
@@ -280,6 +305,16 @@ def get_task_detail(task_id):
     }
     if task.image_path:
         result['image_url'] = f"/uploads/tasks/{task.image_path}"
+    
+    # 添加视频信息
+    if task.video_type:
+        result['video_type'] = task.video_type
+        if task.video_type == 'local' and task.video_path:
+            result['video_path'] = task.video_path
+            result['video_url'] = f"/uploads/videos/{task.video_path}"
+        elif task.video_type == 'youtube' and task.video_url:
+            result['video_url'] = task.video_url
+    
     return jsonify(result), 200
 
 @app.route('/api/tasks/<int:task_id>', methods=['PUT'])
@@ -302,16 +337,44 @@ def update_task(task_id):
         else:
             task.publish_at = None
     
+    # 处理视频相关字段 - 确保不会丢失现有的视频信息
+    # 只有在明确提供视频信息时才更新
+    if 'video_type' in data:
+        task.video_type = data['video_type']
+        if data['video_type'] == 'local' and 'video_path' in data:
+            task.video_path = data['video_path']
+            task.video_url = None  # 清除 YouTube 链接
+        elif data['video_type'] == 'youtube' and 'video_url' in data:
+            task.video_url = data['video_url']
+            task.video_path = None  # 清除本地视频路径
+        elif data['video_type'] is None:
+            # 清除所有视频信息
+            task.video_type = None
+            task.video_path = None
+            task.video_url = None
+    
     try:
         db.session.commit()
+        
+        # 构建返回的 task 信息，包含视频信息
+        task_response = {
+            'id': task.id,
+            'name': task.name,
+            'introduction': task.introduction,
+            'publish_at': task.publish_at.isoformat() if task.publish_at else None
+        }
+        
+        # 添加视频信息到响应中
+        if task.video_type:
+            task_response['video_type'] = task.video_type
+            if task.video_type == 'local' and task.video_path:
+                task_response['video_url'] = f"/uploads/videos/{task.video_path}"
+            elif task.video_type == 'youtube' and task.video_url:
+                task_response['video_url'] = task.video_url
+        
         return jsonify({
             'message': 'Task updated successfully',
-            'task': {
-                'id': task.id,
-                'name': task.name,
-                'introduction': task.introduction,
-                'publish_at': task.publish_at.isoformat() if task.publish_at else None
-            }
+            'task': task_response
         }), 200
     except Exception as e:
         db.session.rollback()
@@ -366,18 +429,34 @@ def get_questions(task_id):
         question_data = {
             'id': q.id,
             'question': q.question,
+            'question_type': q.question_type or 'single_choice',
+            'question_data': q.question_data,
+            'correct_answer': q.correct_answer,
             'options': {
                 'A': q.option_a,
                 'B': q.option_b,
                 'C': q.option_c,
                 'D': q.option_d
             },
+            'option_a': q.option_a,
+            'option_b': q.option_b,
+            'option_c': q.option_c,
+            'option_d': q.option_d,
             'difficulty': q.difficulty,
-            'score': q.score
+            'score': q.score,
+            'description': q.description
         }
         # 添加图片路径（如果存在）
         if q.image_path:
             question_data['image_url'] = f"/uploads/questions/{q.image_path}"
+        
+        # 添加视频信息（如果存在）
+        if q.video_type == 'local' and q.video_path:
+            question_data['video_url'] = f"/uploads/videos/{q.video_path}"
+            question_data['video_type'] = 'local'
+        elif q.video_type == 'youtube' and q.video_url:
+            question_data['video_url'] = q.video_url
+            question_data['video_type'] = 'youtube'
         result.append(question_data)
     return jsonify(result), 200
 
@@ -496,10 +575,10 @@ def submit_task(task_id):
                 db.session.add(sa)
                 new_achievements.append({'id': perfect_score_achievement.id, 'name': perfect_score_achievement.name})
 
-    # 2. Fast Solver - 快速完成任务（设定10分钟内完成）
+    # 2. Fast Solver - 快速完成任务（设定 10 分钟内完成）
     if task_started_at and current_time:
         time_taken = (current_time - task_started_at).total_seconds() / 60  # 转换为分钟
-        if time_taken <= 10:  # 10分钟内完成
+        if time_taken <= 10:  # 10 分钟内完成
             fast_solver_achievement = Achievement.query.filter_by(name='Fast Solver').first()
             if fast_solver_achievement:
                 existing_achievement = StudentAchievement.query.filter_by(
@@ -518,7 +597,7 @@ def submit_task(task_id):
 
     db.session.commit()
 
-    # 3. Accuracy Master - 总体准确率达到90%以上（需要在commit后计算）
+    # 3. Accuracy Master - 总体准确率达到 90% 以上（需要在 commit 后计算）
     all_results = StudentTaskResult.query.filter_by(student_id=student_id).all()
     total_questions = 0
     total_correct = 0
@@ -725,6 +804,286 @@ def get_student_task_progress(student_id):
 
 # Question Management Routes
 
+@app.route('/api/tasks/<int:task_id>/questions', methods=['POST'])
+def create_single_question(task_id):
+    """创建单个问题（支持多种问题类型）"""
+    # 验证任务存在
+    task = Task.query.get_or_404(task_id)
+    
+    # 检查当前任务的问题数量
+    current_question_count = Question.query.filter_by(task_id=task_id).count()
+    if current_question_count >= 5:
+        return jsonify({'error': 'Maximum 5 questions allowed per task'}), 400
+    
+    try:
+        # 从表单数据获取基本字段
+        question_text = request.form.get('question')
+        question_type = request.form.get('question_type', 'single_choice')
+        difficulty = request.form.get('difficulty', 'Easy')
+        score = request.form.get('score', '3')
+        description = request.form.get('description', '')  # 文字描述
+        created_by = request.form.get('created_by')
+        
+        # 验证必填字段
+        if not question_text:
+            return jsonify({'error': 'Question text is required'}), 400
+        
+        # 验证分数
+        try:
+            score = int(score)
+        except ValueError:
+            return jsonify({'error': 'Score must be a number'}), 400
+        
+        # 根据问题类型验证和处理数据
+        question_data = {}
+        option_a = option_b = option_c = option_d = correct_answer = None
+        
+        if question_type == 'single_choice':
+            option_a = request.form.get('option_a')
+            option_b = request.form.get('option_b')
+            option_c = request.form.get('option_c')
+            option_d = request.form.get('option_d')
+            correct_answer = request.form.get('correct_answer', 'A')
+            
+            if not option_a or not option_b or not option_c or not option_d:
+                return jsonify({'error': 'All options are required for single choice questions'}), 400
+            if correct_answer.upper() not in ['A', 'B', 'C', 'D']:
+                return jsonify({'error': 'Correct answer must be A, B, C, or D'}), 400
+                
+        elif question_type == 'multiple_choice':
+            options = []
+            correct_answers = []
+            i = 0
+            while request.form.get(f'options[{i}]') is not None:
+                options.append(request.form.get(f'options[{i}]'))
+                i += 1
+            
+            # Parse correct_answers array
+            i = 0
+            while request.form.get(f'correct_answers[{i}]') is not None:
+                correct_answers.append(int(request.form.get(f'correct_answers[{i}]')))
+                i += 1
+            
+            if len(options) < 2:
+                return jsonify({'error': 'At least 2 options required for multiple choice questions'}), 400
+            if len(correct_answers) == 0:
+                return jsonify({'error': 'At least one correct answer required for multiple choice questions'}), 400
+                
+            question_data = {'options': options, 'correct_answers': correct_answers}
+            
+        elif question_type == 'fill_blank':
+            blank_answers = []
+            i = 0
+            while request.form.get(f'blank_answers[{i}]') is not None:
+                blank_answers.append(request.form.get(f'blank_answers[{i}]'))
+                i += 1
+            
+            if len(blank_answers) == 0:
+                return jsonify({'error': 'At least one blank answer required'}), 400
+                
+            question_data = {'blank_answers': blank_answers}
+            
+        elif question_type == 'puzzle_game':
+            puzzle_solution = request.form.get('puzzle_solution')
+            puzzle_fragments = []
+            i = 0
+            while request.form.get(f'puzzle_fragments[{i}]') is not None:
+                puzzle_fragments.append(request.form.get(f'puzzle_fragments[{i}]'))
+                i += 1
+            
+            if not puzzle_solution:
+                return jsonify({'error': 'Puzzle solution is required'}), 400
+            if len(puzzle_fragments) == 0:
+                return jsonify({'error': 'At least one puzzle fragment required'}), 400
+                
+            question_data = {'puzzle_solution': puzzle_solution, 'puzzle_fragments': puzzle_fragments}
+            
+        elif question_type == 'matching_task':
+            left_items = []
+            right_items = []
+            correct_matches = []
+            
+            i = 0
+            while request.form.get(f'left_items[{i}]') is not None:
+                left_items.append(request.form.get(f'left_items[{i}]'))
+                i += 1
+                
+            i = 0
+            while request.form.get(f'right_items[{i}]') is not None:
+                right_items.append(request.form.get(f'right_items[{i}]'))
+                i += 1
+            
+            # Parse correct_matches array of objects
+            i = 0
+            while request.form.get(f'correct_matches[{i}][left]') is not None:
+                left_idx = int(request.form.get(f'correct_matches[{i}][left]'))
+                right_idx = int(request.form.get(f'correct_matches[{i}][right]'))
+                correct_matches.append({'left': left_idx, 'right': right_idx})
+                i += 1
+            
+            if len(left_items) < 2 or len(right_items) < 2:
+                return jsonify({'error': 'At least 2 items required on each side for matching tasks'}), 400
+            if len(correct_matches) == 0:
+                return jsonify({'error': 'At least one correct match required'}), 400
+                
+            question_data = {'left_items': left_items, 'right_items': right_items, 'correct_matches': correct_matches}
+            
+        elif question_type == 'error_spotting':
+            error_spots = []
+            i = 0
+            while request.form.get(f'error_spots[{i}][x]') is not None:
+                x = int(request.form.get(f'error_spots[{i}][x]'))
+                y = int(request.form.get(f'error_spots[{i}][y]'))
+                desc = request.form.get(f'error_spots[{i}][description]')
+                error_spots.append({'x': x, 'y': y, 'description': desc})
+                i += 1
+            
+            if len(error_spots) == 0:
+                return jsonify({'error': 'At least one error spot required'}), 400
+                
+            question_data = {'error_spots': error_spots}
+            
+        else:
+            return jsonify({'error': 'Invalid question type'}), 400
+        
+        # 检查是否至少有一种描述（图片、视频或文字描述）
+        has_image = 'image' in request.files and request.files['image'].filename != ''
+        has_video = 'video' in request.files and request.files['video'].filename != ''
+        has_youtube = request.form.get('youtube_url', '').strip() != ''
+        has_description = description.strip() != ''
+        
+        # Error spotting requires an image
+        if question_type == 'error_spotting' and not has_image:
+            return jsonify({'error': 'Error spotting questions require an image'}), 400
+        
+        # 创建问题对象
+        new_question = Question(
+            task_id=task_id,
+            question=question_text,
+            question_type=question_type,
+            question_data=json.dumps(question_data) if question_data else None,
+            option_a=option_a,
+            option_b=option_b,
+            option_c=option_c,
+            option_d=option_d,
+            correct_answer=correct_answer.upper() if correct_answer else None,
+            difficulty=difficulty,
+            score=score,
+            description=description if has_description else None,
+            created_by=created_by,
+            created_at=datetime.now(timezone.utc)
+        )
+        
+        # 处理图片上传
+        if has_image:
+            image_file = request.files['image']
+            if image_file and image_file.filename:
+                # 验证图片格式
+                allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+                file_extension = image_file.filename.rsplit('.', 1)[1].lower()
+                if file_extension not in allowed_extensions:
+                    return jsonify({'error': 'Invalid image format. Allowed: png, jpg, jpeg, gif, webp'}), 400
+                
+                # 生成唯一文件名
+                import uuid
+                unique_filename = f"{uuid.uuid4().hex}.{file_extension}"
+                
+                # 确保上传目录存在
+                task_upload_dir = os.path.join(app.config['UPLOAD_FOLDER'], f'task_{task_id}')
+                os.makedirs(task_upload_dir, exist_ok=True)
+                
+                # 保存图片
+                image_path = os.path.join(task_upload_dir, unique_filename)
+                image_file.save(image_path)
+                
+                # 设置相对路径用于数据库存储和 URL 生成
+                new_question.image_path = f"task_{task_id}/{unique_filename}"
+                new_question.image_filename = image_file.filename
+        
+        # 处理视频上传
+        if has_video:
+            video_file = request.files['video']
+            if video_file and video_file.filename:
+                # 验证视频格式
+                allowed_video_extensions = {'mp4', 'avi', 'mov', 'wmv', 'webm'}
+                file_extension = video_file.filename.rsplit('.', 1)[1].lower()
+                if file_extension not in allowed_video_extensions:
+                    return jsonify({'error': 'Invalid video format. Allowed: mp4, avi, mov, wmv, webm'}), 400
+                
+                # 验证文件大小 (最大 50MB)
+                max_size = 50 * 1024 * 1024  # 50MB
+                if request.content_length and request.content_length > max_size:
+                    return jsonify({'error': 'Video file too large. Maximum size: 50MB'}), 400
+                
+                # 生成唯一文件名
+                import uuid
+                unique_filename = f"{uuid.uuid4().hex}.{file_extension}"
+                
+                # 确保上传目录存在
+                video_upload_dir = os.path.join(app.config['VIDEO_UPLOAD_FOLDER'])
+                os.makedirs(video_upload_dir, exist_ok=True)
+                
+                # 保存视频
+                video_path = os.path.join(video_upload_dir, unique_filename)
+                video_file.save(video_path)
+                
+                # 设置视频信息
+                new_question.video_path = unique_filename
+                new_question.video_filename = video_file.filename
+                new_question.video_type = 'local'
+        
+        # 处理 YouTube 链接
+        elif has_youtube:
+            youtube_url = request.form.get('youtube_url').strip()
+            # 简单的 YouTube URL 验证
+            if 'youtube.com/watch' in youtube_url or 'youtu.be/' in youtube_url:
+                new_question.video_url = youtube_url
+                new_question.video_type = 'youtube'
+            else:
+                return jsonify({'error': 'Invalid YouTube URL'}), 400
+        
+        # 保存到数据库
+        db.session.add(new_question)
+        db.session.commit()
+        
+        # 构建返回数据
+        result = {
+            'id': new_question.id,
+            'question': new_question.question,
+            'options': {
+                'A': new_question.option_a,
+                'B': new_question.option_b,
+                'C': new_question.option_c,
+                'D': new_question.option_d
+            },
+            'correct_answer': new_question.correct_answer,
+            'difficulty': new_question.difficulty,
+            'score': new_question.score,
+            'description': new_question.description,
+            'created_by': new_question.created_by,
+            'created_at': new_question.created_at.isoformat()
+        }
+        
+        # 添加媒体文件 URL
+        if new_question.image_path:
+            result['image_url'] = f"/uploads/questions/{new_question.image_path}"
+        
+        if new_question.video_type == 'local' and new_question.video_path:
+            result['video_url'] = f"/uploads/videos/{new_question.video_path}"
+            result['video_type'] = 'local'
+        elif new_question.video_type == 'youtube' and new_question.video_url:
+            result['video_url'] = new_question.video_url
+            result['video_type'] = 'youtube'
+        
+        return jsonify({
+            'message': 'Question created successfully',
+            'question': result
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to create question: {str(e)}'}), 500
+
 @app.route('/api/tasks/<int:task_id>/questions/batch', methods=['POST'])
 def create_questions_batch(task_id):
     """批量创建问题"""
@@ -819,10 +1178,171 @@ def create_questions_batch(task_id):
         db.session.rollback()
         return jsonify({'error': f'Database error: {str(e)}'}), 500
 
+@app.route('/api/questions/<int:question_id>', methods=['DELETE'])
+def delete_question(question_id):
+    """删除单个问题"""
+    try:
+        question = Question.query.get_or_404(question_id)
+        
+        # 删除相关的文件
+        if question.image_path:
+            try:
+                image_file_path = os.path.join(app.config['UPLOAD_FOLDER'], question.image_path)
+                if os.path.exists(image_file_path):
+                    os.remove(image_file_path)
+            except Exception as e:
+                print(f"Warning: Failed to delete image file: {str(e)}")
+        
+        if question.video_path:
+            try:
+                video_file_path = os.path.join(app.config['VIDEO_UPLOAD_FOLDER'], question.video_path)
+                if os.path.exists(video_file_path):
+                    os.remove(video_file_path)
+            except Exception as e:
+                print(f"Warning: Failed to delete video file: {str(e)}")
+        
+        # 从数据库中删除问题
+        db.session.delete(question)
+        db.session.commit()
+        
+        return jsonify({'message': 'Question deleted successfully'}), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to delete question: {str(e)}'}), 500
+
 @app.route('/uploads/questions/<path:filename>')
 def uploaded_file(filename):
     """提供问题图片访问服务"""
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
+    return send_from_directory(uploads_dir, f'questions/{filename}')
+
+@app.route('/uploads/videos/<path:filename>')
+def uploaded_video_file(filename):
+    """提供问题视频访问服务"""
+    return send_from_directory(app.config['VIDEO_UPLOAD_FOLDER'], filename)
+
+# Video Upload Routes
+
+@app.route('/api/tasks/<int:task_id>/video', methods=['POST'])
+def upload_task_video(task_id):
+    """上传任务视频文件"""
+    task = Task.query.get_or_404(task_id)
+    
+    if 'video' not in request.files:
+        return jsonify({'error': 'No video file provided'}), 400
+    
+    file = request.files['video']
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+    
+    # 验证文件类型
+    allowed_extensions = {'mp4', 'avi', 'mov', 'wmv', 'webm'}
+    if not ('.' in file.filename and file.filename.rsplit('.', 1)[1].lower() in allowed_extensions):
+        return jsonify({'error': 'Invalid video format. Allowed: mp4, avi, mov, wmv, webm'}), 400
+    
+    # 验证文件大小 (最大 100MB)
+    max_size = 100 * 1024 * 1024  # 100MB
+    if request.content_length and request.content_length > max_size:
+        return jsonify({'error': 'Video file too large. Maximum size: 100MB'}), 400
+    
+    try:
+        # 创建安全的文件名
+        file_extension = file.filename.rsplit('.', 1)[1].lower()
+        filename = f"task_{task_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{file_extension}"
+        video_path = os.path.join(app.config['VIDEO_UPLOAD_FOLDER'], filename)
+        
+        # 确保目录存在
+        os.makedirs(app.config['VIDEO_UPLOAD_FOLDER'], exist_ok=True)
+        
+        # 保存文件
+        file.save(video_path)
+        
+        # 更新数据库
+        task.video_path = filename
+        task.video_type = 'local'
+        task.video_url = f'/uploads/videos/{filename}'  # 设置本地视频访问路径
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Video uploaded successfully',
+            'video_url': f'/uploads/videos/{filename}',
+            'video_type': 'local'
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to upload video: {str(e)}'}), 500
+
+@app.route('/api/tasks/<int:task_id>/youtube', methods=['POST'])
+def save_youtube_url(task_id):
+    """保存 YouTube 视频链接"""
+    task = Task.query.get_or_404(task_id)
+    data = request.get_json()
+    
+    youtube_url = data.get('youtube_url')
+    if not youtube_url:
+        return jsonify({'error': 'YouTube URL is required'}), 400
+    
+    # 简单的 YouTube URL 验证
+    if 'youtube.com/watch' not in youtube_url and 'youtu.be/' not in youtube_url:
+        return jsonify({'error': 'Invalid YouTube URL'}), 400
+    
+    try:
+        # 更新数据库
+        task.video_url = youtube_url
+        task.video_type = 'youtube'
+        task.video_path = None  # 清除本地视频路径
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'YouTube URL saved successfully',
+            'video_url': youtube_url,
+            'video_type': 'youtube'
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to save YouTube URL: {str(e)}'}), 500
+
+@app.route('/uploads/videos/<path:filename>')
+def uploaded_video(filename):
+    """提供视频文件访问服务"""
+    return send_from_directory(app.config['VIDEO_UPLOAD_FOLDER'], filename)
+
+@app.route('/api/tasks/<int:task_id>/video', methods=['DELETE'])
+def delete_task_video(task_id):
+    """删除任务的视频"""
+    task = Task.query.get_or_404(task_id)
+    
+    try:
+        # 如果是本地视频，删除文件
+        if task.video_type == 'local' and task.video_path:
+            video_file_path = os.path.join(app.config['VIDEO_UPLOAD_FOLDER'], os.path.basename(task.video_path))
+            if os.path.exists(video_file_path):
+                os.remove(video_file_path)
+                print(f"Deleted video file: {video_file_path}")
+        
+        # 清除数据库中的视频信息
+        task.video_path = None
+        task.video_url = None
+        task.video_type = None
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Video deleted successfully',
+            'task': {
+                'id': task.id,
+                'name': task.name,
+                'video_path': task.video_path,
+                'video_url': task.video_url,
+                'video_type': task.video_type
+            }
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error deleting video: {e}")
+        return jsonify({'error': 'Failed to delete video'}), 500
 
 
 # Student Profile and Achievement Routes
@@ -1005,7 +1525,7 @@ if __name__ == '__main__':
                     real_name=t['real_name'],
                     teacher_id=t['teacher_id'],
                     username=t['username'],
-                    password=generate_password_hash(t['password_plain'])
+                    password=generate_password_hash(t['password_plain'], method='pbkdf2:sha256')
                 ))
 
         # Seed default escape room tasks
@@ -1097,7 +1617,7 @@ Put on your detective hat and let your statistical reasoning guide you through t
             },
             {
                 'name': 'Accuracy Master',
-                'condition': '总体答题准确率达到90%以上',
+                'condition': '总体答题准确率达到 90% 以上',
                 'task_id': None  # General achievement
             },
             {
@@ -1128,4 +1648,4 @@ Put on your detective hat and let your statistical reasoning guide you through t
         db.session.commit()
         print('All tables recreated, default teacher accounts and escape room tasks ensured.')
 
-    app.run(debug=True)
+    app.run(debug=True, port=5001)

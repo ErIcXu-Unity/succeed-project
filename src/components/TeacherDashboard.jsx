@@ -1,36 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import './TeacherDashboard.css';
 import { useNavigate } from 'react-router-dom';
-import QuestionCreateModal from './QuestionCreateModal';
+import './TeacherDashboard.css';
 
 const TeacherDashboard = () => {
   const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedTaskId, setSelectedTaskId] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [deleting, setDeleting] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [taskToDelete, setTaskToDelete] = useState(null);
 
-  const stats = {
-    totalGames: 12,
-    totalStudents: 86,
-    avgCompletion: 75
-  };
-
-  // 获取任务列表
   useEffect(() => {
     fetchTasks();
   }, []);
 
   const fetchTasks = async () => {
     try {
-      //const response = await fetch('http://localhost:5000/api/tasks');
       const user = JSON.parse(localStorage.getItem('user_data'));
       const role = user?.role === 'tea' ? 'tea' : 'stu';
-      const response = await fetch(`http://localhost:5000/api/tasks?role=${role}`);
-
+      const response = await fetch(`http://localhost:5001/api/tasks?role=${role}`);
+      
       if (response.ok) {
         const data = await response.json();
         setTasks(data);
@@ -44,36 +32,26 @@ const TeacherDashboard = () => {
     }
   };
 
-  const viewGrades = (taskId) => {
-    navigate('/teacher/gamegrade');
-  };
-
-  const editGame = (taskId) => {
-    navigate(`/teacher/tasks/${taskId}/edit`);
-  };
-
-  const createNewTask = () => {
+  const handleCreateTask = () => {
     navigate('/teacher/tasks/new');
   };
 
-  const confirmDeleteTask = (task) => {
-    setTaskToDelete(task);
-    setShowDeleteConfirm(true);
+  const handleEditTask = (taskId) => {
+    navigate(`/teacher/tasks/${taskId}/edit`);
   };
 
-  const deleteTask = async () => {
-    if (!taskToDelete) return;
-
+  const handleDeleteTask = async (taskId) => {
     setDeleting(true);
     try {
-      const response = await fetch(`http://localhost:5000/api/tasks/${taskToDelete.id}`, {
+      const response = await fetch(`http://localhost:5001/api/tasks/${taskId}`, {
         method: 'DELETE'
       });
 
       if (response.ok) {
-        // 删除成功，刷新任务列表
+        // 删除成功，重新获取任务列表
         await fetchTasks();
-        alert(`Task "${taskToDelete.name}" deleted successfully!`);
+        setDeleteConfirm(null);
+        alert('Task deleted successfully!');
       } else {
         const errorData = await response.json();
         alert(`Failed to delete task: ${errorData.error || 'Unknown error'}`);
@@ -83,30 +61,12 @@ const TeacherDashboard = () => {
       alert('Error deleting task. Please try again.');
     } finally {
       setDeleting(false);
-      setShowDeleteConfirm(false);
-      setTaskToDelete(null);
     }
   };
 
-  const cancelDelete = () => {
-    setShowDeleteConfirm(false);
-    setTaskToDelete(null);
-  };
-
-  const createQuestion = (taskId) => {
-    setSelectedTaskId(taskId);
-    setIsModalOpen(true);
-  };
-
-  const handleQuestionCreated = (newQuestion) => {
-    console.log('New question created:', newQuestion);
-    // 可以在这里添加成功通知
-    alert('Question created successfully!');
-  };
-
-  const handleModalClose = () => {
-    setIsModalOpen(false);
-    setSelectedTaskId(null);
+  const handleGradeTask = (taskId) => {
+    // 这里可以导航到成绩页面
+    alert(`Grading feature for task ${taskId} - Coming soon!`);
   };
 
   if (loading) {
@@ -114,100 +74,198 @@ const TeacherDashboard = () => {
       <div className="main-content">
         <div className="loading">
           <i className="fas fa-spinner fa-spin"></i>
-          Loading...
+          Loading tasks...
         </div>
       </div>
     );
   }
 
   return (
-    <div className="main-content">
-      <div className="stats">
-        <div className="stat-box">Total Games: {stats.totalGames}</div>
-        <div className="stat-box">Total Students: {stats.totalStudents}</div>
-        <div className="stat-box">Avg Completion: {stats.avgCompletion}%</div>
+    <div className="teacher-dashboard-container">
+      {/* Dashboard Header */}
+      <div className="dashboard-header">
+        <div className="header-content">
+          <h1 className="dashboard-title">
+            <i className="fas fa-chalkboard-teacher"></i>
+            Teacher Dashboard
+          </h1>
+          <button className="create-task-btn" onClick={handleCreateTask}>
+            <i className="fas fa-plus"></i>
+            Create New Task
+          </button>
+        </div>
       </div>
 
-      {/* 新建任务按钮 */}
-      <div className="create-task-section">
-        <button className="create-task-btn" onClick={createNewTask}>
-          <i className="fas fa-plus-circle"></i>
-          Create New Task
-        </button>
-      </div>
-
-      <div className="card-container">
-        {tasks.map((task) => (
-          <div key={task.id} className="card">
-            <img src="/assets/game01.jpg" alt={task.name} />
-            <div className="card-title">{task.name}</div>
-            <div className="card-buttons">
-              <button className="grade-btn" onClick={() => viewGrades(task.id)}>
-                <i className="fas fa-chart-line"></i> Grades
-              </button>
-              <button className="edit-btn" onClick={() => editGame(task.id)}>
-                <i className="fas fa-edit"></i> Edit
-              </button>
-              <button className="create-btn" onClick={() => createQuestion(task.id)}>
-                <i className="fas fa-plus"></i> Add Question
-              </button>
-              <button className="delete-btn" onClick={() => confirmDeleteTask(task)}>
-                <i className="fas fa-trash"></i> Delete
-              </button>
+      {/* Dashboard Content */}
+      <div className="dashboard-content">
+        {/* Statistics Cards */}
+        <div className="stats-section">
+          <div className="stats-grid">
+            <div className="stat-card">
+              <div className="stat-icon tasks">
+                <i className="fas fa-tasks"></i>
+              </div>
+              <div className="stat-info">
+                <h3>{tasks.length}</h3>
+                <p>Total Tasks</p>
+              </div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon students">
+                <i className="fas fa-users"></i>
+              </div>
+              <div className="stat-info">
+                <h3>24</h3>
+                <p>Active Students</p>
+              </div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon completion">
+                <i className="fas fa-chart-line"></i>
+              </div>
+              <div className="stat-info">
+                <h3>78%</h3>
+                <p>Completion Rate</p>
+              </div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon published">
+                <i className="fas fa-eye"></i>
+              </div>
+              <div className="stat-info">
+                <h3>{tasks.filter(task => task.publish_at).length}</h3>
+                <p>Published Tasks</p>
+              </div>
             </div>
           </div>
-        ))}
+        </div>
+
+        {/* Tasks Section */}
+        <div className="tasks-section">
+          <div className="section-header">
+            <h2 className="section-title">
+              <i className="fas fa-clipboard-list"></i>
+              Existing Tasks
+            </h2>
+            <div className="tasks-count">
+              {tasks.length} {tasks.length === 1 ? 'Task' : 'Tasks'}
+            </div>
+          </div>
+          
+          <div className="tasks-grid">
+            {tasks.length === 0 ? (
+              <div className="no-tasks">
+                <div className="no-tasks-content">
+                  <i className="fas fa-clipboard"></i>
+                  <h3>No tasks yet</h3>
+                  <p>Create your first task to get started!</p>
+                </div>
+              </div>
+            ) : (
+              tasks.map(task => (
+                <div key={task.id} className="task-card">
+                  <div className="task-card-header">
+                    <img 
+                      src={task.image_url || '/assets/task1.jpg'} 
+                      alt={task.name}
+                      onError={(e) => {
+                        e.target.src = '/assets/task1.jpg';
+                      }}
+                      className="task-image"
+                    />
+                    {task.publish_at && (
+                      <div className="task-status published">
+                        <i className="fas fa-eye"></i>
+                        Published
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="task-card-content">
+                    <h3 className="task-title">{task.name}</h3>
+                    <div className="task-meta">
+                      <span className="question-count">
+                        <i className="fas fa-question-circle"></i>
+                        {task.question_count} questions
+                      </span>
+                      {task.publish_at && (
+                        <span className="publish-date">
+                          <i className="fas fa-calendar"></i>
+                          {new Date(task.publish_at).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="task-card-actions">
+                    <button 
+                      className="action-btn grade-btn"
+                      onClick={() => handleGradeTask(task.id)}
+                      title="Grade submissions"
+                    >
+                      <i className="fas fa-star"></i>
+                      <span>Grade</span>
+                    </button>
+                    <button 
+                      className="action-btn edit-btn"
+                      onClick={() => handleEditTask(task.id)}
+                      title="Edit task"
+                    >
+                      <i className="fas fa-edit"></i>
+                      <span>Edit</span>
+                    </button>
+                    <button 
+                      className="action-btn delete-btn"
+                      onClick={() => setDeleteConfirm(task)}
+                      title="Delete task"
+                    >
+                      <i className="fas fa-trash"></i>
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </div>
 
       {/* 删除确认对话框 */}
-      {showDeleteConfirm && (
+      {deleteConfirm && (
         <div className="delete-confirm-overlay">
           <div className="delete-confirm-modal">
-            <h3>Confirm Delete</h3>
+            <h3>
+              <i className="fas fa-exclamation-triangle"></i>
+              Delete Task
+            </h3>
             <p>
-              Are you sure you want to delete the task "{taskToDelete?.name}"?
+              Are you sure you want to delete <strong>"{deleteConfirm.name}"</strong>?
               <br />
-              This will permanently remove all questions, student results, and progress data.
+              This action cannot be undone. All questions and student progress will be lost.
             </p>
             <div className="delete-confirm-buttons">
-              <button
+              <button 
                 className="btn btn-secondary"
-                onClick={cancelDelete}
+                onClick={() => setDeleteConfirm(null)}
                 disabled={deleting}
               >
+                <i className="fas fa-times"></i>
                 Cancel
               </button>
-              <button
+              <button 
                 className="btn btn-danger"
-                onClick={deleteTask}
+                onClick={() => handleDeleteTask(deleteConfirm.id)}
                 disabled={deleting}
               >
-                {deleting ? (
-                  <>
-                    <i className="fas fa-spinner fa-spin"></i>
-                    Deleting...
-                  </>
-                ) : (
-                  <>
-                    <i className="fas fa-trash"></i>
-                    Delete Task
-                  </>
-                )}
+                <i className="fas fa-trash"></i>
+                {deleting ? 'Deleting...' : 'Delete Task'}
               </button>
             </div>
           </div>
         </div>
       )}
-
-      {/* 问题创建模态框 */}
-      <QuestionCreateModal
-        isOpen={isModalOpen}
-        onClose={handleModalClose}
-        onSubmit={handleQuestionCreated}
-        taskId={selectedTaskId}
-      />
     </div>
   );
 };
 
-export default TeacherDashboard;
+export default TeacherDashboard; 

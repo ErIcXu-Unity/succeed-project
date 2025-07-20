@@ -2,304 +2,228 @@
 
 A full-stack web application for creating and managing educational escape room games at the University of New South Wales (UNSW). This platform allows teachers to create interactive escape room challenges and students to participate in gamified learning activities.
 
+## 🎯 New Features & Updates
+
+### ✨ Enhanced Question System
+- **6 Question Types**: Single Choice, Multiple Choice, Fill in Blank, Puzzle Game, Matching Task, Error Spotting
+- **Rich Media Support**: Images, videos, and YouTube integration for questions
+- **Dynamic Question Editors**: Specialized editors for each question type
+- **Smart Validation**: Type-specific validation with real-time feedback
+- **Question Preview**: Comprehensive preview system for all question types
+
+### 🎨 Modern User Interface
+- **Fully Responsive Design**: Optimized for desktop, tablet, and mobile devices
+- **Enhanced Teacher Dashboard**: Improved statistics, better task management
+- **Smart Button Layout**: Adaptive button arrangements based on screen size
+- **Keyboard Navigation**: ESC key support for modal dialogs
+- **Touch-Friendly**: Optimized for mobile touch interactions
+
+### 🏗️ Technical Improvements
+- **Component Architecture**: Modular question type editors
+- **Type Safety**: Enhanced form validation with null safety
+- **API Enhancements**: Support for multiple question types in backend
+- **Database Migration**: Seamless upgrade path for existing data
+
 ## Features
 
 ### For Teachers
 - **Dashboard Management**: Overview of all escape room games and student progress
-- **Game Creation**: Create and edit escape room scenarios with puzzles and challenges
-- **Question Management**: Add, edit, and organize quiz questions with image support
+- **Advanced Game Creation**: Create escape rooms with 6 different question types
+- **Question Management**: 
+  - Single Choice: Traditional A/B/C/D questions
+  - Multiple Choice: Questions with multiple correct answers
+  - Fill in Blank: Text completion exercises
+  - Puzzle Game: Fragment assembly challenges
+  - Matching Task: Connect related items
+  - Error Spotting: Find mistakes in images
+- **Media Integration**: Add images, videos, and YouTube content to questions
 - **Student Analytics**: View detailed performance metrics and completion rates
 - **Achievement System**: Monitor student achievements and badges
-- **Class Management**: Organize students and monitor their participation
+- **Responsive Interface**: Manage classes on any device
 
 ### For Students
-- **Interactive Gameplay**: Participate in escape room challenges designed for learning
+- **Interactive Gameplay**: Participate in diverse escape room challenges
+- **Multi-Type Questions**: Experience varied question formats for enhanced learning
 - **Achievement System**: Earn badges and track progress through completed tasks
 - **Real-time Progress**: Save and resume progress on incomplete tasks
 - **Performance Tracking**: View personal statistics and improvement over time
-- **Network Resilience**: Smart error handling with automatic retry mechanisms
+- **Mobile Support**: Complete escape rooms on mobile devices
 
 ## Technology Stack
 
 ### Frontend
 - **Framework**: React 18, JavaScript ES6+
-- **Styling**: CSS3 with CSS Variables
+- **Architecture**: Component-based with specialized question type editors
+- **Styling**: CSS3 with responsive design and CSS Variables
 - **State Management**: React Hooks (useState, useEffect)
-- **Routing**: React Router
+- **Routing**: React Router with dynamic navigation
 - **HTTP Client**: Fetch API with advanced error handling
+- **Media Handling**: Support for images, videos, and YouTube integration
 
 ### Backend
 - **Framework**: Flask (Python)
 - **Database**: PostgreSQL with SQLAlchemy ORM
-- **API**: RESTful APIs with CORS support
+- **API**: RESTful APIs with CORS support and multi-type question handling
 - **Authentication**: Session-based authentication
-- **File Upload**: Image handling for questions
+- **File Upload**: Enhanced media handling (images, videos)
+- **Data Migration**: Scripts for upgrading existing question data
 
-### Database
+### Database Schema
 - **Primary Database**: PostgreSQL
-- **ORM**: SQLAlchemy
-- **Features**: Automatic schema creation, data relationships, timezone support
+- **ORM**: SQLAlchemy with timezone support
+- **Question Types**: Flexible schema supporting multiple question formats
+- **Media Storage**: File path management for uploaded content
+- **Achievement Tracking**: Comprehensive student progress monitoring
+
+## Question Types
+
+### 1. Single Choice
+Traditional multiple-choice questions with one correct answer (A, B, C, D).
+
+### 2. Multiple Choice
+Questions allowing multiple correct answers with flexible option counts.
+
+### 3. Fill in Blank
+Text completion exercises where students fill in missing information.
+
+### 4. Puzzle Game
+Fragment assembly challenges where students arrange pieces to form solutions.
+
+### 5. Matching Task
+Connect items from two columns to demonstrate understanding of relationships.
+
+### 6. Error Spotting
+Interactive image-based questions where students identify and click on errors.
 
 ## Project Structure
 
 ```
 capstone-project-25t2-9900-h18b-donut/
 ├── backend/                     # Flask backend
-│   ├── app.py                  # Main Flask application
+│   ├── app.py                  # Main Flask application with enhanced APIs
+│   ├── migrate_questions.py   # Database migration script
 │   ├── requirements.txt        # Python dependencies
-│   ├── .env                    # Environment variables (create this)
-│   ├── test_api.py            # API testing script
-│   └── uploads/               # File upload directory
-├── src/                        # React frontend
+│   ├── uploads/               # Media file storage
+│   └── .env                   # Environment variables
+├── src/                       # React frontend
 │   ├── components/            # React components
-│   │   ├── Login.jsx         # Authentication
-│   │   ├── StudentDashboard.jsx
-│   │   ├── StudentAchievements.jsx
-│   │   ├── TaskQuiz.jsx      # Main quiz interface
-│   │   ├── TeacherDashboard.jsx
-│   │   ├── TaskEditor.jsx    # Question management
-│   │   └── ...
-│   ├── App.jsx               # Main React app
-│   └── index.js              # Entry point
-├── public/
-│   ├── index.html
-│   └── assets/               # Static assets
-├── package.json              # Node.js dependencies
-└── README.md
+│   │   ├── *Editor.jsx       # Question type editors
+│   │   ├── IntegratedQuestionModal.jsx  # Main question creation
+│   │   ├── QuestionPreview.jsx          # Question preview system
+│   │   ├── TeacherDashboard.jsx         # Enhanced dashboard
+│   │   └── TaskEditor.jsx               # Task management
+│   ├── App.jsx               # Main application component
+│   └── index.js              # Application entry point
+├── public/                   # Static assets
+└── README.md                # Project documentation
 ```
-
-## Prerequisites
-
-Before running this project, ensure you have:
-
-- **Node.js** (version 16 or higher)
-- **Python** (version 3.8 or higher)
-- **PostgreSQL** (version 12 or higher)
-- **npm** or **yarn** package manager
-- **pip** (Python package installer)
 
 ## Installation & Setup
 
-### 1. Database Setup (PostgreSQL)
+### Prerequisites
+- Node.js (v14 or higher)
+- Python 3.8+
+- PostgreSQL database
 
-1. **Install PostgreSQL** if not already installed
-2. **Create the database**:
-   ```sql
-   -- Connect to PostgreSQL as superuser
-   CREATE DATABASE "test-project";
-   ```
-3. **Note your PostgreSQL credentials**:
-   - Host: `localhost`
-   - Port: `5432`
-   - Database: `test-project`
-   - Username: `postgres` (or your PostgreSQL username)
-   - Password: (your PostgreSQL password)
+### Backend Setup
+1. Navigate to the backend directory:
+```bash
+cd backend
+```
 
-### 2. Backend Setup (Flask)
+2. Create a virtual environment:
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
 
-1. **Navigate to backend directory**:
-   ```bash
-   cd backend
-   ```
+3. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-2. **Create and activate virtual environment** (recommended):
-   ```bash
-   # Create virtual environment
-   python -m venv venv
-   
-   # Activate virtual environment
-   # On Windows:
-   venv\Scripts\activate
-   # On macOS/Linux:
-   source venv/bin/activate
-   ```
+4. Create `.env` file with your database configuration:
+```env
+DATABASE_URL=postgresql://username:password@localhost:5432/escape_room_db
+```
 
-3. **Install Python dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+5. Run the application:
+```bash
+python app.py
+```
 
-   Required packages include:
-   - `Flask>=2.0.0` - Web framework
-   - `Flask-SQLAlchemy>=2.5.1` - Database ORM
-   - `Flask-CORS>=3.0.10` - Cross-origin requests
-   - `python-dotenv>=0.19.0` - Environment variables
-   - `Werkzeug>=2.0.0` - WSGI utilities
-   - `psycopg2-binary>=2.9.0` - PostgreSQL driver
+### Frontend Setup
+1. Install dependencies:
+```bash
+npm install
+```
 
-4. **Create environment configuration**:
-   Create a `.env` file in the `backend/` directory:
-   ```env
-   DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/test-project
-   ```
-   Replace `YOUR_PASSWORD` with your actual PostgreSQL password.
+2. Start the development server:
+```bash
+npm start
+```
 
-5. **Test the backend setup**:
-   ```bash
-   python test_api.py
-   ```
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-6. **Start the Flask server**:
-   ```bash
-   python app.py
-   ```
+## Usage
 
-   Expected output:
-   ```
-   * Running on http://127.0.0.1:5000
-   * Debug mode: on
-   All tables recreated, default teacher accounts and escape room tasks ensured.
-   ```
+### For Teachers
+1. **Login**: Use teacher credentials to access the dashboard
+2. **Create Tasks**: Design escape room scenarios with various question types
+3. **Add Questions**: Use the integrated question modal to create diverse challenges
+4. **Monitor Progress**: Track student performance through the responsive dashboard
+5. **Manage Media**: Upload images and videos to enhance question content
 
-### 3. Frontend Setup (React)
+### For Students
+1. **Register/Login**: Create account or login with student credentials
+2. **Browse Tasks**: View available escape room challenges
+3. **Complete Challenges**: Answer questions of various types to progress
+4. **Track Achievements**: Monitor badges and completion statistics
+5. **Resume Progress**: Continue incomplete tasks anytime
 
-1. **Navigate to project root directory**:
-   ```bash
-   cd ..  # Back to project root
-   ```
+## API Endpoints
 
-2. **Install Node.js dependencies**:
-   ```bash
-   npm install
-   ```
-
-3. **Start the React development server**:
-   ```bash
-   npm start
-   ```
-
-   Expected output:
-   ```
-   webpack compiled with warnings
-   Local:            http://localhost:3000
-   ```
-
-## Running the Application
-
-### Development Mode
-
-1. **Start PostgreSQL** service on your system
-
-2. **Run Backend** (Terminal 1):
-   ```bash
-   cd backend
-   venv\Scripts\activate  # Windows
-   # source venv/bin/activate  # macOS/Linux
-   python app.py
-   ```
-
-3. **Run Frontend** (Terminal 2):
-   ```bash
-   npm start
-   ```
-
-4. **Access the application**:
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:5000
-
-### Testing the Setup
-
-1. **Backend API Test**:
-   ```bash
-   cd backend
-   python test_api.py
-   ```
-
-2. **Verify endpoints**:
-   - Tasks API: http://localhost:5000/api/tasks
-   - Should return JSON with task list
-
-3. **Frontend verification**:
-   - Visit: http://localhost:3000
-   - Should show login page
-
-### Default Accounts
-
-The application comes with pre-seeded accounts:
-
-**Teacher Accounts**:
-- Username: `st1000@tea.com`, Password: `123456`
-- Username: `st1001@tea.com`, Password: `123456`
-
-**Student Accounts**: Register new accounts through the registration page.
-
-## Development Workflow
-
-### VS Code Setup
-1. Open project folder in VS Code
-2. Install recommended extensions:
-   - Python
-   - ES7+ React/Redux/React-Native snippets
-   - PostgreSQL (by Chris Kolkman)
-
-3. Use split terminal for running both frontend and backend
-
-### Making Changes
-- **Backend changes**: Flask auto-reloads (debug=True)
-- **Frontend changes**: React hot-reloads automatically
-- **Database changes**: Modify models in `app.py`, restart Flask
-
-### Troubleshooting
-
-**Common Issues**:
-
-1. **Port already in use**:
-   ```bash
-   # Check what's using port 5000
-   netstat -ano | findstr :5000
-   # Kill the process if needed
-   taskkill /PID <process_id> /F
-   ```
-
-2. **Database connection failed**:
-   - Verify PostgreSQL is running
-   - Check credentials in `.env` file
-   - Ensure database `test-project` exists
-
-3. **Module not found errors**:
-   ```bash
-   # Reinstall dependencies
-   pip install -r requirements.txt
-   npm install
-   ```
-
-4. **CORS errors**:
-   - Ensure backend is running on port 5000
-   - Check Flask-CORS configuration in `app.py`
-
-## API Documentation
-
-### Authentication Endpoints
-- `POST /login` - User authentication
-- `POST /register` - User registration
+### Question Management
+- `POST /api/tasks/{id}/questions` - Create new question (supports all 6 types)
+- `GET /api/tasks/{id}/questions` - Retrieve task questions with type information
+- `DELETE /api/questions/{id}` - Remove specific question
 
 ### Task Management
-- `GET /api/tasks` - List all tasks
-- `GET /api/tasks/<id>` - Get task details
-- `POST /api/tasks/<id>/submit` - Submit task answers
+- `GET /api/tasks` - List all tasks (with role-based filtering)
+- `POST /api/tasks` - Create new escape room task
+- `PUT /api/tasks/{id}` - Update task information
+- `DELETE /api/tasks/{id}` - Remove task and related data
 
-### Student Features
-- `GET /api/students/<id>/achievements` - Get student achievements
-- `GET /api/students/<id>/profile` - Get student profile
+### Student Progress
+- `POST /api/tasks/{id}/submit` - Submit completed task
+- `GET /api/students/{id}/achievements` - Get student achievements
+- `POST /api/tasks/{id}/save-progress` - Save partial progress
 
-### Teacher Features
-- `POST /api/tasks/<id>/questions/batch` - Bulk create questions
-- `GET /api/teachers/<id>/students` - Get teacher's students
+## Contributing
 
-## Building for Production
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/new-feature`)
+3. Commit your changes (`git commit -m 'feat: add new feature'`)
+4. Push to the branch (`git push origin feature/new-feature`)
+5. Create a Pull Request
 
-1. **Frontend build**:
-   ```bash
-   npm run build
-   ```
+## Database Migration
 
-2. **Backend deployment**:
-   - Use production WSGI server (e.g., Gunicorn)
-   - Set environment variables for production database
-   - Configure reverse proxy (e.g., Nginx)
+For existing installations, run the migration script to support new question types:
+
+```bash
+cd backend
+python migrate_questions.py
+```
+
+This will add the necessary database columns for enhanced question functionality.
 
 ## License
 
-© 2025 UNSW Sydney. All rights reserved.
+This project is developed for UNSW educational purposes.
 
-This project is developed for educational purposes at the University of New South Wales.
+## Acknowledgments
+
+- UNSW Computer Science & Engineering
+- React.js community for excellent documentation
+- Flask community for robust backend framework

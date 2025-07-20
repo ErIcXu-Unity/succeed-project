@@ -77,7 +77,7 @@ const TaskQuiz = () => {
     // 初始检查
     checkNetwork();
 
-    // 每30秒检查一次网络状态
+    // 每 30 秒检查一次网络状态
     const interval = setInterval(checkNetwork, 30000);
 
     // 监听在线/离线事件
@@ -153,9 +153,9 @@ const TaskQuiz = () => {
   // 网络连接检查
   const checkNetworkConnection = async () => {
     try {
-              const response = await fetch('http://localhost:5001/api/tasks', {
+      const response = await fetch('http://localhost:5001/api/tasks', {
         method: 'GET',
-        signal: AbortSignal.timeout(5000) // 5秒超时
+        signal: AbortSignal.timeout(5000) // 5 秒超时
       });
       return response.ok;
     } catch (error) {
@@ -198,7 +198,7 @@ const TaskQuiz = () => {
       console.log('Task ID:', taskId);
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 秒超时
 
       const response = await fetch(`http://localhost:5001/api/tasks/${taskId}/submit`, {
         method: 'POST',
@@ -461,9 +461,76 @@ const TaskQuiz = () => {
         <div className="question-content">
           <h2>{currentQuestion.question}</h2>
           
+          {/* 文字描述 */}
+          {currentQuestion.description && (
+            <div className="question-description">
+              <h4><i className="fas fa-info-circle"></i> 问题说明</h4>
+              <p>{currentQuestion.description}</p>
+            </div>
+          )}
+          
+          {/* 图片展示 */}
           {currentQuestion.image_url && (
             <div className="question-image">
-              <img src={currentQuestion.image_url} alt="Question illustration" />
+              <h4><i className="fas fa-image"></i> 图片说明</h4>
+              <img 
+                src={currentQuestion.image_url.startsWith('http') ? currentQuestion.image_url : `http://localhost:5001${currentQuestion.image_url}`} 
+                alt="Question illustration" 
+                onError={(e) => {
+                  console.error('Image load error:', e.target.src);
+                  e.target.style.display = 'none';
+                  const parent = e.target.parentNode;
+                  if (parent) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'media-error';
+                    errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 图片加载失败';
+                    parent.appendChild(errorDiv);
+                  }
+                }}
+              />
+            </div>
+          )}
+          
+          {/* 视频展示 */}
+          {currentQuestion.video_type && currentQuestion.video_url && (
+            <div className="question-video">
+              <h4>
+                <i className={`${currentQuestion.video_type === 'youtube' ? 'fab fa-youtube' : 'fas fa-video'}`}></i> 
+                视频说明
+              </h4>
+              {currentQuestion.video_type === 'local' ? (
+                <video
+                  src={currentQuestion.video_url.startsWith('http') ? currentQuestion.video_url : `http://localhost:5001${currentQuestion.video_url}`}
+                  controls
+                  style={{ width: '100%', maxWidth: '600px', height: 'auto', borderRadius: '8px' }}
+                  onError={(e) => {
+                    console.error('Video load error:', e.target.src);
+                    e.target.style.display = 'none';
+                    const parent = e.target.parentNode;
+                    if (parent) {
+                      const errorDiv = document.createElement('div');
+                      errorDiv.className = 'media-error';
+                      errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 视频加载失败';
+                      parent.appendChild(errorDiv);
+                    }
+                  }}
+                >
+                  您的浏览器不支持视频播放
+                </video>
+              ) : (
+                <div className="youtube-embed">
+                  <iframe
+                    width="100%"
+                    height="400"
+                    src={`https://www.youtube.com/embed/${currentQuestion.video_url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)?.[1] || ''}`}
+                    title="Question video"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    style={{ borderRadius: '8px' }}
+                  ></iframe>
+                </div>
+              )}
             </div>
           )}
 
@@ -528,4 +595,4 @@ const TaskQuiz = () => {
   );
 };
 
-export default TaskQuiz; 
+export default TaskQuiz;

@@ -1,43 +1,7 @@
-/* src/components/TaskIntro.css */
-.task-intro {
-  max-width: 600px;
-  margin: 2rem auto;
-  padding: 1.5rem;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  text-align: center;
-}
-
-.task-title {
-  margin-bottom: 1rem;
-  color: var(--unsw-charcoal);
-}
-
-.task-description {
-  margin-bottom: 2rem;
-  font-size: 1rem;
-  color: #333;
-}
-
-.start-btn {
-  padding: 0.8rem 2rem;
-  background: var(--unsw-yellow);
-  color: var(--unsw-charcoal);
-  border: none;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.start-btn:hover {
-  background: var(--unsw-yellow-dark);
-}
+/* TaskIntro.css - 清理和改进的样式 */
 
 .task-intro-container {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 2rem;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -53,68 +17,44 @@
 }
 
 /* 加载状态 */
-.loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 400px;
-}
-
 .loading-spinner {
   text-align: center;
+  padding: 4rem 2rem;
+  color: #666;
 }
 
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #007bff;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
+.loading-spinner i {
+  font-size: 3rem;
+  color: #007bff;
+  margin-bottom: 1rem;
+  display: block;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.loading-spinner p {
+  font-size: 1.1rem;
+  margin: 0;
 }
 
 /* 错误状态 */
-.error {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 400px;
-}
-
 .error-message {
   text-align: center;
   padding: 2rem;
   background: #fff5f5;
   border: 2px solid #feb2b2;
-  border-radius: 8px;
+  border-radius: 12px;
   color: #c53030;
+  margin: 2rem 0;
 }
 
-.error-message h3 {
-  margin: 0 0 1rem 0;
-  font-size: 1.5rem;
+.error-message i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  display: block;
 }
 
-.error-message button {
-  background: #e53e3e;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 1rem;
-  margin-top: 1rem;
-  transition: background 0.3s ease;
-}
-
-.error-message button:hover {
-  background: #c53030;
+.error-message p {
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
 }
 
 .error-actions {
@@ -122,6 +62,7 @@
   gap: 1rem;
   justify-content: center;
   margin-top: 1.5rem;
+  flex-wrap: wrap;
 }
 
 .error-actions .btn-secondary,
@@ -131,11 +72,14 @@
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   text-decoration: none;
+  min-width: 120px;
+  justify-content: center;
 }
 
 .error-actions .btn-secondary {
@@ -162,8 +106,21 @@
 .task-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 2rem;
+  padding: 2.5rem 2rem;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.task-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  opacity: 0.1;
 }
 
 .task-title {
@@ -171,6 +128,8 @@
   font-size: 2.5rem;
   font-weight: 700;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 1;
 }
 
 .task-meta {
@@ -178,20 +137,25 @@
   justify-content: center;
   gap: 1rem;
   flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
 }
 
 .question-count {
   background: rgba(255, 255, 255, 0.2);
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
+  padding: 0.6rem 1.2rem;
+  border-radius: 25px;
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: 600;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 /* 任务说明 */
 .task-description {
-  padding: 2rem;
+  padding: 2.5rem 2rem;
   border-bottom: 1px solid #e2e8f0;
+  background: #fafbfc;
 }
 
 .task-description h2 {
@@ -199,6 +163,17 @@
   color: #2d3748;
   font-size: 1.75rem;
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.description-content {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  border-left: 4px solid #007bff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .description-content p {
@@ -214,7 +189,7 @@
 
 /* 视频区域 */
 .task-video {
-  padding: 2rem;
+  padding: 2.5rem 2rem;
   border-bottom: 1px solid #e2e8f0;
   background: #f7fafc;
 }
@@ -224,43 +199,64 @@
   color: #2d3748;
   font-size: 1.75rem;
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .video-container {
   background: white;
-  border-radius: 8px;
-  padding: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 /* 操作按钮区域 */
 .task-actions {
-  padding: 2rem;
+  padding: 2.5rem 2rem;
   text-align: center;
+  background: white;
 }
 
 .action-buttons {
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
   justify-content: center;
   flex-wrap: wrap;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.btn-secondary,
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  min-width: 140px;
+  justify-content: center;
+}
+
+.btn-secondary {
+  background: #e2e8f0;
+  color: #4a5568;
+}
+
+.btn-secondary:hover {
+  background: #cbd5e0;
+  color: #2d3748;
+  transform: translateY(-2px);
 }
 
 .start-quiz-btn {
   background: linear-gradient(135deg, #48bb78, #38a169);
   color: white;
-  border: none;
-  padding: 1rem 2rem;
-  border-radius: 8px;
-  font-size: 1.2rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
   box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
 }
 
@@ -277,33 +273,79 @@
   box-shadow: none;
 }
 
-.back-btn {
-  background: #e2e8f0;
-  color: #4a5568;
-  border: none;
-  padding: 1rem 2rem;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-decoration: none;
-}
-
-.back-btn:hover {
-  background: #cbd5e0;
-  color: #2d3748;
-}
-
 .no-questions-notice {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   color: #e53e3e;
   font-size: 1rem;
-  margin: 1rem 0 0 0;
-  padding: 1rem;
+  padding: 1rem 1.5rem;
   background: #fff5f5;
-  border: 1px solid #feb2b2;
-  border-radius: 6px;
-  display: inline-block;
+  border: 2px solid #feb2b2;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+/* 提示信息部分 */
+.task-tips {
+  padding: 2.5rem 2rem;
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  border-top: 1px solid #e2e8f0;
+}
+
+.task-tips h3 {
+  margin: 0 0 1.5rem 0;
+  color: #2d3748;
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.tips-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.tips-list li {
+  background: white;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  font-size: 1rem;
+  color: #4a5568;
+  line-height: 1.6;
+  border-left: 4px solid #007bff;
+  transition: all 0.3s ease;
+}
+
+.tips-list li:hover {
+  transform: translateX(5px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.tips-list li:nth-child(1) {
+  border-left-color: #007bff;
+}
+
+.tips-list li:nth-child(2) {
+  border-left-color: #28a745;
+}
+
+.tips-list li:nth-child(3) {
+  border-left-color: #ffc107;
+}
+
+.tips-list li:nth-child(4) {
+  border-left-color: #6f42c1;
 }
 
 /* 响应式设计 */
@@ -319,8 +361,9 @@
   .task-header,
   .task-description,
   .task-video,
-  .task-actions {
-    padding: 1.5rem;
+  .task-actions,
+  .task-tips {
+    padding: 2rem 1.5rem;
   }
   
   .action-buttons {
@@ -328,10 +371,20 @@
     align-items: center;
   }
   
-  .start-quiz-btn,
-  .back-btn {
+  .btn-secondary,
+  .btn-primary,
+  .start-quiz-btn {
     width: 100%;
     max-width: 300px;
+  }
+
+  .tips-list {
+    gap: 0.75rem;
+  }
+
+  .tips-list li {
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
   }
 }
 
@@ -347,7 +400,30 @@
   .task-header,
   .task-description,
   .task-video,
-  .task-actions {
+  .task-actions,
+  .task-tips {
+    padding: 1.5rem 1rem;
+  }
+
+  .task-description h2,
+  .task-video h2,
+  .task-tips h3 {
+    font-size: 1.4rem;
+  }
+
+  .description-content,
+  .video-container {
     padding: 1rem;
+  }
+
+  .error-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .error-actions .btn-secondary,
+  .error-actions .btn-primary {
+    width: 100%;
+    max-width: 250px;
   }
 }

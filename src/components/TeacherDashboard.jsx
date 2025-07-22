@@ -430,12 +430,14 @@ const TeacherDashboard = () => {
                       <div className="task-card-overlay">
                         <div className="task-badges">
                           <span className="course-badge">
-                            <span className="course-icon">{courseIcon}</span>
-                            {courseType}
-                          </span>
-                          <span className={`status-badge ${taskStatus.toLowerCase()}`}>
-                            <i className={`fas ${taskStatus === 'Published' ? 'fa-eye' : 'fa-clock'}`}></i>
-                            {taskStatus}
+                            <div className="course-info">
+                              <span className="course-icon">{courseIcon}</span>
+                              {courseType}
+                            </div>
+                            <span className={`internal-status ${taskStatus.toLowerCase()}`}>
+                              <i className={`fas ${taskStatus === 'Published' ? 'fa-eye' : 'fa-clock'}`}></i>
+                              {taskStatus}
+                            </span>
                           </span>
                         </div>
                       </div>

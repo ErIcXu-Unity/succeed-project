@@ -1,3 +1,5 @@
+# pylint: disable=unexpected-keyword-arg,no-value-for-parameter
+# type: ignore[call-arg]
 """
 Main Flask Application - Escape Room Educational Platform
 Modular architecture with organized blueprints

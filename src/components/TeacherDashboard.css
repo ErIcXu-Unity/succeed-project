@@ -437,10 +437,15 @@
 
 .task-badges {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: flex-start;
   flex-wrap: wrap;
   gap: 0.5rem;
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  right: 1rem;
+  z-index: 2;
 }
 
 .course-badge {
@@ -452,9 +457,13 @@
   font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  justify-content: space-between;
+  gap: 1rem;
   backdrop-filter: blur(10px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 1;
+  min-width: 200px;
 }
 
 .course-icon {
@@ -472,6 +481,10 @@
   align-items: center;
   gap: 0.4rem;
   backdrop-filter: blur(10px);
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 3;
 }
 
 .status-badge.published {
@@ -480,6 +493,29 @@
 
 .status-badge.scheduled {
   background: rgba(253, 126, 20, 0.9);
+}
+
+/* 内部状态样式 - 在course-badge内显示 */
+.course-badge .internal-status {
+  background: var(--success-green);
+  color: var(--white);
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.course-badge .internal-status.scheduled {
+  background: var(--warning-orange);
+}
+
+.course-badge .course-info {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 /* Task Card Content */

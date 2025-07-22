@@ -98,9 +98,22 @@ const randomizeQuestionOptions = (question, seed) => {
   return newQuestion;
 };
 
-// 生成每次都不同的随机化种子
+// 生成会话级随机化种子（支持进度保存）
 const generateStudentSeed = (studentId, taskId) => {
-  // 使用学生ID、任务ID和当前时间戳创建种子，确保每次都不同
+  const sessionKey = `quiz_session_${studentId}_${taskId}`;
+  
+  // 检查是否有已保存的会话种子
+  const savedSession = localStorage.getItem(sessionKey);
+  if (savedSession) {
+    const session = JSON.parse(savedSession);
+    // 如果会话未完成，使用保存的种子
+    if (!session.completed) {
+      console.log('🔄 使用保存的会话种子:', session.seed);
+      return session.seed;
+    }
+  }
+  
+  // 生成新的会话种子
   const timestamp = Date.now();
   const combined = `${studentId}_${taskId}_${timestamp}`;
   let hash = 0;
@@ -109,7 +122,38 @@ const generateStudentSeed = (studentId, taskId) => {
     hash = ((hash << 5) - hash) + char;
     hash = hash & hash; // 转换为32位整数
   }
-  return Math.abs(hash);
+  const newSeed = Math.abs(hash);
+  
+  // 保存新的会话信息
+  const newSession = {
+    seed: newSeed,
+    completed: false,
+    startTime: new Date().toISOString()
+  };
+  localStorage.setItem(sessionKey, JSON.stringify(newSession));
+  console.log('🆕 生成新的会话种子:', newSeed);
+  
+  return newSeed;
+};
+
+// 标记会话完成
+const markSessionCompleted = (studentId, taskId) => {
+  const sessionKey = `quiz_session_${studentId}_${taskId}`;
+  const savedSession = localStorage.getItem(sessionKey);
+  if (savedSession) {
+    const session = JSON.parse(savedSession);
+    session.completed = true;
+    session.endTime = new Date().toISOString();
+    localStorage.setItem(sessionKey, JSON.stringify(session));
+    console.log('✅ 会话标记为已完成');
+  }
+};
+
+// 重新开始会话（用于重做测验）
+const restartSession = (studentId, taskId) => {
+  const sessionKey = `quiz_session_${studentId}_${taskId}`;
+  localStorage.removeItem(sessionKey);
+  console.log('🔄 会话已重置，下次进入将重新随机化');
 };
 
 const TaskQuiz = () => {
@@ -187,8 +231,23 @@ const TaskQuiz = () => {
           const startTime = new Date().toISOString();
           setTaskStartTime(startTime);
 
-          // 注意：由于每次进入都有不同的随机化顺序，不再恢复答题进度
-          // 每次都从第一题开始，确保完整的随机化体验
+          // 恢复答题进度（会话级随机化支持进度保存）
+          if (user?.user_id) {
+            const progressResponse = await fetch(`http://localhost:5001/api/tasks/${taskId}/progress?student_id=${user.user_id}`);
+            if (progressResponse.ok) {
+              const progressData = await progressResponse.json();
+              if (progressData.has_progress) {
+                // 需要将原始题目索引转换为随机化后的索引
+                const originalIndex = progressData.current_question_index || 0;
+                const originalQuestionId = questionsData[originalIndex]?.id;
+                const randomizedIndex = shuffledIndices?.findIndex(mapping => mapping.questionId === originalQuestionId) || 0;
+                
+                setCurrentQuestionIndex(randomizedIndex >= 0 ? randomizedIndex : 0);
+                setAllAnswers(progressData.answers || {});
+                console.log('✅ 进度已恢复，使用会话级随机化保持顺序一致');
+              }
+            }
+          }
         } else {
           setError('Failed to load questions');
         }
@@ -242,13 +301,61 @@ const TaskQuiz = () => {
     }));
   };
 
-  // 保存答题进度 - 由于采用了每次不同的随机化，暂时禁用进度保存
+  // 保存答题进度 - 会话级随机化支持进度保存
   const saveProgress = async () => {
-    // 由于每次进入题目顺序都不同，进度保存功能已禁用
-    // 学生需要一次性完成测验
-    setSaving(false);
-    alert('由于题目顺序随机化，不支持保存进度。请一次性完成测验。');
-    return;
+    setSaving(true);
+    try {
+      const user = JSON.parse(localStorage.getItem('user_data'));
+      const currentQuestion = questions[currentQuestionIndex];
+      
+      // 保存原始题目索引，而不是随机化后的索引
+      const originalQuestionIndex = currentQuestion?._originalIndex !== undefined 
+        ? currentQuestion._originalIndex 
+        : currentQuestionIndex;
+      
+      // 转换随机化后的答案为原始答案（与提交逻辑相同）
+      const originalAnswers = {};
+      Object.keys(allAnswers).forEach(questionId => {
+        const userAnswer = allAnswers[questionId];
+        const question = questions.find(q => q.id.toString() === questionId.toString());
+        
+        if (question && question._originalKeyMapping) {
+          const reverseMapping = {};
+          Object.keys(question._originalKeyMapping).forEach(originalKey => {
+            const newKey = question._originalKeyMapping[originalKey];
+            reverseMapping[newKey] = originalKey;
+          });
+          originalAnswers[questionId] = reverseMapping[userAnswer] || userAnswer;
+        } else {
+          originalAnswers[questionId] = userAnswer;
+        }
+      });
+
+      const response = await fetch(`http://localhost:5001/api/tasks/${taskId}/save-progress`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          student_id: user?.user_id,
+          current_question_index: originalQuestionIndex,
+          answers: originalAnswers // 使用转换后的原始答案
+        })
+      });
+
+      if (response.ok) {
+        alert('进度保存成功！您可以稍后继续答题。');
+        navigate('/student/home');
+      } else {
+        const errorData = await response.json();
+        alert(`保存进度失败: ${errorData.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error saving progress:', error);
+      alert('保存进度时出错，请重试。');
+    } finally {
+      setSaving(false);
+    }
   };
 
   // 导航到指定题目
@@ -357,6 +464,12 @@ const TaskQuiz = () => {
         console.log('Submit results:', results);
         setQuizResults(results);
         setQuizMode('results');
+        
+        // 标记当前会话为已完成
+        const user = JSON.parse(localStorage.getItem('user_data'));
+        if (user?.user_id) {
+          markSessionCompleted(user.user_id, taskId);
+        }
       } else {
         const errorText = await response.text();
         console.error('Error response:', errorText);
@@ -410,12 +523,16 @@ const TaskQuiz = () => {
     }
   };
 
-  // 重试测验
+  // 重试测验 - 重新随机化
   const retryQuiz = () => {
-    setAllAnswers({});
-    setQuizResults(null);
-    setQuizMode('answering');
-    setCurrentQuestionIndex(0);
+    const user = JSON.parse(localStorage.getItem('user_data'));
+    if (user?.user_id) {
+      // 重置会话，下次进入将重新随机化
+      restartSession(user.user_id, taskId);
+    }
+    
+    // 重新加载页面以应用新的随机化
+    window.location.reload();
   };
 
   // 返回主页
@@ -717,6 +834,44 @@ const TaskQuiz = () => {
               ));
             })()}
           </div>
+          
+          {/* 开发模式调试信息 */}
+          {process.env.NODE_ENV === 'development' && (
+            <div style={{ 
+              marginTop: '1rem', 
+              padding: '1rem', 
+              background: '#f8f9fa', 
+              border: '1px solid #dee2e6', 
+              borderRadius: '8px',
+              fontSize: '0.875rem'
+            }}>
+              <strong>🎲 会话级随机化调试:</strong>
+              <div>题目ID: {currentQuestion.id}</div>
+              <div>当前显示索引: {currentQuestionIndex + 1}</div>
+              <div>原始题目索引: {questionOrder[currentQuestionIndex]?.originalIndex + 1}</div>
+              {(() => {
+                const user = JSON.parse(localStorage.getItem('user_data') || '{}');
+                const sessionKey = `quiz_session_${user.user_id}_${taskId}`;
+                const session = JSON.parse(localStorage.getItem(sessionKey) || '{}');
+                return (
+                  <div>
+                    <div>会话种子: {session.seed}</div>
+                    <div>会话开始: {session.startTime ? new Date(session.startTime).toLocaleString() : 'N/A'}</div>
+                    <div>会话状态: {session.completed ? '已完成' : '进行中'}</div>
+                  </div>
+                );
+              })()}
+              {currentQuestion._originalKeyMapping && (
+                <div>选项映射: {JSON.stringify(currentQuestion._originalKeyMapping)}</div>
+              )}
+              <div style={{color: '#28a745', fontWeight: 'bold'}}>
+                随机化后正确答案: {currentQuestion.correct_answer}
+              </div>
+              <div style={{color: '#007bff', fontSize: '0.8rem', marginTop: '0.5rem'}}>
+                💡 会话内保持相同顺序，支持进度保存。完成后重做将重新随机化
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="quiz-actions">

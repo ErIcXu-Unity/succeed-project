@@ -8,11 +8,21 @@
 html, body {
   margin: 0;
   padding: 0;
+  width: 100%;
+  max-width: none !important;
 }
 
 * {
   box-sizing: border-box;
   font-family: "Arial", sans-serif;
+}
+
+
+#root {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 .App {
@@ -21,6 +31,9 @@ html, body {
   flex-direction: column;
   background: #f5f5f5;
   color: var(--unsw-charcoal);
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 header {
@@ -29,6 +42,8 @@ header {
   display: flex;
   align-items: center;
   gap: 1rem;
+  width: 100%;
+  margin: 0;
 }
 
 header img {
@@ -42,10 +57,12 @@ header h1 {
 
 main {
   flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem;
+  display: block;
+  width: 100vw !important;
+  min-height: calc(100vh - 120px);
+  padding: 0;
+  margin: 0;
+  max-width: none !important;
 }
 
 .card-group {
@@ -143,8 +160,8 @@ footer {
 .dashboard {
   text-align: center;
   padding: 2rem;
-  max-width: 600px;
-  margin: 0 auto;
+  width: 100%;
+  margin: 0;
 }
 
 .user-details {

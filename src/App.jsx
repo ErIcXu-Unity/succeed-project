@@ -16,6 +16,13 @@ import TaskIntro from './components/TaskIntro.jsx';
 import TaskQuiz from './components/TaskQuiz.jsx';
 import TaskEditor from './components/TaskEditor.jsx';
 import Login from './components/Login.jsx';
+import QuestionRendererTest from './components/QuestionRendererTest.jsx';
+import FillBlankQuestionCreate from './pages/FillBlankQuestionCreate.jsx';
+import SingleChoiceQuestionCreate from './pages/SingleChoiceQuestionCreate.jsx';
+import MultipleChoiceQuestionCreate from './pages/MultipleChoiceQuestionCreate.jsx';
+import PuzzleGameQuestionCreate from './pages/PuzzleGameQuestionCreate.jsx';
+import MatchingTaskQuestionCreate from './pages/MatchingTaskQuestionCreate.jsx';
+import ErrorSpottingQuestionCreate from './pages/ErrorSpottingQuestionCreate.jsx';
 
 import './App.css';
 
@@ -95,6 +102,15 @@ function AppWrapper() {
               {/* 任务管理路由 - 在TeacherLayout外部 */}
               <Route path="/teacher/tasks/new" element={<TaskEditor />} />
               <Route path="/teacher/tasks/:taskId/edit" element={<TaskEditor />} />
+              {/* Question creation routes */}
+              <Route path="/teacher/tasks/:taskId/create/single-choice" element={<SingleChoiceQuestionCreate />} />
+              <Route path="/teacher/tasks/:taskId/create/multiple-choice" element={<MultipleChoiceQuestionCreate />} />
+              <Route path="/teacher/tasks/:taskId/create/fill-blank" element={<FillBlankQuestionCreate />} />
+              <Route path="/teacher/tasks/:taskId/create/puzzle-game" element={<PuzzleGameQuestionCreate />} />
+              <Route path="/teacher/tasks/:taskId/create/matching-task" element={<MatchingTaskQuestionCreate />} />
+              <Route path="/teacher/tasks/:taskId/create/error-spotting" element={<ErrorSpottingQuestionCreate />} />
+              {/* Test route for QuestionRenderer */}
+              <Route path="/test-questions" element={<QuestionRendererTest />} />
               <Route path="*" element={<Navigate to="/teacher" replace />} />
             </>
           ) : (
@@ -110,6 +126,8 @@ function AppWrapper() {
               {/* 任务相关路由 - 在StudentLayout外部 */}
               <Route path="/student/tasks/:taskId/intro" element={<TaskIntro />} />
               <Route path="/student/tasks/:taskId/quiz" element={<TaskQuiz />} />
+              {/* Test route for QuestionRenderer */}
+              <Route path="/test-questions" element={<QuestionRendererTest />} />
               <Route path="*" element={<Navigate to="/student/home" replace />} />
             </>
           )}

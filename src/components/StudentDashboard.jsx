@@ -236,7 +236,7 @@ function StudentDashboard() {
                     )}
                   </div>
                   
-                  <Link to={`/student/task/${task.id}`} className="btn btn-primary">
+                  <Link to={`/student/tasks/${task.id}/intro`} className="btn btn-primary">
                     {hasProgress ? (
                       <>
                         <i className="fas fa-play"></i>

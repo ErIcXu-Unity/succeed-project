@@ -3,11 +3,121 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import VideoPlayer from './VideoPlayer';
 import './TaskQuiz.css';
 
+// 伪随机数生成器（基于种子）
+const seedRandom = (seed) => {
+  let value = seed;
+  return () => {
+    value = (value * 1103515245 + 12345) & 0x7fffffff;
+    return value / 0x7fffffff;
+  };
+};
+
+// 洗牌函数（基于种子的 Fisher-Yates 算法）
+const shuffleArray = (array, seed) => {
+  const shuffled = [...array];
+  const rng = seedRandom(seed);
+  
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  
+  return shuffled;
+};
+
+// 随机化题目选项顺序，同时保持正确答案映射
+const randomizeQuestionOptions = (question, seed) => {
+  // 如果不是选择题类型，直接返回原题目
+  if (question.question_type !== 'single_choice' && question.question_type !== 'multiple_choice') {
+    return question;
+  }
+
+  // 获取原始选项
+  let options = [];
+  if (question.options && typeof question.options === 'object') {
+    // 新格式：使用 options 对象
+    options = Object.entries(question.options);
+  } else if (question.option_a && question.option_b) {
+    // 旧格式：使用 option_a, option_b 等字段
+    options = [
+      ['A', question.option_a],
+      ['B', question.option_b],
+      ['C', question.option_c],
+      ['D', question.option_d]
+    ].filter(([key, value]) => value && value.trim()); // 过滤空选项
+  } else {
+    return question; // 没有有效选项，返回原题目
+  }
+
+  // 使用种子随机化选项顺序
+  const shuffledOptions = shuffleArray(options, seed + question.id);
+  
+  // 创建新的选项映射
+  const newQuestion = { ...question };
+  const keyMapping = {};
+  
+  // 根据原始格式更新选项
+  if (question.options && typeof question.options === 'object') {
+    // 新格式：更新 options 对象
+    newQuestion.options = {};
+    shuffledOptions.forEach(([originalKey, optionText], index) => {
+      const newKey = String.fromCharCode(65 + index); // A, B, C, D
+      newQuestion.options[newKey] = optionText;
+      keyMapping[originalKey] = newKey;
+    });
+  } else {
+    // 旧格式：更新 option_a, option_b 等字段
+    // 先清空现有选项
+    ['A', 'B', 'C', 'D'].forEach(key => {
+      newQuestion[`option_${key.toLowerCase()}`] = null;
+    });
+    
+    shuffledOptions.forEach(([originalKey, optionText], index) => {
+      const newKey = String.fromCharCode(65 + index); // A, B, C, D
+      newQuestion[`option_${newKey.toLowerCase()}`] = optionText;
+      keyMapping[originalKey] = newKey;
+    });
+  }
+
+  // 更新正确答案映射
+  if (question.question_type === 'single_choice') {
+    newQuestion.correct_answer = keyMapping[question.correct_answer] || question.correct_answer;
+  } else if (question.question_type === 'multiple_choice') {
+    // 多选题的正确答案可能是数组或逗号分隔的字符串
+    let correctAnswers = question.correct_answer;
+    if (typeof correctAnswers === 'string') {
+      correctAnswers = correctAnswers.split(',').map(a => a.trim());
+    }
+    const mappedAnswers = correctAnswers.map(ans => keyMapping[ans] || ans);
+    newQuestion.correct_answer = mappedAnswers.join(',');
+  }
+
+  // 保存映射关系用于调试
+  newQuestion._originalKeyMapping = keyMapping;
+  
+  return newQuestion;
+};
+
+// 生成每次都不同的随机化种子
+const generateStudentSeed = (studentId, taskId) => {
+  // 使用学生ID、任务ID和当前时间戳创建种子，确保每次都不同
+  const timestamp = Date.now();
+  const combined = `${studentId}_${taskId}_${timestamp}`;
+  let hash = 0;
+  for (let i = 0; i < combined.length; i++) {
+    const char = combined.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // 转换为32位整数
+  }
+  return Math.abs(hash);
+};
+
 const TaskQuiz = () => {
   const { taskId } = useParams();
   const navigate = useNavigate();
   const [task, setTask] = useState(null);
   const [questions, setQuestions] = useState([]);
+  const [questionOrder, setQuestionOrder] = useState([]); // 存储题目顺序映射
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [allAnswers, setAllAnswers] = useState({}); // 存储所有题目的答案选择
   const [quizMode, setQuizMode] = useState('answering'); // 'answering' 或 'results'
@@ -35,24 +145,50 @@ const TaskQuiz = () => {
         const questionsResponse = await fetch(`http://localhost:5001/api/tasks/${taskId}/questions`);
         if (questionsResponse.ok) {
           const questionsData = await questionsResponse.json();
-          setQuestions(questionsData);
+          let shuffledIndices = null;
+          
+          // 如果有用户信息，进行随机化处理
+          if (user?.user_id && questionsData.length > 0) {
+            // 生成学生特定的种子
+            const seed = generateStudentSeed(user.user_id, taskId);
+            
+            // 1. 创建题目顺序映射（原始索引 -> 随机化索引）
+            const questionIndices = questionsData.map((_, index) => ({
+              originalIndex: index,
+              questionId: questionsData[index].id
+            }));
+            shuffledIndices = shuffleArray(questionIndices, seed);
+            setQuestionOrder(shuffledIndices);
+            
+            // 2. 按照随机顺序重新排列题目，并随机化每个题目的选项
+            const randomizedQuestions = shuffledIndices.map((orderInfo, newIndex) => {
+              const originalQuestion = questionsData[orderInfo.originalIndex];
+              // 随机化选项顺序（使用题目ID作为额外的种子变化）
+              const randomizedQuestion = randomizeQuestionOptions(originalQuestion, seed);
+              return {
+                ...randomizedQuestion,
+                _originalIndex: orderInfo.originalIndex, // 保存原始索引用于答案提交
+                _displayIndex: newIndex // 显示索引
+              };
+            });
+            
+            setQuestions(randomizedQuestions);
+          } else {
+            // 没有用户信息或题目为空，使用原始顺序
+            shuffledIndices = questionsData.map((_, index) => ({
+              originalIndex: index,
+              questionId: questionsData[index]?.id
+            }));
+            setQuestions(questionsData);
+            setQuestionOrder(shuffledIndices);
+          }
 
           // 设置任务开始时间（在所有情况下都设置）
           const startTime = new Date().toISOString();
           setTaskStartTime(startTime);
 
-          // 尝试恢复答题进度
-          if (user?.user_id) {
-            const progressResponse = await fetch(`http://localhost:5001/api/tasks/${taskId}/progress?student_id=${user.user_id}`);
-            if (progressResponse.ok) {
-              const progressData = await progressResponse.json();
-              if (progressData.has_progress) {
-                setCurrentQuestionIndex(progressData.current_question_index || 0);
-                setAllAnswers(progressData.answers || {});
-                console.log('Progress restored:', progressData);
-              }
-            }
-          }
+          // 注意：由于每次进入都有不同的随机化顺序，不再恢复答题进度
+          // 每次都从第一题开始，确保完整的随机化体验
         } else {
           setError('Failed to load questions');
         }
@@ -106,36 +242,13 @@ const TaskQuiz = () => {
     }));
   };
 
-  // 保存答题进度
+  // 保存答题进度 - 由于采用了每次不同的随机化，暂时禁用进度保存
   const saveProgress = async () => {
-    setSaving(true);
-    try {
-      const user = JSON.parse(localStorage.getItem('user_data'));
-      const response = await fetch(`http://localhost:5001/api/tasks/${taskId}/save-progress`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          student_id: user?.user_id,
-          current_question_index: currentQuestionIndex,
-          answers: allAnswers
-        })
-      });
-
-      if (response.ok) {
-        alert('Progress saved successfully! You can resume later.');
-        navigate('/student/home');
-      } else {
-        const errorData = await response.json();
-        alert(`Failed to save progress: ${errorData.error || 'Unknown error'}`);
-      }
-    } catch (error) {
-      console.error('Error saving progress:', error);
-      alert('Error saving progress. Please try again.');
-    } finally {
-      setSaving(false);
-    }
+    // 由于每次进入题目顺序都不同，进度保存功能已禁用
+    // 学生需要一次性完成测验
+    setSaving(false);
+    alert('由于题目顺序随机化，不支持保存进度。请一次性完成测验。');
+    return;
   };
 
   // 导航到指定题目
@@ -186,14 +299,39 @@ const TaskQuiz = () => {
     }
 
     try {
-      // 构建提交数据
+      // 构建提交数据 - 需要将随机化后的答案转换回原始答案
       const user = JSON.parse(localStorage.getItem('user_data'));
+      
+      // 转换随机化后的答案为原始答案
+      const originalAnswers = {};
+      Object.keys(allAnswers).forEach(questionId => {
+        const userAnswer = allAnswers[questionId];
+        const question = questions.find(q => q.id.toString() === questionId.toString());
+        
+        if (question && question._originalKeyMapping) {
+          // 如果有选项映射，需要反向转换
+          const reverseMapping = {};
+          Object.keys(question._originalKeyMapping).forEach(originalKey => {
+            const newKey = question._originalKeyMapping[originalKey];
+            reverseMapping[newKey] = originalKey;
+          });
+          
+          // 将随机化后的答案转换为原始答案
+          originalAnswers[questionId] = reverseMapping[userAnswer] || userAnswer;
+        } else {
+          // 没有映射的题目直接使用原答案
+          originalAnswers[questionId] = userAnswer;
+        }
+      });
+      
       const submitData = {
-        answers: allAnswers,
+        answers: originalAnswers, // 使用转换后的原始答案
         student_id: user?.user_id,
         started_at: taskStartTime  // 包含任务开始时间
       };
 
+      console.log('Original user answers (randomized):', allAnswers);
+      console.log('Converted answers (original format):', originalAnswers);
       console.log('Submitting data:', submitData);
       console.log('Task ID:', taskId);
 
@@ -343,18 +481,33 @@ const TaskQuiz = () => {
           <h3>Question Details</h3>
           {questions.map((question, index) => {
             const userAnswer = allAnswers[question.id];
-            const correctAnswer = quizResults?.correct_answers?.[question.id];
+            // 使用随机化后题目的正确答案，而不是后端返回的
+            const correctAnswer = question.correct_answer;
             const isCorrect = userAnswer === correctAnswer;
             
             // 安全获取选项文本
             const getUserAnswerText = () => {
-              if (!userAnswer || !question.options) return 'Not answered';
-              return question.options[userAnswer] || 'Invalid option';
+              if (!userAnswer) return 'Not answered';
+              
+              // 支持两种格式的选项
+              if (question.options && typeof question.options === 'object') {
+                return question.options[userAnswer] || 'Invalid option';
+              } else if (question[`option_${userAnswer.toLowerCase()}`]) {
+                return question[`option_${userAnswer.toLowerCase()}`];
+              }
+              return 'Invalid option';
             };
             
             const getCorrectAnswerText = () => {
-              if (!correctAnswer || !question.options) return 'Unknown';
-              return question.options[correctAnswer] || 'Invalid option';
+              if (!correctAnswer) return 'Unknown';
+              
+              // 支持两种格式的选项
+              if (question.options && typeof question.options === 'object') {
+                return question.options[correctAnswer] || 'Invalid option';
+              } else if (question[`option_${correctAnswer.toLowerCase()}`]) {
+                return question[`option_${correctAnswer.toLowerCase()}`];
+              }
+              return 'Invalid option';
             };
             
             return (
@@ -535,16 +688,34 @@ const TaskQuiz = () => {
           )}
 
           <div className="options-grid">
-            {Object.entries(currentQuestion.options).map(([option, text]) => (
-              <button
-                key={option}
-                className={`option-button ${allAnswers[currentQuestion.id] === option ? 'selected' : ''}`}
-                onClick={() => handleAnswerSelect(option)}
-              >
-                <span className="option-letter">{option}</span>
-                <span className="option-text">{text}</span>
-              </button>
-            ))}
+            {(() => {
+              // 处理两种选项格式：options对象 或 option_a, option_b等字段
+              let optionsToRender = [];
+              
+              if (currentQuestion.options && typeof currentQuestion.options === 'object') {
+                // 新格式：options 对象
+                optionsToRender = Object.entries(currentQuestion.options);
+              } else if (currentQuestion.option_a) {
+                // 旧格式：option_a, option_b 等字段
+                optionsToRender = [
+                  ['A', currentQuestion.option_a],
+                  ['B', currentQuestion.option_b],
+                  ['C', currentQuestion.option_c],
+                  ['D', currentQuestion.option_d]
+                ].filter(([key, value]) => value && value.trim());
+              }
+              
+              return optionsToRender.map(([option, text]) => (
+                <button
+                  key={option}
+                  className={`option-button ${allAnswers[currentQuestion.id] === option ? 'selected' : ''}`}
+                  onClick={() => handleAnswerSelect(option)}
+                >
+                  <span className="option-letter">{option}</span>
+                  <span className="option-text">{text}</span>
+                </button>
+              ));
+            })()}
           </div>
         </div>
 

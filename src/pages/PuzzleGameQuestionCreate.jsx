@@ -86,7 +86,7 @@ const PuzzleGameQuestionCreate = () => {
       }
 
       // Success - navigate back to task page
-      navigate(`/teacher/tasks/${taskId}`);
+      navigate(`/teacher/tasks/${taskId}/edit`);
       
     } catch (err) {
       setError(err.message);

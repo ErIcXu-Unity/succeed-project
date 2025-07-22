@@ -83,8 +83,8 @@ const SingleChoiceQuestionCreate = () => {
         throw new Error(errorData.error || 'Failed to create question');
       }
 
-      // Success - navigate back to task page
-      navigate(`/teacher/tasks/${taskId}`);
+      // Success - navigate back to task edit page
+      navigate(`/teacher/tasks/${taskId}/edit`);
       
     } catch (err) {
       setError(err.message);

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import VideoUpload from './VideoUpload';
-import IntegratedQuestionModal from './IntegratedQuestionModal';
 import QuestionPreview from './QuestionPreview';
 import './TaskEditor.css';
 
@@ -21,9 +20,6 @@ const TaskEditor = () => {
   const [pendingVideo, setPendingVideo] = useState(null);
   // 新增：用于编辑模式下同步最新视频
   const [currentVideo, setCurrentVideo] = useState(null);
-  
-  // 问题创建模态框状态
-  const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
 
   // 调试：检查 taskId 的值
   console.log('TaskEditor Debug - taskId:', taskId, 'type:', typeof taskId);
@@ -36,6 +32,19 @@ const TaskEditor = () => {
 
   // 当前任务 ID（新建模式下为 null，创建后获得）
   const [currentTaskId, setCurrentTaskId] = useState(isCreateMode ? null : taskId);
+
+  // Refresh questions when user returns from question creation
+  useEffect(() => {
+    const handleFocus = () => {
+      if (!isCreateMode && (currentTaskId || taskId)) {
+        console.log('Window focused, refreshing questions...');
+        fetchExistingQuestions();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [isCreateMode, currentTaskId, taskId]);
 
   // 初始化空问题模板
   const createEmptyQuestion = () => ({
@@ -143,9 +152,25 @@ const TaskEditor = () => {
     }
   };
 
-  const addQuestion = () => {
+  const addQuestion = (questionType = 'single_choice') => {
     if (questions.length < 5) {
-      setIsQuestionModalOpen(true);
+      const taskIdForNavigation = currentTaskId || taskId;
+      if (taskIdForNavigation && taskIdForNavigation !== 'new') {
+        // Navigate to appropriate dedicated page based on question type
+        const routeMap = {
+          'single_choice': 'single-choice',
+          'multiple_choice': 'multiple-choice',
+          'fill_blank': 'fill-blank',
+          'puzzle_game': 'puzzle-game',
+          'matching_task': 'matching-task',
+          'error_spotting': 'error-spotting'
+        };
+        
+        const route = routeMap[questionType] || 'single-choice';
+        navigate(`/teacher/tasks/${taskIdForNavigation}/create/${route}`);
+      } else {
+        setError('Please save the task first before adding questions');
+      }
     }
   };
 
@@ -173,16 +198,8 @@ const TaskEditor = () => {
     }
   };
 
-  const handleQuestionCreated = (result) => {
-    console.log('新问题创建成功：', result);
-    // 重新加载问题列表
-    fetchExistingQuestions();
-    alert('问题创建成功！');
-  };
-
-  const handleQuestionModalClose = () => {
-    setIsQuestionModalOpen(false);
-  };
+  // Questions are now created via dedicated pages
+  // fetchExistingQuestions is called when returning from question creation pages
 
   // 保存待处理的视频
   const savePendingVideo = async (taskId, videoInfo) => {
@@ -495,14 +512,62 @@ const TaskEditor = () => {
         <section className="questions-section">
           <div className="questions-header">
             <h2>Questions ({questions.length}/5)</h2>
-            <button
-              onClick={addQuestion}
-              className="btn btn-primary"
-              disabled={questions.length >= 5}
-            >
-              <i className="fas fa-plus"></i>
-              Add Question
-            </button>
+            <div className="add-question-dropdown">
+              <button
+                onClick={() => addQuestion('single_choice')}
+                className="btn btn-primary"
+                disabled={questions.length >= 5}
+              >
+                <i className="fas fa-plus"></i>
+                Add Question
+              </button>
+              {questions.length < 5 && (
+                <div className="question-type-menu">
+                  <button 
+                    onClick={() => addQuestion('single_choice')}
+                    className="question-type-option"
+                  >
+                    <i className="fas fa-dot-circle"></i>
+                    <span>Single Choice</span>
+                  </button>
+                  <button 
+                    onClick={() => addQuestion('multiple_choice')}
+                    className="question-type-option"
+                  >
+                    <i className="fas fa-check-square"></i>
+                    <span>Multiple Choice</span>
+                  </button>
+                  <button 
+                    onClick={() => addQuestion('fill_blank')}
+                    className="question-type-option"
+                  >
+                    <i className="fas fa-edit"></i>
+                    <span>Fill in the Blank</span>
+                  </button>
+                  <button 
+                    onClick={() => addQuestion('puzzle_game')}
+                    className="question-type-option"
+                  >
+                    <i className="fas fa-puzzle-piece"></i>
+                    <span>Puzzle Game</span>
+                  </button>
+                  <button 
+                    onClick={() => addQuestion('matching_task')}
+                    className="question-type-option"
+                  >
+                    <i className="fas fa-exchange-alt"></i>
+                    <span>Matching Task</span>
+                  </button>
+                  <button 
+                    onClick={() => addQuestion('error_spotting')}
+                    className="question-type-option"
+                  >
+                    <i className="fas fa-search"></i>
+                    <span>Error Spotting</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           {questions.length === 0 ? (
@@ -532,14 +597,6 @@ const TaskEditor = () => {
           )}
         </section>
       </div>
-      
-      {/* 问题创建模态框 */}
-      <IntegratedQuestionModal
-        isOpen={isQuestionModalOpen}
-        onClose={handleQuestionModalClose}
-        onSubmit={handleQuestionCreated}
-        taskId={currentTaskId || taskId}
-      />
     </div>
   );
 };

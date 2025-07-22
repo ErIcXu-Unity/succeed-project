@@ -4,13 +4,14 @@
   margin: 0;
   background: linear-gradient(135deg, #fffde7, #f5f5f5);
   min-height: 100vh;
+  width: 100%;
 }
 
 /* ===== Header (Top Bar) ===== */
 .teacher-header {
   background-color: #FFD600;
-  padding: 20px;
-  font-size: 28px;
+  padding: 1rem 1.5rem;
+  font-size: 1.5rem;
   font-weight: bold;
   text-align: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -60,7 +61,91 @@ a {
 
 /* ===== Page Body Wrapper ===== */
 .teacher-main-content {
-  max-width: 1200px;
-  margin: auto;
-  padding: 30px 20px;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Main layout container */
+.teacher-dashboard {
+  width: 100vw !important;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: row;
+  max-width: none !important;
+}
+
+.header {
+  background-color: #FFD600;
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  margin: 0;
+  /* Header will be part of sidebar now */
+}
+
+.nav {
+  display: flex;
+  flex-direction: column; /* Vertical navigation */
+  background-color: #fff;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  margin: 0;
+}
+
+.nav-item {
+  padding: 15px 25px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s;
+  text-decoration: none;
+  border-left: 4px solid transparent;
+  width: 100%;
+}
+
+.nav-item i {
+  margin-right: 8px;
+  color: #FFD600;
+}
+
+.nav-item:hover {
+  background-color: #fff7c2;
+  border-left-color: #FFD600;
+}
+
+.nav-item.active {
+  background-color: #fff7c2;
+  border-left-color: #FFD600;
+  color: #1a1a1a;
+}
+
+/* Sidebar containing header and nav */
+.sidebar {
+  width: 280px;
+  min-width: 280px;
+  background: #fff;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+}
+
+.main-content {
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  min-width: 0;
+  width: calc(100vw - 280px) !important;
+  max-width: none !important;
 }

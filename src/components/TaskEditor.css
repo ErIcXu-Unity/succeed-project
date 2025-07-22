@@ -1,18 +1,180 @@
 .task-editor-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
+  width: 100%;
+  margin: 0;
+  padding: 0;
   background: #fff;
   min-height: 100vh;
 }
+
+/* Make better use of screen space */
+.task-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+  margin: 0;
+  padding: 2rem 3rem;
+}
+
+/* Optimize section spacing */
+.form-section {
+  margin-bottom: 1.5rem;
+}
+
+.form-section:last-child {
+  margin-bottom: 0;
+}
+
+/* Make input fields more compact */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+/* Optimize video section */
+.video-section {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1.5rem;
+  border: 1px solid #e9ecef;
+}
+
+/* Optimize questions section */
+.questions-section {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1.5rem;
+  border: 1px solid #e9ecef;
+}
+
+.questions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.questions-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.question-card {
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 1rem;
+  position: relative;
+  transition: box-shadow 0.2s;
+}
+
+.question-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Add Question Dropdown Styles */
+.add-question-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.add-question-dropdown:hover .question-type-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.question-type-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  min-width: 220px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
+  z-index: 1000;
+  margin-top: 0.5rem;
+  overflow: hidden;
+}
+
+.question-type-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 1rem 1.25rem;
+  border: none;
+  background: white;
+  color: #495057;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  border-bottom: 1px solid #f1f3f4;
+  position: relative;
+}
+
+.question-type-option:last-child {
+  border-bottom: none;
+  border-radius: 0 0 8px 8px;
+}
+
+.question-type-option:first-child {
+  border-radius: 8px 8px 0 0;
+}
+
+.question-type-option:hover {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e3f2fd 100%);
+  color: #2980b9;
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.15);
+}
+
+.question-type-option i {
+  color: #3498db;
+  width: 18px;
+  text-align: center;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+}
+
+.question-type-option:hover i {
+  color: #2980b9;
+  transform: scale(1.1);
+}
+
+.question-type-option span {
+  flex: 1;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.question-type-option:hover span {
+  color: #2980b9;
+}
+
+
 
 .task-editor-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
+  margin-bottom: 0;
+  padding: 2rem 3rem 1.5rem 3rem;
   border-bottom: 2px solid #f1f3f4;
+  background: #f8f9fa;
+  width: 100%;
 }
 
 .task-editor-header h1 {
@@ -84,7 +246,9 @@
 .task-editor-content {
   display: flex;
   flex-direction: column;
-  gap: 3rem;
+  gap: 2rem;
+  width: 100%;
+  padding: 0 3rem 2rem 3rem;
 }
 
 /* Task Info Section */
@@ -93,6 +257,7 @@
   padding: 2rem;
   border-radius: 12px;
   border: 1px solid #e9ecef;
+  width: 100%;
 }
 
 .task-info-section h2 {
@@ -160,6 +325,7 @@
   border: 2px solid #e9ecef;
   border-radius: 12px;
   padding: 2rem;
+  width: 100%;
 }
 
 .questions-header {
@@ -239,9 +405,10 @@
 }
 
 .questions-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
   gap: 2rem;
+  width: 100%;
 }
 
 .question-card {
@@ -250,6 +417,7 @@
   border-radius: 12px;
   padding: 1.5rem;
   transition: all 0.3s ease;
+  width: 100%;
 }
 
 .question-card:hover {

@@ -1,12 +1,9 @@
-<<<<<<< HEAD
 # pylint: disable=unexpected-keyword-arg,no-value-for-parameter
 # type: ignore[call-arg]
-=======
 """
 Main Flask Application - Escape Room Educational Platform
 Modular architecture with organized blueprints
 """
->>>>>>> 53488a296197a2cc67b72d31e9346470c0fad89e
 import os
 from flask import Flask
 from flask_cors import CORS

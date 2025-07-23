@@ -106,7 +106,7 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.modal-content input {
+.modal-content input:not(.password-input) {
   width: 100%;
   padding: 0.6rem;
   margin: 0.6rem 0;
@@ -114,7 +114,11 @@
   border-radius: 5px;
 }
 
-.modal-content button {
+.modal-content .password-input-container {
+  margin: 0.6rem 0;
+}
+
+.modal-content button:not(.password-toggle) {
   width: 100%;
   padding: 0.7rem;
   background-color: var(--unsw-charcoal);
@@ -125,7 +129,7 @@
   cursor: pointer;
 }
 
-.modal-content button:hover {
+.modal-content button:not(.password-toggle):hover {
   background-color: #000;
 }
 

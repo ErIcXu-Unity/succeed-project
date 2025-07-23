@@ -38,15 +38,23 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
       }
       
       if (expectedLength > 0) {
-        const initialAnswers = Array(expectedLength).fill('');
+        // Use saved answers if available, otherwise initialize with empty strings
+        const savedAnswers = Array.isArray(currentAnswer) ? currentAnswer : [];
+        const initialAnswers = Array(expectedLength).fill('').map((_, index) => 
+          savedAnswers[index] || ''
+        );
         setFillBlankAnswers(initialAnswers);
-        onAnswerChange(initialAnswers);
+        
+        // Only call onAnswerChange if we don't have saved answers to avoid overwriting
+        if (!Array.isArray(currentAnswer) || currentAnswer.length === 0) {
+          onAnswerChange(initialAnswers);
+        }
       }
     }
     
     // Reset hints
     setShowHints({});
-  }, [question.id]);
+  }, [question.id, currentAnswer]);
 
   // Handle fill-blank answer changes
   const handleFillBlankChange = (index, value) => {

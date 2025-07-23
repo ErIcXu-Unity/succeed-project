@@ -170,6 +170,8 @@ const TaskQuiz = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [autoSaving, setAutoSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState(null);
   const [error, setError] = useState('');
   const [taskStartTime, setTaskStartTime] = useState(null); // 任务开始时间
   const [networkStatus, setNetworkStatus] = useState('checking'); // 'online', 'offline', 'checking'
@@ -293,6 +295,77 @@ const TaskQuiz = () => {
     };
   }, []);
 
+  // 自动保存监控 - 当答案改变时触发延迟保存
+  useEffect(() => {
+    if (Object.keys(allAnswers).length === 0) return;
+
+    // 设置延迟自动保存 (3秒延迟，避免频繁保存)
+    const timeoutId = setTimeout(() => {
+      autoSave();
+    }, 3000);
+
+    return () => clearTimeout(timeoutId);
+  }, [allAnswers, networkStatus]);
+
+  // 定期自动保存 - 每60秒保存一次（防止意外丢失）
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      if (Object.keys(allAnswers).length > 0 && !document.hidden) {
+        autoSave();
+      }
+    }, 60000); // 60秒
+
+    return () => clearInterval(intervalId);
+  }, [allAnswers, networkStatus]);
+
+  // 页面可见性变化监听 - 当页面重新可见时自动保存
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && Object.keys(allAnswers).length > 0) {
+        // 页面重新可见时自动保存
+        autoSave();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [allAnswers, networkStatus]);
+
+  // 页面卸载前自动保存
+  useEffect(() => {
+    const handleBeforeUnload = async (event) => {
+      if (Object.keys(allAnswers).length > 0 && networkStatus === 'online') {
+        // 尝试同步保存（在页面卸载前）
+        try {
+          navigator.sendBeacon(`http://localhost:5001/api/tasks/${taskId}/save-progress`, 
+            JSON.stringify({
+              student_id: JSON.parse(localStorage.getItem('user_data'))?.user_id,
+              current_question_index: questions[currentQuestionIndex]?._originalIndex !== undefined 
+                ? questions[currentQuestionIndex]._originalIndex 
+                : currentQuestionIndex,
+              answers: allAnswers
+            })
+          );
+        } catch (error) {
+          console.error('Failed to save on page unload:', error);
+        }
+        
+        // 显示确认对话框
+        event.preventDefault();
+        return (event.returnValue = 'You have unsaved progress. Are you sure you want to leave?');
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [allAnswers, networkStatus, currentQuestionIndex, questions, taskId]);
+
   // 选择答案 - 支持不同问题类型
   const handleAnswerSelect = (answer) => {
     const currentQuestion = questions[currentQuestionIndex];
@@ -342,7 +415,7 @@ const TaskQuiz = () => {
   };
 
   // 保存答题进度 - 会话级随机化支持进度保存
-  const saveProgress = async () => {
+  const saveProgress = async (showSuccessMessage = true, navigateToHome = true) => {
     setSaving(true);
     try {
       const user = JSON.parse(localStorage.getItem('user_data'));
@@ -384,21 +457,52 @@ const TaskQuiz = () => {
       });
 
       if (response.ok) {
-        alert('进度保存成功！您可以稍后继续答题。');
-        navigate('/student/home');
+        if (showSuccessMessage) {
+          alert('进度保存成功！您可以稍后继续答题。');
+        }
+        if (navigateToHome) {
+          navigate('/student/home');
+        }
+        return true;
       } else {
         const errorData = await response.json();
-        alert(`保存进度失败: ${errorData.error || 'Unknown error'}`);
+        if (showSuccessMessage) {
+          alert(`保存进度失败: ${errorData.error || 'Unknown error'}`);
+        }
+        console.error('Save progress failed:', errorData);
+        return false;
       }
     } catch (error) {
       console.error('Error saving progress:', error);
-      alert('保存进度时出错，请重试。');
+      if (showSuccessMessage) {
+        alert('保存进度时出错，请重试。');
+      }
+      return false;
     } finally {
       setSaving(false);
     }
   };
 
-  // 导航到指定题目
+  // 自动保存功能
+  const autoSave = async () => {
+    // 只有在有答案的情况下才进行自动保存
+    if (Object.keys(allAnswers).length > 0 && networkStatus === 'online' && !saving && !autoSaving) {
+      setAutoSaving(true);
+      try {
+        const success = await saveProgress(false, false); // 不显示成功消息，不跳转到主页
+        if (success) {
+          setLastSaved(new Date());
+          console.log('✅ Auto-save successful');
+        }
+      } catch (error) {
+        console.error('❌ Auto-save failed:', error);
+      } finally {
+        setAutoSaving(false);
+      }
+    }
+  };
+
+  // 导航到指定题目（不带自动保存，因为调用方会处理）
   const goToQuestion = (index) => {
     if (index >= 0 && index < questions.length) {
       setCurrentQuestionIndex(index);
@@ -838,12 +942,30 @@ const TaskQuiz = () => {
                networkStatus === 'offline' ? '离线' : '检查中...'}
             </span>
           </div>
+          <div className="auto-save-status">
+            {autoSaving ? (
+              <span className="auto-saving">
+                <i className="fas fa-spinner fa-spin"></i>
+                Auto saving...
+              </span>
+            ) : lastSaved ? (
+              <span className="last-saved">
+                <i className="fas fa-check-circle"></i>
+                Saved {new Date(lastSaved).toLocaleTimeString()}
+              </span>
+            ) : (
+              <span className="not-saved">
+                <i className="fas fa-circle"></i>
+                Not saved yet
+              </span>
+            )}
+          </div>
           <div className="answered-display">
             Answered: {answeredCount}/{questions.length}
           </div>
           <button 
             className="btn btn-secondary save-exit-btn" 
-            onClick={saveProgress}
+            onClick={() => saveProgress()}
             disabled={saving || Object.keys(allAnswers).length === 0}
           >
             <i className="fas fa-save"></i>
@@ -869,7 +991,10 @@ const TaskQuiz = () => {
             className={`nav-button ${index === currentQuestionIndex ? 'current' : ''} ${
               allAnswers[questions[index].id] ? 'answered' : ''
             }`}
-            onClick={() => goToQuestion(index)}
+            onClick={async () => {
+              await autoSave();
+              goToQuestion(index);
+            }}
           >
             {index + 1}
           </button>
@@ -1005,7 +1130,10 @@ const TaskQuiz = () => {
           <div className="navigation-buttons">
             <button 
               className="btn btn-secondary" 
-              onClick={() => goToQuestion(currentQuestionIndex - 1)}
+              onClick={async () => {
+                await autoSave();
+                goToQuestion(currentQuestionIndex - 1);
+              }}
               disabled={currentQuestionIndex === 0}
             >
               <i className="fas fa-arrow-left"></i>
@@ -1015,7 +1143,10 @@ const TaskQuiz = () => {
             {currentQuestionIndex === questions.length - 1 ? (
               <button 
                 className={`btn btn-primary ${allQuestionsAnswered() ? '' : 'disabled'}`}
-                onClick={submitAllAnswers}
+                onClick={async () => {
+                  await autoSave();
+                  submitAllAnswers();
+                }}
                 disabled={!allQuestionsAnswered() || submitting}
               >
                 <i className="fas fa-paper-plane"></i>
@@ -1024,7 +1155,10 @@ const TaskQuiz = () => {
             ) : (
               <button 
                 className="btn btn-primary"
-                onClick={() => goToQuestion(currentQuestionIndex + 1)}
+                onClick={async () => {
+                  await autoSave();
+                  goToQuestion(currentQuestionIndex + 1);
+                }}
               >
                 <i className="fas fa-arrow-right"></i>
                 Next

@@ -58,11 +58,27 @@ def create_app():
 def initialize_database(app):
     """Initialize database and seed default data"""
     from models import db, Student, Teacher, Task, Achievement
+    """Initialize database and seed default data"""
+    from models import db, Student, Teacher, Task, Achievement
     from seed_data import seed_all_data
     
     with app.app_context():
         # Recreate schema from scratch each run (development only)
-        db.drop_all()
+        # try:
+        #     # Try to drop tables with CASCADE for PostgreSQL
+        #     from sqlalchemy import text
+        #     with db.engine.connect() as conn:
+        #         conn.execute(text('DROP SCHEMA IF EXISTS public CASCADE'))
+        #         conn.execute(text('CREATE SCHEMA public'))
+        #         conn.commit()
+        # except Exception as e:
+        #     print(f"Schema reset failed, trying alternative method: {e}")
+        #     # Fallback to simple drop_all (may fail with constraints)
+        #     try:
+        #         db.drop_all()
+        #     except:
+        #         print("Warning: Could not drop existing tables. Proceeding with create_all...")
+        
         db.create_all()
         
         # Seed default data from seed_data.py

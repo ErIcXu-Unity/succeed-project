@@ -175,7 +175,7 @@ const TaskEditor = () => {
   };
 
   const removeQuestion = async (questionId) => {
-    if (window.confirm('确定要删除这个问题吗？')) {
+    if (window.confirm('Are you sure you want to delete this question?')) {
       try {
         // 如果问题有 ID，说明已经保存到数据库，需要调用删除 API
         if (questionId) {
@@ -184,7 +184,7 @@ const TaskEditor = () => {
           });
           
           if (!response.ok) {
-            throw new Error('删除问题失败');
+            throw new Error('Deleting question failed');
           }
         }
         
@@ -192,8 +192,8 @@ const TaskEditor = () => {
         await fetchExistingQuestions();
         
       } catch (error) {
-        console.error('删除问题时出错：', error);
-        alert('删除问题失败，请重试');
+        console.error('Error deleting question：', error);
+        alert('Failed to delete question, please try again');
       }
     }
   };
@@ -471,17 +471,143 @@ const TaskEditor = () => {
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="publishAt">Publish Time</label>
-            <input
-              type="datetime-local"
-              id="publishAt"
-              value={publishAt}
-              onChange={(e) => setPublishAt(e.target.value)}
-              className="form-input"
-            />
-            <div className="help-text">
-              Students will only see this task after this time. Leave blank to make it visible immediately.
+          <div className="publish-time-section">
+            <div className="publish-time-header">
+              <div className="publish-time-title">
+                <i className="fas fa-calendar-alt"></i>
+                <h3>Publish Schedule</h3>
+              </div>
+              <div className="publish-status">
+                {publishAt ? (
+                  <span className="status-scheduled">
+                    <i className="fas fa-clock"></i>
+                    Scheduled
+                  </span>
+                ) : (
+                  <span className="status-immediate">
+                    <i className="fas fa-eye"></i>
+                    Immediate
+                  </span>
+                )}
+              </div>
+            </div>
+            
+            <div className="publish-time-content">
+              <div className="publish-options">
+                <div className="publish-option">
+                  <label className="radio-option">
+                    <input
+                      type="radio"
+                      name="publishOption"
+                      checked={!publishAt}
+                      onChange={() => setPublishAt('')}
+                    />
+                    <span className="radio-custom"></span>
+                    <div className="option-content">
+                      <div className="option-title">
+                        <i className="fas fa-bolt"></i>
+                        Publish Immediately
+                      </div>
+                      <div className="option-description">
+                        Students can access this task right after creation
+                      </div>
+                    </div>
+                  </label>
+                </div>
+                
+                <div className="publish-option">
+                  <label className="radio-option">
+                    <input
+                      type="radio"
+                      name="publishOption"
+                      checked={!!publishAt}
+                      onChange={() => {
+                        if (!publishAt) {
+                          // Set default to next hour
+                          const now = new Date();
+                          now.setHours(now.getHours() + 1);
+                          now.setMinutes(0);
+                          setPublishAt(now.toISOString().slice(0, 16));
+                        }
+                      }}
+                    />
+                    <span className="radio-custom"></span>
+                    <div className="option-content">
+                      <div className="option-title">
+                        <i className="fas fa-calendar-check"></i>
+                        Schedule for Later
+                      </div>
+                      <div className="option-description">
+                        Set a specific date and time for publication
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+              
+              {publishAt && (
+                <div className="datetime-picker-container">
+                  <div className="datetime-picker-wrapper">
+                    <div className="datetime-input-group">
+                      <i className="fas fa-calendar"></i>
+                      <input
+                        type="datetime-local"
+                        id="publishAt"
+                        value={publishAt}
+                        onChange={(e) => setPublishAt(e.target.value)}
+                        className="datetime-input"
+                        min={new Date().toISOString().slice(0, 16)}
+                        lang="en-US"
+                        data-locale="en-US"
+                        placeholder="Select date and time"
+                      />
+                    </div>
+                    <div className="quick-schedule-options">
+                      <button
+                        type="button"
+                        className="quick-option-btn"
+                        onClick={() => {
+                          const tomorrow = new Date();
+                          tomorrow.setDate(tomorrow.getDate() + 1);
+                          tomorrow.setHours(9, 0, 0, 0);
+                          setPublishAt(tomorrow.toISOString().slice(0, 16));
+                        }}
+                      >
+                        Tomorrow at 9:00 AM
+                      </button>
+                      <button
+                        type="button"
+                        className="quick-option-btn"
+                        onClick={() => {
+                          const nextWeek = new Date();
+                          nextWeek.setDate(nextWeek.getDate() + 7);
+                          nextWeek.setHours(9, 0, 0, 0);
+                          setPublishAt(nextWeek.toISOString().slice(0, 16));
+                        }}
+                      >
+                        Next Week at 9:00 AM
+                      </button>
+                    </div>
+                  </div>
+                  {publishAt && (
+                    <div className="schedule-preview">
+                      <i className="fas fa-info-circle"></i>
+                      <span>
+                        Task will be published on{' '}
+                        <strong>{new Date(publishAt).toLocaleString('en-US', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: true
+                        })}</strong>
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

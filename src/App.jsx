@@ -16,6 +16,7 @@ import TaskIntro from './components/TaskIntro.jsx';
 import TaskQuiz from './components/TaskQuiz.jsx';
 import TaskEditor from './components/TaskEditor.jsx';
 import Login from './components/Login.jsx';
+import ChangePasswordModal from './components/ChangePasswordModal.jsx';
 import QuestionRendererTest from './components/QuestionRendererTest.jsx';
 import FillBlankQuestionCreate from './pages/FillBlankQuestionCreate.jsx';
 import SingleChoiceQuestionCreate from './pages/SingleChoiceQuestionCreate.jsx';
@@ -30,6 +31,7 @@ function AppWrapper() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
 
   const handleLoginSuccess = (userData) => {
     setUser(userData);
@@ -46,6 +48,14 @@ function AppWrapper() {
     setUser(null);
     localStorage.removeItem('user_data');
     navigate('/', { replace: true });
+  };
+
+  const openChangePasswordModal = () => {
+    setIsChangePasswordModalOpen(true);
+  };
+
+  const closeChangePasswordModal = () => {
+    setIsChangePasswordModalOpen(false);
   };
 
   useEffect(() => {
@@ -83,6 +93,9 @@ function AppWrapper() {
         <h1>Escape Room Editor</h1>
         <div className="user-info">
           <span>Welcome, {user.real_name ? user.real_name : user.username} ({user.role === 'tea' ? 'Teacher' : 'Student'})</span>
+          <button onClick={openChangePasswordModal} className="settings-btn" title="Change Password">
+            <i className="fas fa-cog"></i>
+          </button>
           <button onClick={logout} className="logout-btn">
             Logout
           </button>
@@ -138,6 +151,13 @@ function AppWrapper() {
         &copy; 2025 UNSW Sydney •{' '}
         <a href="https://moodle.telt.unsw.edu.au">Moodle Home</a>
       </footer>
+
+      {/* 密码修改模态框 */}
+      <ChangePasswordModal
+        isOpen={isChangePasswordModalOpen}
+        onClose={closeChangePasswordModal}
+        user={user}
+      />
     </div>
   );
 }

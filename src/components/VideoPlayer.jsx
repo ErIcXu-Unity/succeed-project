@@ -7,7 +7,7 @@ const VideoPlayer = ({ task }) => {
       <div className="simple-video-player">
         <div className="no-video-notice">
           <i className="fas fa-video-slash"></i>
-          <p>此任务暂未添加视频</p>
+          <p>There is no video added to this task yet</p>
         </div>
       </div>
     );

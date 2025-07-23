@@ -21,12 +21,7 @@ def get_questions(task_id):
             'question_type': q.question_type or 'single_choice',
             'question_data': q.question_data,
             'correct_answer': q.correct_answer,
-            'options': {
-                'A': q.option_a,
-                'B': q.option_b,
-                'C': q.option_c,
-                'D': q.option_d
-            },
+            'options': {},  # 将被智能填充
             'option_a': q.option_a,
             'option_b': q.option_b,
             'option_c': q.option_c,
@@ -35,6 +30,59 @@ def get_questions(task_id):
             'score': q.score,
             'description': q.description
         }
+        
+        # 智能构建options对象 - 根据问题类型处理
+        try:
+            if q.question_type == 'multiple_choice' and q.question_data:
+                # Multiple Choice: 从question_data JSON中解析选项
+                parsed_data = json.loads(q.question_data)
+                options_list = parsed_data.get('options', [])
+                
+                # 将选项数组转换为A/B/C/D格式
+                for i, option_text in enumerate(options_list):
+                    if i < 26:  # 支持最多26个选项(A-Z)
+                        letter = chr(65 + i)  # A, B, C, D, ...
+                        question_data['options'][letter] = option_text
+                        
+                # 为Multiple Choice设置正确答案（如果需要）
+                if 'correct_answers' in parsed_data:
+                    correct_indices = parsed_data['correct_answers']
+                    if correct_indices:
+                        # 将第一个正确答案设为primary correct_answer（兼容性）
+                        first_correct = correct_indices[0]
+                        if first_correct < len(options_list):
+                            question_data['correct_answer'] = chr(65 + first_correct)
+                            
+            elif q.question_type == 'single_choice':
+                # Single Choice: 使用传统字段
+                question_data['options'] = {
+                    'A': q.option_a,
+                    'B': q.option_b,
+                    'C': q.option_c,
+                    'D': q.option_d
+                }
+            else:
+                # 其他问题类型: 使用传统字段（如果存在）
+                if q.option_a or q.option_b or q.option_c or q.option_d:
+                    question_data['options'] = {
+                        'A': q.option_a,
+                        'B': q.option_b,
+                        'C': q.option_c,
+                        'D': q.option_d
+                    }
+                else:
+                    question_data['options'] = {}
+                    
+        except (json.JSONDecodeError, TypeError, KeyError) as e:
+            # JSON解析失败的容错处理
+            print(f"Warning: Failed to parse question_data for question {q.id}: {e}")
+            question_data['options'] = {
+                'A': q.option_a,
+                'B': q.option_b,
+                'C': q.option_c,
+                'D': q.option_d
+            }
+        
         # 添加图片路径（如果存在）
         if q.image_path:
             question_data['image_url'] = f"/uploads/questions/{q.image_path}"

@@ -51,7 +51,6 @@ def submit_task(task_id):
         is_correct = False
         if question.question_type == 'fill_blank':
             # Debug logging for fill blank questions
-            import json
             question_data = json.loads(question.question_data) if isinstance(question.question_data, str) else question.question_data
             correct_blank_answers = question_data.get('blank_answers', [])
             
@@ -85,8 +84,39 @@ def submit_task(task_id):
             
             print(f"Final result: is_correct = {is_correct}")
             print("=== END FILL BLANK DEBUG ===")
+        elif question.question_type == 'multiple_choice':
+            # Handle Multiple Choice questions - selected should be an array of indices
+            try:
+                question_data = json.loads(question.question_data) if isinstance(question.question_data, str) else question.question_data
+                correct_indices = question_data.get('correct_answers', [])
+                
+                print(f"=== MULTIPLE CHOICE SCORING DEBUG ===")
+                print(f"Question ID: {question.id}")
+                print(f"User answer type: {type(selected)}")
+                print(f"User answer: {selected}")
+                print(f"Correct indices: {correct_indices}")
+                
+                # Check if user answer is a list and matches correct answers
+                if isinstance(selected, list):
+                    # Sort both arrays for comparison (order doesn't matter)
+                    user_sorted = sorted(selected) if selected else []
+                    correct_sorted = sorted(correct_indices) if correct_indices else []
+                    is_correct = user_sorted == correct_sorted
+                    print(f"Sorted user: {user_sorted}, Sorted correct: {correct_sorted}")
+                    print(f"Is correct: {is_correct}")
+                else:
+                    print(f"ERROR: Expected list but got {type(selected)}")
+                
+                print("=== END MULTIPLE CHOICE DEBUG ===")
+            except (json.JSONDecodeError, TypeError, KeyError) as e:
+                print(f"Error parsing multiple choice question data: {e}")
+                is_correct = False
+        elif question.question_type == 'single_choice':
+            # Handle Single Choice questions - selected is a string
+            if isinstance(selected, str) and selected.upper() == question.correct_answer:
+                is_correct = True
         else:
-            # Handle single/multiple choice questions - selected is a string
+            # Handle other question types with generic string comparison
             if isinstance(selected, str) and selected.upper() == question.correct_answer:
                 is_correct = True
         

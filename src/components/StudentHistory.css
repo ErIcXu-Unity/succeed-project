@@ -350,7 +350,7 @@
 .modal-content {
   background: white;
   border-radius: 15px;
-  max-width: 900px;
+  max-width: 1400px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
@@ -407,7 +407,7 @@
 }
 
 .modal-body {
-  padding: 2rem;
+  padding: 2.5rem 3rem;
 }
 
 /* Modal Loading and Error States */
@@ -467,18 +467,25 @@
 
 .summary-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 280px));
+  gap: 1.5rem;
   margin-bottom: 1.5rem;
+  justify-content: center;
 }
 
 .stat-card {
   background: var(--gray-light);
-  padding: 1rem;
-  border-radius: 10px;
+  padding: 1.5rem 1rem;
+  border-radius: 12px;
   text-align: center;
   position: relative;
   overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .stat-card::before {
@@ -748,6 +755,8 @@
 
   .summary-stats {
     grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    justify-content: stretch;
   }
 
   .question-header {

@@ -340,7 +340,8 @@ const TaskEditor = () => {
       
       // 延迟跳转，让用户看到成功信息
       setTimeout(() => {
-        navigate('/teacher');
+        // Navigate back and force a refresh by adding timestamp
+        navigate('/teacher', { replace: true, state: { refresh: Date.now() } });
       }, 1000);
 
     } catch (error) {

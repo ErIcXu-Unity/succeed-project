@@ -259,6 +259,55 @@ const TaskQuiz = () => {
             });
             
             setQuestions(randomizedQuestions);
+            
+            // 恢复答题进度（会话级随机化支持进度保存）
+            const progressResponse = await fetch(`http://localhost:5001/api/tasks/${taskId}/progress?student_id=${user.user_id}`);
+            if (progressResponse.ok) {
+              const progressData = await progressResponse.json();
+              if (progressData.has_progress) {
+                // 需要将原始题目索引转换为随机化后的索引
+                const originalIndex = progressData.current_question_index || 0;
+                const originalQuestionId = questionsData[originalIndex]?.id;
+                const randomizedIndex = shuffledIndices?.findIndex(mapping => mapping.questionId === originalQuestionId) || 0;
+                
+                setCurrentQuestionIndex(randomizedIndex >= 0 ? randomizedIndex : 0);
+                
+                // 将原始格式的答案转换为随机化后的格式
+                const convertedAnswers = {};
+                const originalAnswers = progressData.answers || {};
+                
+                Object.keys(originalAnswers).forEach(questionId => {
+                  const originalAnswer = originalAnswers[questionId];
+                  const randomizedQuestion = randomizedQuestions.find(q => q.id.toString() === questionId.toString());
+                  
+                  if (randomizedQuestion) {
+                    if (randomizedQuestion.question_type === 'multiple_choice' && randomizedQuestion._indexMapping && Array.isArray(originalAnswer)) {
+                      // Multiple Choice: 将原始索引转换为随机化后的索引
+                      convertedAnswers[questionId] = originalAnswer.map(originalIndex => {
+                        return randomizedQuestion._indexMapping[originalIndex] !== undefined 
+                          ? randomizedQuestion._indexMapping[originalIndex] 
+                          : originalIndex;
+                      });
+                    } else if (randomizedQuestion._originalKeyMapping) {
+                      // Single Choice: 将原始字母转换为随机化后的字母
+                      convertedAnswers[questionId] = randomizedQuestion._originalKeyMapping[originalAnswer] || originalAnswer;
+                    } else {
+                      // 其他题型直接使用原答案
+                      convertedAnswers[questionId] = originalAnswer;
+                    }
+                  } else {
+                    // 找不到对应题目，直接使用原答案
+                    convertedAnswers[questionId] = originalAnswer;
+                  }
+                });
+                
+                setAllAnswers(convertedAnswers);
+                console.log('✅ 进度已恢复，答案已转换为随机化格式', {
+                  originalAnswers,
+                  convertedAnswers
+                });
+              }
+            }
           } else {
             // 没有用户信息或题目为空，使用原始顺序
             shuffledIndices = questionsData.map((_, index) => ({
@@ -272,24 +321,6 @@ const TaskQuiz = () => {
           // 设置任务开始时间（在所有情况下都设置）
           const startTime = new Date().toISOString();
           setTaskStartTime(startTime);
-
-          // 恢复答题进度（会话级随机化支持进度保存）
-          if (user?.user_id) {
-            const progressResponse = await fetch(`http://localhost:5001/api/tasks/${taskId}/progress?student_id=${user.user_id}`);
-            if (progressResponse.ok) {
-              const progressData = await progressResponse.json();
-              if (progressData.has_progress) {
-                // 需要将原始题目索引转换为随机化后的索引
-                const originalIndex = progressData.current_question_index || 0;
-                const originalQuestionId = questionsData[originalIndex]?.id;
-                const randomizedIndex = shuffledIndices?.findIndex(mapping => mapping.questionId === originalQuestionId) || 0;
-                
-                setCurrentQuestionIndex(randomizedIndex >= 0 ? randomizedIndex : 0);
-                setAllAnswers(progressData.answers || {});
-                console.log('✅ 进度已恢复，使用会话级随机化保持顺序一致');
-              }
-            }
-          }
         } else {
           setError('Failed to load questions');
         }

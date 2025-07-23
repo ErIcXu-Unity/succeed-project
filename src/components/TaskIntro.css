@@ -1,7 +1,7 @@
 /* TaskIntro.css - 清理和改进的样式 */
 
 .task-intro-container {
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -106,7 +106,7 @@
 .task-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 2.5rem 2rem;
+  padding: 3rem 2rem;
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -125,7 +125,7 @@
 
 .task-title {
   margin: 0 0 1rem 0;
-  font-size: 2.5rem;
+  font-size: 3rem;
   font-weight: 700;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   position: relative;
@@ -153,7 +153,7 @@
 
 /* 任务说明 */
 .task-description {
-  padding: 2.5rem 2rem;
+  padding: 3rem 2.5rem;
   border-bottom: 1px solid #e2e8f0;
   background: #fafbfc;
 }
@@ -161,7 +161,7 @@
 .task-description h2 {
   margin: 0 0 1.5rem 0;
   color: #2d3748;
-  font-size: 1.75rem;
+  font-size: 2rem;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -170,7 +170,7 @@
 
 .description-content {
   background: white;
-  padding: 1.5rem;
+  padding: 2rem;
   border-radius: 10px;
   border-left: 4px solid #007bff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
@@ -178,7 +178,7 @@
 
 .description-content p {
   margin: 0 0 1rem 0;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   line-height: 1.7;
   color: #4a5568;
 }
@@ -189,7 +189,7 @@
 
 /* 视频区域 */
 .task-video {
-  padding: 2.5rem 2rem;
+  padding: 3rem 2.5rem;
   border-bottom: 1px solid #e2e8f0;
   background: #f7fafc;
 }
@@ -197,7 +197,7 @@
 .task-video h2 {
   margin: 0 0 1.5rem 0;
   color: #2d3748;
-  font-size: 1.75rem;
+  font-size: 2rem;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -213,7 +213,7 @@
 
 /* 操作按钮区域 */
 .task-actions {
-  padding: 2.5rem 2rem;
+  padding: 3rem 2.5rem;
   text-align: center;
   background: white;
 }
@@ -231,15 +231,15 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 1rem 2rem;
+  padding: 1.2rem 2.5rem;
   border: none;
   border-radius: 10px;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   text-decoration: none;
-  min-width: 140px;
+  min-width: 160px;
   justify-content: center;
 }
 
@@ -288,7 +288,7 @@
 
 /* 提示信息部分 */
 .task-tips {
-  padding: 2.5rem 2rem;
+  padding: 3rem 2.5rem;
   background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
   border-top: 1px solid #e2e8f0;
 }
@@ -311,16 +311,16 @@
   margin: 0;
   display: grid;
   gap: 1rem;
-  max-width: 600px;
+  max-width: 800px;
   margin: 0 auto;
 }
 
 .tips-list li {
   background: white;
-  padding: 1rem 1.5rem;
+  padding: 1.2rem 1.8rem;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  font-size: 1rem;
+  font-size: 1.1rem;
   color: #4a5568;
   line-height: 1.6;
   border-left: 4px solid #007bff;
@@ -349,8 +349,31 @@
 }
 
 /* 响应式设计 */
+@media (max-width: 1024px) {
+  .task-intro-container {
+    max-width: 900px;
+    padding: 1.5rem;
+  }
+  
+  .task-title {
+    font-size: 2.5rem;
+  }
+  
+  .task-header {
+    padding: 2.5rem 2rem;
+  }
+  
+  .task-description,
+  .task-video,
+  .task-actions,
+  .task-tips {
+    padding: 2.5rem 2rem;
+  }
+}
+
 @media (max-width: 768px) {
   .task-intro-container {
+    max-width: 100%;
     padding: 1rem;
   }
   

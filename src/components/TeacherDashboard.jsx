@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './TeacherDashboard.css';
 
 const TeacherDashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
@@ -20,11 +21,42 @@ const TeacherDashboard = () => {
     fetchTasks();
   }, []);
 
+  // Watch for navigation state changes to refresh data
+  useEffect(() => {
+    if (location.state?.refresh) {
+      fetchTasks();
+    }
+  }, [location.state]);
+
+  // Add effect to refetch tasks when page becomes visible or focused
+  // This ensures fresh data when returning from TaskEditor
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchTasks();
+      }
+    };
+
+    const handleFocus = () => {
+      fetchTasks();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, []);
+
   const fetchTasks = async () => {
     try {
       const user = JSON.parse(localStorage.getItem('user_data'));
       const role = user?.role === 'tea' ? 'tea' : 'stu';
-      const response = await fetch(`http://localhost:5001/api/tasks?role=${role}`);
+      // Add timestamp to prevent caching issues with task status updates
+      const timestamp = new Date().getTime();
+      const response = await fetch(`http://localhost:5001/api/tasks?role=${role}&_t=${timestamp}`);
       
       if (response.ok) {
         const data = await response.json();

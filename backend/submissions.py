@@ -34,6 +34,9 @@ def submit_task(task_id):
 
     # to collect correct answers for frontend
     correct_answers = {}
+    
+    # to collect per-question results for frontend
+    question_results = []
 
     # grade each question
     for q_id_str, selected in answers.items():
@@ -43,9 +46,61 @@ def submit_task(task_id):
             continue
         questions_count += 1
         correct_answers[q_id_str] = question.correct_answer
-        if selected.upper() == question.correct_answer:
+        
+        # Handle different question types
+        is_correct = False
+        if question.question_type == 'fill_blank':
+            # Debug logging for fill blank questions
+            import json
+            question_data = json.loads(question.question_data) if isinstance(question.question_data, str) else question.question_data
+            correct_blank_answers = question_data.get('blank_answers', [])
+            
+            print(f"=== FILL BLANK SCORING DEBUG ===")
+            print(f"Question ID: {question.id}")
+            print(f"User answer type: {type(selected)}")
+            print(f"User answer: {selected}")
+            print(f"Correct answers: {correct_blank_answers}")
+            
+            # Handle fill blank questions - selected should be an array of answers
+            if isinstance(selected, list):
+                print(f"Processing as list with {len(selected)} items vs {len(correct_blank_answers)} expected")
+                # Check if all blanks are correct (case-insensitive comparison)
+                if len(selected) == len(correct_blank_answers):
+                    comparisons = []
+                    for i, (user_answer, correct_answer) in enumerate(zip(selected, correct_blank_answers)):
+                        user_clean = (user_answer or '').strip().lower()
+                        correct_clean = (correct_answer or '').strip().lower()
+                        matches = user_clean == correct_clean
+                        comparisons.append(f"Blank {i+1}: '{user_clean}' == '{correct_clean}' ? {matches}")
+                    
+                    print(f"Comparisons: {comparisons}")
+                    is_correct = all(
+                        (user_answer or '').strip().lower() == (correct_answer or '').strip().lower()
+                        for user_answer, correct_answer in zip(selected, correct_blank_answers)
+                    )
+                else:
+                    print(f"Length mismatch: got {len(selected)} answers, expected {len(correct_blank_answers)}")
+            else:
+                print(f"ERROR: Expected list but got {type(selected)}: {selected}")
+            
+            print(f"Final result: is_correct = {is_correct}")
+            print("=== END FILL BLANK DEBUG ===")
+        else:
+            # Handle single/multiple choice questions - selected is a string
+            if isinstance(selected, str) and selected.upper() == question.correct_answer:
+                is_correct = True
+        
+        if is_correct:
             total_score   += question.score
             correct_count += 1
+        
+        # Add per-question result
+        question_results.append({
+            'question_id': question.id,
+            'is_correct': is_correct,
+            'score': question.score if is_correct else 0,
+            'user_answer': selected
+        })
 
     # 解析开始时间
     task_started_at = None
@@ -194,10 +249,11 @@ def submit_task(task_id):
         # 进度删除失败不影响主流程
         print(f"Warning: Failed to delete progress record: {str(e)}")
 
-    # return score, new achievements, and the map of correct answers
+    # return score, new achievements, correct answers, and per-question results
     return jsonify({
         'total_score':     total_score,
         'new_achievements': new_achievements,
-        'correct_answers':  correct_answers
+        'correct_answers':  correct_answers,
+        'results':         question_results
     }), 200
 

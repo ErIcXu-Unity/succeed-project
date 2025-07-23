@@ -61,13 +61,12 @@ const PuzzleGameQuestionCreate = () => {
       formDataToSend.append('score', formData.score);
       formDataToSend.append('description', formData.description);
       
-      // Add puzzle game specific data
-      const questionData = {
-        puzzle_solution: formData.puzzle_solution,
-        puzzle_fragments: formData.puzzle_fragments
-      };
+      // Add puzzle game specific data in the format backend expects
+      formDataToSend.append('puzzle_solution', formData.puzzle_solution);
       
-      formDataToSend.append('question_data', JSON.stringify(questionData));
+      formData.puzzle_fragments.forEach((fragment, index) => {
+        formDataToSend.append(`puzzle_fragments[${index}]`, fragment);
+      });
       
       // Add user ID
       const user = JSON.parse(localStorage.getItem('user_data'));

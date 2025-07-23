@@ -64,14 +64,18 @@ const MatchingTaskQuestionCreate = () => {
       formDataToSend.append('score', formData.score);
       formDataToSend.append('description', formData.description);
       
-      // Add matching task specific data
-      const questionData = {
-        left_items: formData.left_items,
-        right_items: formData.right_items,
-        correct_matches: formData.correct_matches
-      };
+      // Add matching task specific data in the format backend expects
+      formData.left_items.forEach((item, index) => {
+        formDataToSend.append(`left_items[${index}]`, item);
+      });
       
-      formDataToSend.append('question_data', JSON.stringify(questionData));
+      formData.right_items.forEach((item, index) => {
+        formDataToSend.append(`right_items[${index}]`, item);
+      });
+      
+      formData.correct_matches.forEach((match, index) => {
+        formDataToSend.append(`correct_matches[${index}]`, match);
+      });
       
       // Add user ID
       const user = JSON.parse(localStorage.getItem('user_data'));

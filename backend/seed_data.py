@@ -2,7 +2,7 @@
 Database Seeding Functions for the Escape Room Application
 """
 from werkzeug.security import generate_password_hash
-from models import db, Teacher, Task, Achievement
+from models import db, Teacher, Student, Task, Achievement
 
 def seed_default_teachers():
     """Seed default teacher accounts"""
@@ -30,6 +30,33 @@ def seed_default_teachers():
                 password=generate_password_hash(t['password_plain'])
             ))
             print(f"Created teacher: {t['real_name']}")
+
+def seed_default_students():
+    """Seed default student accounts for testing"""
+    default_students = [
+        {
+            'real_name': 'Test Student',
+            'student_id': 's2000',
+            'username': 'test@student.com',
+            'password_plain': '123456'
+        },
+        {
+            'real_name': 'Demo Student',
+            'student_id': 's2001',
+            'username': 'demo@student.com',
+            'password_plain': '123456'
+        }
+    ]
+    
+    for s in default_students:
+        if not Student.query.filter_by(username=s['username']).first():
+            db.session.add(Student(
+                real_name=s['real_name'],
+                student_id=s['student_id'],
+                username=s['username'],
+                password=generate_password_hash(s['password_plain'])
+            ))
+            print(f"Created student: {s['real_name']} ({s['username']})")
 
 def seed_default_tasks():
     """Seed default escape room tasks"""
@@ -153,6 +180,7 @@ def seed_default_achievements():
 def seed_all_data():
     """Seed all default data"""
     seed_default_teachers()
+    seed_default_students()
     seed_default_tasks()
     seed_default_achievements()
     db.session.commit()

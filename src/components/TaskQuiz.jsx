@@ -1086,44 +1086,7 @@ const TaskQuiz = () => {
               onAnswerChange={handleAnswerSelect}
             />
           </div>
-          
-          {/* 开发模式调试信息 */}
-          {process.env.NODE_ENV === 'development' && (
-            <div style={{ 
-              marginTop: '1rem', 
-              padding: '1rem', 
-              background: '#f8f9fa', 
-              border: '1px solid #dee2e6', 
-              borderRadius: '8px',
-              fontSize: '0.875rem'
-            }}>
-              <strong>🎲 会话级随机化调试:</strong>
-              <div>题目ID: {currentQuestion.id}</div>
-              <div>当前显示索引: {currentQuestionIndex + 1}</div>
-              <div>原始题目索引: {questionOrder[currentQuestionIndex]?.originalIndex + 1}</div>
-              {(() => {
-                const user = JSON.parse(localStorage.getItem('user_data') || '{}');
-                const sessionKey = `quiz_session_${user.user_id}_${taskId}`;
-                const session = JSON.parse(localStorage.getItem(sessionKey) || '{}');
-                return (
-                  <div>
-                    <div>会话种子: {session.seed}</div>
-                    <div>会话开始: {session.startTime ? new Date(session.startTime).toLocaleString() : 'N/A'}</div>
-                    <div>会话状态: {session.completed ? '已完成' : '进行中'}</div>
-                  </div>
-                );
-              })()}
-              {currentQuestion._originalKeyMapping && (
-                <div>选项映射: {JSON.stringify(currentQuestion._originalKeyMapping)}</div>
-              )}
-              <div style={{color: '#28a745', fontWeight: 'bold'}}>
-                随机化后正确答案: {currentQuestion.correct_answer}
-              </div>
-              <div style={{color: '#007bff', fontSize: '0.8rem', marginTop: '0.5rem'}}>
-                💡 会话内保持相同顺序，支持进度保存。完成后重做将重新随机化
-              </div>
-            </div>
-          )}
+
         </div>
 
         <div className="quiz-actions">

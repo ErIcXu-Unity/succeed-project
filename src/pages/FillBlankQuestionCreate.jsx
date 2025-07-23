@@ -13,20 +13,7 @@ const FillBlankQuestionCreate = () => {
     difficulty: 'Easy',
     score: 3,
     description: '',
-    
-    // Legacy format
-    blank_answers: [''],
-    
-    // Enhanced format
-    fill_blank_template: '',
-    fill_blank_blanks: [
-      {
-        id: 0,
-        placeholder: '',
-        correct_answer: '',
-        hints: ['']
-      }
-    ]
+    blank_answers: ['']
   });
   
   const [loading, setLoading] = useState(false);
@@ -38,7 +25,24 @@ const FillBlankQuestionCreate = () => {
       return false;
     }
 
-    if (formData.blank_answers && formData.blank_answers.some(answer => !(answer || '').trim())) {
+    // Check if we have blank_answers and if any are filled
+    const blankAnswers = formData.blank_answers || [];
+    const hasFilledAnswers = blankAnswers.some(answer => (answer || '').trim() !== '');
+    
+    if (!hasFilledAnswers) {
+      setError('At least one blank answer must be filled');
+      return false;
+    }
+
+    // For validation, only check answers that should be filled based on template
+    const templateMatches = (formData.question || '').match(/\{\{[^}]+\}\}/g) || [];
+    const expectedBlanks = Math.max(templateMatches.length, 1);
+    
+    // Check that we have answers for the expected number of blanks
+    const answersToCheck = blankAnswers.slice(0, expectedBlanks);
+    const hasEmptyRequiredAnswers = answersToCheck.some(answer => !(answer || '').trim());
+    
+    if (hasEmptyRequiredAnswers) {
       setError('All blank answers must be filled');
       return false;
     }
@@ -66,8 +70,9 @@ const FillBlankQuestionCreate = () => {
       formDataToSend.append('score', formData.score);
       formDataToSend.append('description', formData.description);
       
-      // Add fill-blank specific data in the format backend expects
-      formData.blank_answers.forEach((answer, index) => {
+      // Add fill-blank specific data in the format backend expects (only filled answers)
+      const filledAnswers = (formData.blank_answers || []).filter(answer => (answer || '').trim());
+      filledAnswers.forEach((answer, index) => {
         formDataToSend.append(`blank_answers[${index}]`, answer);
       });
       

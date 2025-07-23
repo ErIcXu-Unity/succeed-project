@@ -139,3 +139,12 @@
 .close-btn:hover {
   color: #000;
 }
+
+/* 示例文本样式 */
+.example-text {
+  font-size: 0.85rem;
+  color: #999;
+  margin-bottom: 0.5rem;
+  text-align: left;
+  padding-left: 0.2rem;
+}

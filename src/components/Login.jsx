@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Register from './Register.jsx';
+import PasswordInput from './PasswordInput.jsx';
 import './Login.css';
 
 const Login = ({ onLoginSuccess }) => {
@@ -136,6 +137,10 @@ const Login = ({ onLoginSuccess }) => {
             
             {error && <div style={{ color: 'red', marginBottom: '1rem' }}>{error}</div>}
             
+            {modalTitle === 'Student Login' && (
+              <div className="example-text">example: 123456@stu.com</div>
+            )}
+            
             <input
               type="text"
               name="username"
@@ -143,8 +148,8 @@ const Login = ({ onLoginSuccess }) => {
               value={loginData.username}
               onChange={handleInputChange}
             />
-            <input
-              type="password"
+            
+            <PasswordInput
               name="password"
               placeholder="Password"
               value={loginData.password}

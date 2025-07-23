@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import PasswordInput from './PasswordInput.jsx';
 import './Login.css'; // Reuse the same CSS
 
 const Register = ({ onBackToLogin }) => {
@@ -145,8 +146,7 @@ const Register = ({ onBackToLogin }) => {
                 style={{ padding: '0.8rem', border: '1px solid #ccc', borderRadius: '5px', backgroundColor: '#f9f9f9' }}
               />
               
-              <input
-                type="password"
+              <PasswordInput
                 name="password"
                 placeholder="Password (min 6 characters)"
                 value={formData.password}
@@ -156,8 +156,7 @@ const Register = ({ onBackToLogin }) => {
                 style={{ padding: '0.8rem', border: '1px solid #ccc', borderRadius: '5px' }}
               />
               
-              <input
-                type="password"
+              <PasswordInput
                 name="confirmPassword"
                 placeholder="Confirm Password"
                 value={formData.confirmPassword}

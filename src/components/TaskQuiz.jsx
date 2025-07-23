@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import VideoPlayer from './VideoPlayer';
+import InteractiveQuestionRenderer from './InteractiveQuestionRenderer';
 import './TaskQuiz.css';
 
 // 伪随机数生成器（基于种子）
@@ -292,13 +293,52 @@ const TaskQuiz = () => {
     };
   }, []);
 
-  // 选择答案
-  const handleAnswerSelect = (option) => {
+  // 选择答案 - 支持不同问题类型
+  const handleAnswerSelect = (answer) => {
     const currentQuestion = questions[currentQuestionIndex];
     setAllAnswers(prev => ({
       ...prev,
-      [currentQuestion.id]: option
+      [currentQuestion.id]: answer
     }));
+  };
+
+  // 渲染问题文本，将 {{placeholder}} 转换为样式化的空白占位符
+  const renderQuestionText = (question) => {
+    const questionText = question.question || '';
+    
+    // 如果不是填空题或没有占位符，直接返回原文本
+    if (question.question_type !== 'fill_blank' || !questionText.includes('{{')) {
+      return questionText;
+    }
+
+    // 分割文本并替换占位符
+    const parts = questionText.split(/\{\{[^}]+\}\}/);
+    const placeholders = questionText.match(/\{\{[^}]+\}\}/g) || [];
+    
+    const elements = [];
+    
+    for (let i = 0; i < parts.length; i++) {
+      // 添加文本部分
+      if (parts[i]) {
+        elements.push(
+          <span key={`text-${i}`}>{parts[i]}</span>
+        );
+      }
+      
+      // 添加占位符（样式化的空白）
+      if (i < placeholders.length) {
+        const placeholderText = placeholders[i].replace(/[{}]/g, '').trim();
+        elements.push(
+          <span key={`placeholder-${i}`} className="question-placeholder">
+            <span className="placeholder-box">
+              <span className="placeholder-hint">{placeholderText}</span>
+            </span>
+          </span>
+        );
+      }
+    }
+    
+    return <span className="question-with-placeholders">{elements}</span>;
   };
 
   // 保存答题进度 - 会话级随机化支持进度保存
@@ -441,6 +481,18 @@ const TaskQuiz = () => {
       console.log('Converted answers (original format):', originalAnswers);
       console.log('Submitting data:', submitData);
       console.log('Task ID:', taskId);
+      
+      // Debug Fill Blank questions specifically
+      Object.keys(allAnswers).forEach(questionId => {
+        const question = questions.find(q => q.id.toString() === questionId.toString());
+        if (question && question.question_type === 'fill_blank') {
+          console.log(`Fill Blank Question ${questionId}:`, {
+            userAnswer: allAnswers[questionId],
+            convertedAnswer: originalAnswers[questionId],
+            questionType: question.question_type
+          });
+        }
+      });
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 秒超时
@@ -462,6 +514,7 @@ const TaskQuiz = () => {
       if (response.ok) {
         const results = await response.json();
         console.log('Submit results:', results);
+        console.log('Submit results detailed:', JSON.stringify(results, null, 2));
         setQuizResults(results);
         setQuizMode('results');
         
@@ -600,13 +653,65 @@ const TaskQuiz = () => {
             const userAnswer = allAnswers[question.id];
             // 使用随机化后题目的正确答案，而不是后端返回的
             const correctAnswer = question.correct_answer;
-            const isCorrect = userAnswer === correctAnswer;
             
-            // 安全获取选项文本
+            // 判断答案是否正确 - 支持不同问题类型
+            let isCorrect = false;
+            if (question.question_type === 'fill_blank' || 
+                question.question_type === 'puzzle_game' || 
+                question.question_type === 'matching_task' || 
+                question.question_type === 'error_spotting') {
+              // For complex question types, check backend results
+              const questionResult = quizResults?.results?.find(r => r.question_id === question.id);
+              isCorrect = questionResult ? questionResult.is_correct : false;
+            } else {
+              // For choice questions, use direct comparison
+              isCorrect = userAnswer === correctAnswer;
+            }
+            
+            // 安全获取选项文本 - 支持不同问题类型
             const getUserAnswerText = () => {
-              if (!userAnswer) return 'Not answered';
+              if (!userAnswer && userAnswer !== 0) return 'Not answered';
               
-              // 支持两种格式的选项
+              // Handle Fill Blank questions
+              if (question.question_type === 'fill_blank') {
+                if (Array.isArray(userAnswer)) {
+                  return (
+                    <div className="fill-blank-answers">
+                      {userAnswer.map((answer, index) => (
+                        <span key={index} className="blank-answer-item">
+                          <span className="blank-number">#{index + 1}</span>
+                          <span className="blank-value">"{answer || '(empty)}'}"</span>
+                        </span>
+                      ))}
+                    </div>
+                  );
+                } else {
+                  // Handle case where userAnswer is not an array (probably should be)
+                  return (
+                    <div className="fill-blank-answers">
+                      <span className="blank-answer-item">
+                        <span className="blank-number">#1</span>
+                        <span className="blank-value">"{userAnswer || '(empty)}'}"</span>
+                      </span>
+                    </div>
+                  );
+                }
+              }
+              
+              // Handle future question types
+              if (question.question_type === 'puzzle_game') {
+                return 'Coming soon - Puzzle Game answers will be displayed here';
+              }
+              
+              if (question.question_type === 'matching_task') {
+                return 'Coming soon - Matching Task answers will be displayed here';
+              }
+              
+              if (question.question_type === 'error_spotting') {
+                return 'Coming soon - Error Spotting answers will be displayed here';
+              }
+              
+              // Handle choice questions (single/multiple choice)
               if (question.options && typeof question.options === 'object') {
                 return question.options[userAnswer] || 'Invalid option';
               } else if (question[`option_${userAnswer.toLowerCase()}`]) {
@@ -616,9 +721,53 @@ const TaskQuiz = () => {
             };
             
             const getCorrectAnswerText = () => {
-              if (!correctAnswer) return 'Unknown';
+              // Handle Fill Blank questions first (they don't use correctAnswer field)
+              if (question.question_type === 'fill_blank') {
+                try {
+                  // Parse question_data to get correct answers
+                  let questionData = {};
+                  if (typeof question.question_data === 'string') {
+                    questionData = JSON.parse(question.question_data);
+                  } else {
+                    questionData = question.question_data || {};
+                  }
+                  
+                  const correctAnswers = questionData.blank_answers || [];
+                  if (correctAnswers.length > 0) {
+                    return (
+                      <div className="fill-blank-answers">
+                        {correctAnswers.map((answer, index) => (
+                          <span key={index} className="blank-answer-item">
+                            <span className="blank-number">#{index + 1}</span>
+                            <span className="blank-value">"{answer}"</span>
+                          </span>
+                        ))}
+                      </div>
+                    );
+                  }
+                  return 'No correct answers found';
+                } catch (error) {
+                  console.error('Error parsing fill blank correct answers:', error);
+                  return 'Error loading correct answers';
+                }
+              }
               
-              // 支持两种格式的选项
+              // Handle future question types
+              if (question.question_type === 'puzzle_game') {
+                return 'Coming soon - Puzzle Game correct answers will be displayed here';
+              }
+              
+              if (question.question_type === 'matching_task') {
+                return 'Coming soon - Matching Task correct answers will be displayed here';
+              }
+              
+              if (question.question_type === 'error_spotting') {
+                return 'Coming soon - Error Spotting correct answers will be displayed here';
+              }
+              
+              // Handle choice questions (single/multiple choice)
+              if (!correctAnswer && correctAnswer !== 0) return 'Unknown';
+              
               if (question.options && typeof question.options === 'object') {
                 return question.options[correctAnswer] || 'Invalid option';
               } else if (question[`option_${correctAnswer.toLowerCase()}`]) {
@@ -638,14 +787,14 @@ const TaskQuiz = () => {
                     {isCorrect ? `+${question.score}` : '0'} points
                   </span>
                 </div>
-                <div className="question-text">{question.question}</div>
+                <div className="question-text">{renderQuestionText(question)}</div>
                 <div className="answer-comparison">
                   <div className="user-answer">
-                    <strong>Your answer:</strong> {userAnswer} - {getUserAnswerText()}
+                    <strong>Your answer:</strong> {getUserAnswerText()}
                   </div>
                   {!isCorrect && (
                     <div className="correct-answer">
-                      <strong>Correct answer:</strong> {correctAnswer} - {getCorrectAnswerText()}
+                      <strong>Correct answer:</strong> {getCorrectAnswerText()}
                     </div>
                   )}
                 </div>
@@ -729,7 +878,7 @@ const TaskQuiz = () => {
 
       <div className="question-card">
         <div className="question-content">
-          <h2>{currentQuestion.question}</h2>
+          <h2>{renderQuestionText(currentQuestion)}</h2>
           
           {/* 文字描述 */}
           {currentQuestion.description && (
@@ -804,35 +953,13 @@ const TaskQuiz = () => {
             </div>
           )}
 
-          <div className="options-grid">
-            {(() => {
-              // 处理两种选项格式：options对象 或 option_a, option_b等字段
-              let optionsToRender = [];
-              
-              if (currentQuestion.options && typeof currentQuestion.options === 'object') {
-                // 新格式：options 对象
-                optionsToRender = Object.entries(currentQuestion.options);
-              } else if (currentQuestion.option_a) {
-                // 旧格式：option_a, option_b 等字段
-                optionsToRender = [
-                  ['A', currentQuestion.option_a],
-                  ['B', currentQuestion.option_b],
-                  ['C', currentQuestion.option_c],
-                  ['D', currentQuestion.option_d]
-                ].filter(([key, value]) => value && value.trim());
-              }
-              
-              return optionsToRender.map(([option, text]) => (
-                <button
-                  key={option}
-                  className={`option-button ${allAnswers[currentQuestion.id] === option ? 'selected' : ''}`}
-                  onClick={() => handleAnswerSelect(option)}
-                >
-                  <span className="option-letter">{option}</span>
-                  <span className="option-text">{text}</span>
-                </button>
-              ));
-            })()}
+          {/* Interactive Question Renderer - supports all question types */}
+          <div className="question-interaction">
+            <InteractiveQuestionRenderer
+              question={currentQuestion}
+              currentAnswer={allAnswers[currentQuestion.id]}
+              onAnswerChange={handleAnswerSelect}
+            />
           </div>
           
           {/* 开发模式调试信息 */}

@@ -5,22 +5,36 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
   const [showHints, setShowHints] = useState({});
 
   const questionType = question.question_type || 'single_choice';
-  const questionData = question.question_data || {};
+  
+  // Parse question_data if it's a JSON string
+  let questionData = {};
+  try {
+    if (typeof question.question_data === 'string') {
+      questionData = JSON.parse(question.question_data);
+    } else {
+      questionData = question.question_data || {};
+    }
+  } catch (error) {
+    console.error('Error parsing question_data:', error);
+    questionData = {};
+  }
 
   // Initialize fill-blank answers when question changes
   useEffect(() => {
     if (questionType === 'fill_blank') {
       let expectedLength = 0;
       
-      if (questionData.enhanced && questionData.blanks) {
+      // Check for blank_answers in question_data or direct question structure
+      const blankAnswers = questionData.blank_answers || question.blank_answers || [];
+      if (blankAnswers.length > 0) {
+        expectedLength = blankAnswers.length;
+      } else if (questionData.enhanced && questionData.blanks) {
         expectedLength = questionData.blanks.length;
         // Count actual {{...}} patterns in template to verify
         const templateMatches = (questionData.template || '').match(/\{\{[^}]+\}\}/g);
         if (templateMatches) {
           expectedLength = templateMatches.length; // Use actual template count
         }
-      } else if (questionData.blank_answers) {
-        expectedLength = questionData.blank_answers.length;
       }
       
       if (expectedLength > 0) {
@@ -97,14 +111,26 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
       );
 
     case 'fill_blank':
-      if (questionData.enhanced && questionData.blanks) {
-        // Enhanced fill-blank with template
-        return renderEnhancedFillBlank();
-      } else if (questionData.blank_answers) {
-        // Legacy fill-blank
+      // Check for blank_answers in question_data or fallback to direct question structure
+      const blankAnswers = questionData.blank_answers || question.blank_answers || [];
+      
+      if (blankAnswers.length > 0) {
+        // Legacy fill-blank - most common format
         return renderLegacyFillBlank();
+      } else if (questionData.enhanced && questionData.blanks) {
+        // Enhanced fill-blank with template (legacy support)
+        return renderEnhancedFillBlank();
       }
-      return <div className="error">Invalid fill-blank question configuration</div>;
+      return <div className="error">Invalid fill-blank question configuration. No blank answers found.</div>;
+
+    case 'puzzle_game':
+      return renderPuzzleGame();
+
+    case 'matching_task':
+      return renderMatchingTask();
+
+    case 'error_spotting':
+      return renderErrorSpotting();
 
     default:
       // Fallback for other question types
@@ -196,27 +222,108 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
   }
 
   function renderLegacyFillBlank() {
-    const blankAnswers = questionData.blank_answers || [];
+    const blankAnswers = questionData.blank_answers || question.blank_answers || [];
+    
+    // Extract placeholders from question text for better UX
+    const questionText = question.question || '';
+    const templateMatches = questionText.match(/\{\{[^}]+\}\}/g) || [];
     
     return (
       <div className="legacy-fill-blank-question">
         <div className="instruction">
           <i className="fas fa-edit"></i>
-          Fill in the blanks below (look for _____ in the question text)
+          Fill in the blanks below
         </div>
         <div className="blank-inputs">
-          {blankAnswers.map((_, index) => (
-            <div key={index} className="blank-input-item">
-              <label>Blank {index + 1}:</label>
-              <input
-                type="text"
-                className="fill-blank-input"
-                value={fillBlankAnswers[index] || ''}
-                onChange={(e) => handleFillBlankChange(index, e.target.value)}
-                placeholder={`Enter answer for blank ${index + 1}`}
-              />
-            </div>
-          ))}
+          {blankAnswers.map((_, index) => {
+            // Extract placeholder name if available
+            const placeholder = templateMatches[index] ? 
+              templateMatches[index].replace(/[{}]/g, '').trim() : 
+              `blank ${index + 1}`;
+            
+            return (
+              <div key={index} className="blank-input-item">
+                <label>
+                  <i className="fas fa-edit"></i>
+                  {placeholder}:
+                </label>
+                <input
+                  type="text"
+                  className="fill-blank-input"
+                  value={fillBlankAnswers[index] || ''}
+                  onChange={(e) => handleFillBlankChange(index, e.target.value)}
+                  placeholder={`Enter answer for ${placeholder}`}
+                />
+              </div>
+            );
+          })}
+        </div>
+        <div className="fill-blank-progress">
+          <i className="fas fa-check-circle"></i>
+          {fillBlankAnswers.filter(answer => answer && answer.trim()).length} of {blankAnswers.length} blanks filled
+        </div>
+      </div>
+    );
+  }
+
+  // Placeholder for Puzzle Game questions - to be implemented
+  function renderPuzzleGame() {
+    return (
+      <div className="puzzle-game-question">
+        <div className="placeholder-message">
+          <div className="placeholder-icon">
+            <i className="fas fa-puzzle-piece"></i>
+          </div>
+          <h3>Puzzle Game Question</h3>
+          <p>This question type will be available in a future update.</p>
+          <div className="placeholder-details">
+            <small>
+              <i className="fas fa-info-circle"></i>
+              Students will be able to solve puzzle games by arranging fragments.
+            </small>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Placeholder for Matching Task questions - to be implemented
+  function renderMatchingTask() {
+    return (
+      <div className="matching-task-question">
+        <div className="placeholder-message">
+          <div className="placeholder-icon">
+            <i className="fas fa-exchange-alt"></i>
+          </div>
+          <h3>Matching Task Question</h3>
+          <p>This question type will be available in a future update.</p>
+          <div className="placeholder-details">
+            <small>
+              <i className="fas fa-info-circle"></i>
+              Students will be able to match items from left and right columns.
+            </small>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Placeholder for Error Spotting questions - to be implemented
+  function renderErrorSpotting() {
+    return (
+      <div className="error-spotting-question">
+        <div className="placeholder-message">
+          <div className="placeholder-icon">
+            <i className="fas fa-search"></i>
+          </div>
+          <h3>Error Spotting Question</h3>
+          <p>This question type will be available in a future update.</p>
+          <div className="placeholder-details">
+            <small>
+              <i className="fas fa-info-circle"></i>
+              Students will be able to click on errors in images to spot mistakes.
+            </small>
+          </div>
         </div>
       </div>
     );

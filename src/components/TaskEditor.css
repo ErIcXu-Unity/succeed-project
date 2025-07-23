@@ -319,6 +319,355 @@
   line-height: 1.4;
 }
 
+/* Publish Time Section Styles */
+.publish-time-section {
+  background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+  border: 2px solid #e3ebff;
+  border-radius: 16px;
+  padding: 24px;
+  margin: 24px 0;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.08);
+  transition: all 0.3s ease;
+}
+
+.publish-time-section:hover {
+  border-color: #6366f1;
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.12);
+}
+
+.publish-time-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e3ebff;
+}
+
+.publish-time-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.publish-time-title i {
+  color: #6366f1;
+  font-size: 1.25rem;
+}
+
+.publish-time-title h3 {
+  color: #1e293b;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.publish-status {
+  display: flex;
+  align-items: center;
+}
+
+.status-immediate,
+.status-scheduled {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-immediate {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.status-scheduled {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+}
+
+.publish-options {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.publish-option {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.publish-option:hover {
+  border-color: #6366f1;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  cursor: pointer;
+  gap: 16px;
+  width: 100%;
+}
+
+.radio-option input[type="radio"] {
+  display: none;
+}
+
+.radio-custom {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #d1d5db;
+  border-radius: 50%;
+  position: relative;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.radio-option input[type="radio"]:checked + .radio-custom {
+  border-color: #6366f1;
+  background: #6366f1;
+}
+
+.radio-option input[type="radio"]:checked + .radio-custom::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: white;
+  border-radius: 50%;
+}
+
+.option-content {
+  flex: 1;
+}
+
+.option-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.option-title i {
+  color: #6366f1;
+  font-size: 1rem;
+}
+
+.option-description {
+  font-size: 0.9rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.datetime-picker-container {
+  background: white;
+  border: 2px solid #e3ebff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 16px;
+}
+
+.datetime-picker-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.datetime-input-group {
+  display: flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 4px 16px;
+  transition: all 0.3s ease;
+}
+
+.datetime-input-group:focus-within {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.datetime-input-group i {
+  color: #6366f1;
+  margin-right: 12px;
+  font-size: 1.1rem;
+}
+
+.datetime-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 16px 8px;
+  font-size: 1rem;
+  color: #1e293b;
+  outline: none;
+  font-family: inherit;
+}
+
+.datetime-input::-webkit-calendar-picker-indicator {
+  background: #6366f1;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* Force English locale for datetime picker */
+.datetime-input {
+  direction: ltr;
+  unicode-bidi: bidi-override;
+}
+
+/* Webkit datetime picker styling */
+.datetime-input::-webkit-datetime-edit {
+  direction: ltr;
+}
+
+.datetime-input::-webkit-datetime-edit-fields-wrapper {
+  direction: ltr;
+}
+
+.datetime-input::-webkit-datetime-edit-text {
+  direction: ltr;
+}
+
+/* Force consistent datetime display format */
+.datetime-input[lang="en-US"] {
+  direction: ltr !important;
+}
+
+/* Hide non-English characters if possible */
+.datetime-input:lang(zh),
+.datetime-input:lang(zh-CN),
+.datetime-input:lang(zh-TW) {
+  direction: ltr !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+}
+
+.datetime-help-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: #0369a1;
+  line-height: 1.4;
+}
+
+.datetime-help-text i {
+  color: #0284c7;
+  font-size: 0.85rem;
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+.datetime-help-text span {
+  flex: 1;
+}
+
+.quick-schedule-options {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.quick-option-btn {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.quick-option-btn:hover {
+  background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.schedule-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 16px;
+  font-size: 0.9rem;
+  color: #92400e;
+}
+
+.schedule-preview i {
+  color: #f59e0b;
+  font-size: 1rem;
+}
+
+.schedule-preview strong {
+  color: #78350f;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .publish-time-section {
+    padding: 16px;
+    margin: 16px 0;
+  }
+  
+  .publish-time-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .radio-option {
+    padding: 16px;
+  }
+  
+  .datetime-picker-container {
+    padding: 16px;
+  }
+  
+  .quick-schedule-options {
+    flex-direction: column;
+  }
+  
+  .quick-option-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .schedule-preview {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+}
+
 /* Questions Section */
 .questions-section {
   background: #fff;

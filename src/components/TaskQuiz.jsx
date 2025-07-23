@@ -33,69 +33,108 @@ const randomizeQuestionOptions = (question, seed) => {
     return question;
   }
 
-  // 获取原始选项
-  let options = [];
-  if (question.options && typeof question.options === 'object') {
-    // 新格式：使用 options 对象
-    options = Object.entries(question.options);
-  } else if (question.option_a && question.option_b) {
-    // 旧格式：使用 option_a, option_b 等字段
-    options = [
-      ['A', question.option_a],
-      ['B', question.option_b],
-      ['C', question.option_c],
-      ['D', question.option_d]
-    ].filter(([key, value]) => value && value.trim()); // 过滤空选项
-  } else {
-    return question; // 没有有效选项，返回原题目
-  }
-
-  // 使用种子随机化选项顺序
-  const shuffledOptions = shuffleArray(options, seed + question.id);
-  
-  // 创建新的选项映射
   const newQuestion = { ...question };
-  const keyMapping = {};
-  
-  // 根据原始格式更新选项
-  if (question.options && typeof question.options === 'object') {
-    // 新格式：更新 options 对象
-    newQuestion.options = {};
-    shuffledOptions.forEach(([originalKey, optionText], index) => {
-      const newKey = String.fromCharCode(65 + index); // A, B, C, D
-      newQuestion.options[newKey] = optionText;
-      keyMapping[originalKey] = newKey;
-    });
-  } else {
-    // 旧格式：更新 option_a, option_b 等字段
-    // 先清空现有选项
-    ['A', 'B', 'C', 'D'].forEach(key => {
-      newQuestion[`option_${key.toLowerCase()}`] = null;
-    });
-    
-    shuffledOptions.forEach(([originalKey, optionText], index) => {
-      const newKey = String.fromCharCode(65 + index); // A, B, C, D
-      newQuestion[`option_${newKey.toLowerCase()}`] = optionText;
-      keyMapping[originalKey] = newKey;
-    });
-  }
 
-  // 更新正确答案映射
-  if (question.question_type === 'single_choice') {
-    newQuestion.correct_answer = keyMapping[question.correct_answer] || question.correct_answer;
-  } else if (question.question_type === 'multiple_choice') {
-    // 多选题的正确答案可能是数组或逗号分隔的字符串
-    let correctAnswers = question.correct_answer;
-    if (typeof correctAnswers === 'string') {
-      correctAnswers = correctAnswers.split(',').map(a => a.trim());
+  // Multiple Choice和Single Choice使用不同的随机化策略
+  if (question.question_type === 'multiple_choice') {
+    // Multiple Choice: 基于数组索引的随机化
+    let questionData = {};
+    try {
+      if (typeof question.question_data === 'string') {
+        questionData = JSON.parse(question.question_data);
+      } else {
+        questionData = question.question_data || {};
+      }
+    } catch (error) {
+      console.error('Error parsing question_data for randomization:', error);
+      return question;
     }
-    const mappedAnswers = correctAnswers.map(ans => keyMapping[ans] || ans);
-    newQuestion.correct_answer = mappedAnswers.join(',');
+
+    const originalOptions = questionData.options || [];
+    const originalCorrectAnswers = questionData.correct_answers || [];
+
+    if (originalOptions.length === 0) {
+      return question; // 没有选项，返回原题目
+    }
+
+    // 创建索引数组进行随机化
+    const optionIndices = originalOptions.map((_, index) => index);
+    const shuffledIndices = shuffleArray(optionIndices, seed + question.id);
+
+    // 重新排列选项
+    const shuffledOptions = shuffledIndices.map(index => originalOptions[index]);
+
+    // 创建索引映射：原始索引 -> 新索引
+    const indexMapping = {};
+    shuffledIndices.forEach((originalIndex, newIndex) => {
+      indexMapping[originalIndex] = newIndex;
+    });
+
+    // 更新正确答案的索引
+    const newCorrectAnswers = originalCorrectAnswers.map(originalIndex => {
+      return indexMapping[originalIndex] !== undefined ? indexMapping[originalIndex] : originalIndex;
+    });
+
+    // 更新题目数据
+    const newQuestionData = {
+      ...questionData,
+      options: shuffledOptions,
+      correct_answers: newCorrectAnswers
+    };
+
+    newQuestion.question_data = JSON.stringify(newQuestionData);
+    newQuestion._indexMapping = indexMapping; // 保存索引映射用于答案转换
+    
+    console.log('Multiple Choice randomization:', {
+      originalOptions,
+      shuffledOptions,
+      originalCorrectAnswers,
+      newCorrectAnswers,
+      indexMapping
+    });
+
+  } else if (question.question_type === 'single_choice') {
+    // Single Choice: 保持原有的字母映射逻辑
+    let options = [];
+    if (question.options && typeof question.options === 'object') {
+      options = Object.entries(question.options);
+    } else if (question.option_a && question.option_b) {
+      options = [
+        ['A', question.option_a],
+        ['B', question.option_b],
+        ['C', question.option_c],
+        ['D', question.option_d]
+      ].filter(([key, value]) => value && value.trim());
+    } else {
+      return question;
+    }
+
+    const shuffledOptions = shuffleArray(options, seed + question.id);
+    const keyMapping = {};
+    
+    if (question.options && typeof question.options === 'object') {
+      newQuestion.options = {};
+      shuffledOptions.forEach(([originalKey, optionText], index) => {
+        const newKey = String.fromCharCode(65 + index);
+        newQuestion.options[newKey] = optionText;
+        keyMapping[originalKey] = newKey;
+      });
+    } else {
+      ['A', 'B', 'C', 'D'].forEach(key => {
+        newQuestion[`option_${key.toLowerCase()}`] = null;
+      });
+      
+      shuffledOptions.forEach(([originalKey, optionText], index) => {
+        const newKey = String.fromCharCode(65 + index);
+        newQuestion[`option_${newKey.toLowerCase()}`] = optionText;
+        keyMapping[originalKey] = newKey;
+      });
+    }
+
+    newQuestion.correct_answer = keyMapping[question.correct_answer] || question.correct_answer;
+    newQuestion._originalKeyMapping = keyMapping;
   }
 
-  // 保存映射关系用于调试
-  newQuestion._originalKeyMapping = keyMapping;
-  
   return newQuestion;
 };
 
@@ -154,7 +193,7 @@ const markSessionCompleted = (studentId, taskId) => {
 const restartSession = (studentId, taskId) => {
   const sessionKey = `quiz_session_${studentId}_${taskId}`;
   localStorage.removeItem(sessionKey);
-  console.log('🔄 会话已重置，下次进入将重新随机化');
+  console.log('🔄 The session has been reset and will be re-randomized next time you enter');
 };
 
 const TaskQuiz = () => {
@@ -162,7 +201,7 @@ const TaskQuiz = () => {
   const navigate = useNavigate();
   const [task, setTask] = useState(null);
   const [questions, setQuestions] = useState([]);
-  const [questionOrder, setQuestionOrder] = useState([]); // 存储题目顺序映射
+  const [questionOrder, setQuestionOrder] = useState([]); // 存储题目顺序映射 - 当前未使用
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [allAnswers, setAllAnswers] = useState({}); // 存储所有题目的答案选择
   const [quizMode, setQuizMode] = useState('answering'); // 'answering' 或 'results'
@@ -432,12 +471,25 @@ const TaskQuiz = () => {
         const userAnswer = allAnswers[questionId];
         const question = questions.find(q => q.id.toString() === questionId.toString());
         
-        if (question && question._originalKeyMapping) {
+        if (question.question_type === 'multiple_choice' && question._indexMapping && Array.isArray(userAnswer)) {
+          // Multiple Choice: 使用索引映射转换答案
+          const reverseIndexMapping = {};
+          Object.keys(question._indexMapping).forEach(originalIndex => {
+            const newIndex = question._indexMapping[originalIndex];
+            reverseIndexMapping[newIndex] = parseInt(originalIndex);
+          });
+          
+          originalAnswers[questionId] = userAnswer.map(randomizedIndex => {
+            return reverseIndexMapping[randomizedIndex] !== undefined ? reverseIndexMapping[randomizedIndex] : randomizedIndex;
+          });
+        } else if (question && question._originalKeyMapping) {
+          // Single Choice: 使用字母映射转换答案
           const reverseMapping = {};
           Object.keys(question._originalKeyMapping).forEach(originalKey => {
             const newKey = question._originalKeyMapping[originalKey];
             reverseMapping[newKey] = originalKey;
           });
+          
           originalAnswers[questionId] = reverseMapping[userAnswer] || userAnswer;
         } else {
           originalAnswers[questionId] = userAnswer;
@@ -559,15 +611,32 @@ const TaskQuiz = () => {
         const userAnswer = allAnswers[questionId];
         const question = questions.find(q => q.id.toString() === questionId.toString());
         
-        if (question && question._originalKeyMapping) {
-          // 如果有选项映射，需要反向转换
+        if (question.question_type === 'multiple_choice' && question._indexMapping && Array.isArray(userAnswer)) {
+          // Multiple Choice: 使用索引映射转换答案
+          const reverseIndexMapping = {};
+          Object.keys(question._indexMapping).forEach(originalIndex => {
+            const newIndex = question._indexMapping[originalIndex];
+            reverseIndexMapping[newIndex] = parseInt(originalIndex);
+          });
+          
+          // 将随机化后的索引转换回原始索引
+          originalAnswers[questionId] = userAnswer.map(randomizedIndex => {
+            return reverseIndexMapping[randomizedIndex] !== undefined ? reverseIndexMapping[randomizedIndex] : randomizedIndex;
+          });
+          
+          console.log('Multiple Choice answer conversion:', {
+            userAnswer,
+            reverseIndexMapping,
+            convertedAnswer: originalAnswers[questionId]
+          });
+        } else if (question && question._originalKeyMapping) {
+          // Single Choice: 使用字母映射转换答案
           const reverseMapping = {};
           Object.keys(question._originalKeyMapping).forEach(originalKey => {
             const newKey = question._originalKeyMapping[originalKey];
             reverseMapping[newKey] = originalKey;
           });
           
-          // 将随机化后的答案转换为原始答案
           originalAnswers[questionId] = reverseMapping[userAnswer] || userAnswer;
         } else {
           // 没有映射的题目直接使用原答案
@@ -763,12 +832,13 @@ const TaskQuiz = () => {
             if (question.question_type === 'fill_blank' || 
                 question.question_type === 'puzzle_game' || 
                 question.question_type === 'matching_task' || 
-                question.question_type === 'error_spotting') {
-              // For complex question types, check backend results
+                question.question_type === 'error_spotting' ||
+                question.question_type === 'multiple_choice') {
+              // For complex question types and multiple choice, check backend results
               const questionResult = quizResults?.results?.find(r => r.question_id === question.id);
               isCorrect = questionResult ? questionResult.is_correct : false;
             } else {
-              // For choice questions, use direct comparison
+              // For single choice questions, use direct comparison
               isCorrect = userAnswer === correctAnswer;
             }
             
@@ -802,6 +872,59 @@ const TaskQuiz = () => {
                 }
               }
               
+              // Handle Multiple Choice questions
+              if (question.question_type === 'multiple_choice') {
+                if (Array.isArray(userAnswer)) {
+                  // Parse question_data to get options
+                  let questionData = {};
+                  try {
+                    if (typeof question.question_data === 'string') {
+                      questionData = JSON.parse(question.question_data);
+                    } else {
+                      questionData = question.question_data || {};
+                    }
+                  } catch (error) {
+                    console.error('Error parsing question_data:', error);
+                    questionData = {};
+                  }
+                  
+                  const options = questionData.options || [];
+                  const selectedTexts = userAnswer.map(index => {
+                    if (index >= 0 && index < options.length) {
+                      return options[index];
+                    }
+                    return `Option ${index + 1}`;
+                  });
+                  
+                  if (selectedTexts.length === 0) {
+                    return 'No options selected';
+                  }
+                  
+                  // Display as formatted list
+                  return (
+                    <div className="multiple-choice-answers">
+                      {selectedTexts.map((text, index) => (
+                        <span key={index} className="selected-option-item">
+                          {String.fromCharCode(65 + userAnswer[index])}: {text}
+                        </span>
+                      ))}
+                    </div>
+                  );
+                } else {
+                  return 'Invalid answer format';
+                }
+              }
+              
+              // Handle Single Choice questions
+              if (question.question_type === 'single_choice') {
+                if (question.options && typeof question.options === 'object') {
+                  return question.options[userAnswer] || 'Invalid option';
+                } else if (question[`option_${userAnswer.toLowerCase()}`]) {
+                  return question[`option_${userAnswer.toLowerCase()}`];
+                }
+                return 'Invalid option';
+              }
+              
               // Handle future question types
               if (question.question_type === 'puzzle_game') {
                 return 'Coming soon - Puzzle Game answers will be displayed here';
@@ -815,7 +938,7 @@ const TaskQuiz = () => {
                 return 'Coming soon - Error Spotting answers will be displayed here';
               }
               
-              // Handle choice questions (single/multiple choice)
+              // Handle other question types
               if (question.options && typeof question.options === 'object') {
                 return question.options[userAnswer] || 'Invalid option';
               } else if (question[`option_${userAnswer.toLowerCase()}`]) {
@@ -856,6 +979,60 @@ const TaskQuiz = () => {
                 }
               }
               
+              // Handle Multiple Choice questions
+              if (question.question_type === 'multiple_choice') {
+                try {
+                  // Parse question_data to get correct answers
+                  let questionData = {};
+                  if (typeof question.question_data === 'string') {
+                    questionData = JSON.parse(question.question_data);
+                  } else {
+                    questionData = question.question_data || {};
+                  }
+                  
+                  const options = questionData.options || [];
+                  const correctIndices = questionData.correct_answers || [];
+                  
+                  if (correctIndices.length > 0 && options.length > 0) {
+                    const correctTexts = correctIndices.map(index => {
+                      if (index >= 0 && index < options.length) {
+                        return {
+                          letter: String.fromCharCode(65 + index),
+                          text: options[index]
+                        };
+                      }
+                      return { letter: `${index + 1}`, text: `Option ${index + 1}` };
+                    });
+                    
+                    return (
+                      <div className="multiple-choice-answers">
+                        {correctTexts.map((item, index) => (
+                          <span key={index} className="correct-option-item">
+                            {item.letter}: {item.text}
+                          </span>
+                        ))}
+                      </div>
+                    );
+                  }
+                  return 'No correct answers found';
+                } catch (error) {
+                  console.error('Error parsing multiple choice correct answers:', error);
+                  return 'Error loading correct answers';
+                }
+              }
+              
+              // Handle Single Choice questions
+              if (question.question_type === 'single_choice') {
+                if (!correctAnswer && correctAnswer !== 0) return 'Unknown';
+                
+                if (question.options && typeof question.options === 'object') {
+                  return question.options[correctAnswer] || 'Invalid option';
+                } else if (question[`option_${correctAnswer.toLowerCase()}`]) {
+                  return question[`option_${correctAnswer.toLowerCase()}`];
+                }
+                return 'Invalid option';
+              }
+              
               // Handle future question types
               if (question.question_type === 'puzzle_game') {
                 return 'Coming soon - Puzzle Game correct answers will be displayed here';
@@ -869,7 +1046,7 @@ const TaskQuiz = () => {
                 return 'Coming soon - Error Spotting correct answers will be displayed here';
               }
               
-              // Handle choice questions (single/multiple choice)
+              // Handle other question types
               if (!correctAnswer && correctAnswer !== 0) return 'Unknown';
               
               if (question.options && typeof question.options === 'object') {

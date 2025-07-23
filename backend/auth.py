@@ -65,3 +65,55 @@ def login():
         }), 200
 
     return jsonify({'error': 'invalid credentials'}), 401
+
+@auth_bp.route('/change-password', methods=['POST'])
+def change_password():
+    """修改用户密码"""
+    data = request.get_json()
+    
+    # 验证必需字段
+    required_fields = ['username', 'current_password', 'new_password']
+    for field in required_fields:
+        if not data.get(field):
+            return jsonify({'error': f'{field} is required'}), 400
+    
+    username = data.get('username')
+    current_password = data.get('current_password')
+    new_password = data.get('new_password')
+    
+    # 验证新密码长度
+    if len(new_password) < 6:
+        return jsonify({'error': 'New password must be at least 6 characters'}), 400
+    
+    # 查找用户（学生或教师）
+    user = Student.query.filter_by(username=username).first()
+    user_type = 'student'
+    
+    if not user:
+        user = Teacher.query.filter_by(username=username).first()
+        user_type = 'teacher'
+    
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    
+    # 验证当前密码
+    if not check_password_hash(user.password, current_password):
+        return jsonify({'error': 'Current password is incorrect'}), 401
+    
+    # 检查新密码是否与当前密码相同
+    if check_password_hash(user.password, new_password):
+        return jsonify({'error': 'New password must be different from current password'}), 400
+    
+    try:
+        # 更新密码
+        user.password = generate_password_hash(new_password)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Password changed successfully',
+            'user_type': user_type
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to change password: {str(e)}'}), 500

@@ -58,12 +58,12 @@ const TaskIntro = () => {
           <i className="fas fa-exclamation-triangle"></i>
           <p>Error: {error}</p>
           <div className="error-actions">
-            <button onClick={() => window.history.back()} className="btn-secondary">
-              <i className="fas fa-arrow-left"></i>
-              Go Back
+            <button onClick={() => navigate('/student/home')} className="btn-secondary">
+              <i className="fas fa-home"></i>
+              Back to Home
             </button>
             <button onClick={() => navigate('/student')} className="btn-primary">
-              <i className="fas fa-home"></i>
+              <i className="fas fa-list"></i>
               Back to Task List
             </button>
           </div>
@@ -78,8 +78,9 @@ const TaskIntro = () => {
         <div className="error-message">
           <i className="fas fa-question-circle"></i>
           <p>Task information not found</p>
-          <button onClick={() => window.history.back()} className="btn-secondary">
-            Go Back
+          <button onClick={() => navigate('/student/home')} className="btn-secondary">
+            <i className="fas fa-home"></i>
+            Back to Home
           </button>
         </div>
       </div>
@@ -125,11 +126,11 @@ const TaskIntro = () => {
         <section className="task-actions">
           <div className="action-buttons">
             <button 
-              onClick={() => window.history.back()} 
+              onClick={() => navigate('/student/home')} 
               className="btn-secondary"
             >
-              <i className="fas fa-arrow-left"></i>
-              Go Back
+              <i className="fas fa-home"></i>
+              Back to Home
             </button>
             
             {task.question_count > 0 ? (

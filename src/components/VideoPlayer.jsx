@@ -28,7 +28,7 @@ const VideoPlayer = ({ task }) => {
         <div className="simple-video-player">
           <div className="video-error-simple">
             <i className="fas fa-exclamation-triangle"></i>
-            <p>无法解析 YouTube 视频链接，请检查链接是否正确</p>
+            <p>Unable to parse the YouTube video link, please check if the link is correct</p>
           </div>
         </div>
       );
@@ -38,7 +38,7 @@ const VideoPlayer = ({ task }) => {
       <div className="simple-video-player">
         <div className="video-info-header">
           <i className="fab fa-youtube"></i>
-          <span>YouTube 视频</span>
+          <span>YouTube Video</span>
         </div>
         <div className="youtube-video-container">
           <iframe
@@ -70,7 +70,7 @@ const VideoPlayer = ({ task }) => {
       <div className="simple-video-player">
         <div className="video-info-header">
           <i className="fas fa-file-video"></i>
-          <span>任务视频</span>
+          <span>Task Video</span>
         </div>
         <div className="local-video-container">
           <video

@@ -67,8 +67,8 @@ const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
         const result = await response.json();
         const videoInfo = {
           type: 'local',
-          path: result.filename,
-          url: `/uploads/videos/${result.filename}`
+          path: result.filename || result.video_url.split('/').pop(), // 从返回结果获取文件名
+          url: result.video_url
         };
         
         setCurrentVideo(videoInfo);
@@ -174,14 +174,47 @@ const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // 验证文件类型
+      const allowedTypes = ['video/mp4', 'video/mov', 'video/avi', 'video/wmv', 'video/webm'];
+      if (!allowedTypes.includes(file.type)) {
+        setError('Please select a valid video format (MP4, MOV, AVI, WMV, WebM)');
+        return;
+      }
+      
+      // 验证文件大小 (100MB)
+      const maxSize = 100 * 1024 * 1024; // 100MB
+      if (file.size > maxSize) {
+        setError('Video file too large. Maximum size: 100MB');
+        return;
+      }
+      
       handleLocalUpload(file);
     }
+    
+    // 重置文件输入，这样用户可以重新选择同一个文件
+    e.target.value = '';
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
+    e.stopPropagation();
+    
     const file = e.dataTransfer.files[0];
     if (file) {
+      // 验证文件类型
+      const allowedTypes = ['video/mp4', 'video/mov', 'video/avi', 'video/wmv', 'video/webm'];
+      if (!allowedTypes.includes(file.type)) {
+        setError('Please select a valid video format (MP4, MOV, AVI, WMV, WebM)');
+        return;
+      }
+      
+      // 验证文件大小 (100MB)
+      const maxSize = 100 * 1024 * 1024; // 100MB
+      if (file.size > maxSize) {
+        setError('Video file too large. Maximum size: 100MB');
+        return;
+      }
+      
       handleLocalUpload(file);
     }
   };
@@ -237,25 +270,69 @@ const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
             <div className="video-preview">
               <h5>Video Preview:</h5>
               {currentVideo.type === 'local' ? (
-                <video
-                  src={currentVideo.url && currentVideo.url !== 'null' && currentVideo.url !== 'undefined' 
-                    ? (currentVideo.url.startsWith('http') ? currentVideo.url : `http://localhost:5001${currentVideo.url}`) 
-                    : (currentVideo.path && currentVideo.path !== 'null' && currentVideo.path !== 'undefined' 
-                      ? `http://localhost:5001/uploads/videos/${currentVideo.path}` 
-                      : '')
-                  }
-                  controls
-                  style={{ width: '100%', maxWidth: '400px', height: 'auto' }}
-                  onError={(e) => {
-                    console.error('Video load error. Current video:', currentVideo);
-                    console.error('Video src:', e.target.src);
-                    e.target.style.display = 'none';
-                    const errorDiv = e.target.nextSibling;
-                    if (errorDiv && errorDiv.classList.contains('video-error')) {
-                      errorDiv.style.display = 'block';
+                <div className="local-video-container">
+                  <video
+                    src={
+                      currentVideo.url && currentVideo.url !== 'null' && currentVideo.url !== 'undefined' 
+                        ? (currentVideo.url.startsWith('http') 
+                            ? currentVideo.url 
+                            : `http://localhost:5001${currentVideo.url}`) 
+                        : (currentVideo.path && currentVideo.path !== 'null' && currentVideo.path !== 'undefined' 
+                            ? `http://localhost:5001/uploads/videos/${currentVideo.path}` 
+                            : '')
                     }
-                  }}
-                />
+                    controls
+                    style={{ width: '100%', maxWidth: '400px', height: 'auto' }}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      const errorDiv = e.target.nextElementSibling;
+                      if (errorDiv && errorDiv.classList.contains('video-error-fallback')) {
+                        errorDiv.style.display = 'block';
+                      }
+                    }}
+                  >
+                    <source src={
+                      currentVideo.url && currentVideo.url !== 'null' && currentVideo.url !== 'undefined' 
+                        ? (currentVideo.url.startsWith('http') 
+                            ? currentVideo.url 
+                            : `http://localhost:5001${currentVideo.url}`) 
+                        : (currentVideo.path && currentVideo.path !== 'null' && currentVideo.path !== 'undefined' 
+                            ? `http://localhost:5001/uploads/videos/${currentVideo.path}` 
+                            : '')
+                    } type="video/mp4" />
+                    <source src={
+                      currentVideo.url && currentVideo.url !== 'null' && currentVideo.url !== 'undefined' 
+                        ? (currentVideo.url.startsWith('http') 
+                            ? currentVideo.url 
+                            : `http://localhost:5001${currentVideo.url}`) 
+                        : (currentVideo.path && currentVideo.path !== 'null' && currentVideo.path !== 'undefined' 
+                            ? `http://localhost:5001/uploads/videos/${currentVideo.path}` 
+                            : '')
+                    } type="video/mov" />
+                    <source src={
+                      currentVideo.url && currentVideo.url !== 'null' && currentVideo.url !== 'undefined' 
+                        ? (currentVideo.url.startsWith('http') 
+                            ? currentVideo.url 
+                            : `http://localhost:5001${currentVideo.url}`) 
+                        : (currentVideo.path && currentVideo.path !== 'null' && currentVideo.path !== 'undefined' 
+                            ? `http://localhost:5001/uploads/videos/${currentVideo.path}` 
+                            : '')
+                    } type="video/webm" />
+                    您的浏览器不支持视频播放
+                  </video>
+                  <div className="video-error-fallback" style={{ 
+                    display: 'none', 
+                    padding: '20px', 
+                    textAlign: 'center', 
+                    backgroundColor: '#f8d7da', 
+                    color: '#721c24', 
+                    borderRadius: '8px',
+                    border: '1px solid #f5c6cb'
+                  }}>
+                    <i className="fas fa-exclamation-triangle"></i>
+                    <p>视频加载失败，请检查文件是否存在</p>
+                  </div>
+                </div>
               ) : (
                 <div className="youtube-embed">
                   <iframe
@@ -291,27 +368,38 @@ const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
       {/* 上传类型选择器 */}
       {(!currentVideo || !currentVideo.type) && !isCreateMode && (
         <>
-          <div className="upload-type-selector">
-            <label className={uploadType === 'local' ? 'active' : ''}>
-              <input
-                type="radio"
-                value="local"
-                checked={uploadType === 'local'}
-                onChange={(e) => setUploadType(e.target.value)}
-              />
-              <i className="fas fa-upload"></i>
-              Local File Upload
-            </label>
-            <label className={uploadType === 'youtube' ? 'active' : ''}>
-              <input
-                type="radio"
-                value="youtube"
-                checked={uploadType === 'youtube'}
-                onChange={(e) => setUploadType(e.target.value)}
-              />
+          <div className="upload-options">
+            <button 
+              className={`upload-option-btn local-upload-btn ${uploadType === 'local' ? 'active' : ''}`}
+              onClick={(e) => {
+                e.preventDefault();
+                
+                // 自动选择local上传类型
+                setUploadType('local');
+                setError(''); // 清除之前的错误
+                
+                // 打开文件选择器
+                const fileInput = document.getElementById('video-file-input');
+                if (fileInput) {
+                  fileInput.click();
+                }
+              }}
+              disabled={uploading}
+            >
+              <i className="fas fa-folder-open"></i>
+              Browse Local Files
+            </button>
+            
+            <button 
+              className={`upload-option-btn youtube-option-btn ${uploadType === 'youtube' ? 'active' : ''}`}
+              onClick={() => {
+                setUploadType('youtube');
+                setError(''); // 清除之前的错误
+              }}
+            >
               <i className="fab fa-youtube"></i>
               YouTube Link
-            </label>
+            </button>
           </div>
 
           {uploadType === 'local' && (
@@ -320,7 +408,14 @@ const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
                 className="upload-area"
                 onDrop={handleDrop}
                 onDragOver={(e) => e.preventDefault()}
-                onClick={() => document.getElementById('video-file-input').click()}
+                onDragEnter={(e) => e.preventDefault()}
+                onClick={() => {
+                  const fileInput = document.getElementById('video-file-input');
+                  if (fileInput) {
+                    fileInput.click();
+                  }
+                }}
+                style={{ cursor: uploading ? 'not-allowed' : 'pointer' }}
               >
                 <div className="upload-content">
                   {uploading ? (
@@ -332,19 +427,12 @@ const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
                     <>
                       <i className="fas fa-video upload-icon"></i>
                       <p>Click to select video file or drag and drop</p>
-                      <p className="upload-hint">Supported formats: MP4, MOV, AVI (Max: 100MB)</p>
+                      <p className="upload-hint">Supported formats: MP4, MOV, AVI, WMV, WebM (Max: 100MB)</p>
                     </>
                   )}
                 </div>
               </div>
-              <input
-                id="video-file-input"
-                type="file"
-                accept="video/*"
-                style={{ display: 'none' }}
-                onChange={handleFileSelect}
-                disabled={uploading}
-              />
+
             </div>
           )}
 
@@ -390,6 +478,16 @@ const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
           {error}
         </div>
       )}
+
+      {/* 隐藏的文件选择器，放在组件最后以便任何按钮都能访问 */}
+      <input
+        id="video-file-input"
+        type="file"
+        accept="video/mp4,video/mov,video/avi,video/wmv,video/webm"
+        style={{ display: 'none' }}
+        onChange={handleFileSelect}
+        disabled={uploading}
+      />
     </div>
   );
 };

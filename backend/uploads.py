@@ -14,10 +14,5 @@ def uploaded_file(filename):
 
 @uploads_bp.route('/uploads/videos/<path:filename>')
 def uploaded_video_file(filename):
-    """提供问题视频访问服务"""
-    return send_from_directory(current_app.config['VIDEO_UPLOAD_FOLDER'], filename)
-
-@uploads_bp.route('/uploads/videos/<path:filename>')
-def uploaded_video(filename):
     """提供视频文件访问服务"""
     return send_from_directory(current_app.config['VIDEO_UPLOAD_FOLDER'], filename)

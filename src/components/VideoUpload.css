@@ -6,9 +6,10 @@
   background: #f8f9fa;
 }
 
-/* 上传类型选择器 */
-.upload-type-selector {
+/* 上传选项按钮区域 */
+.upload-options {
   display: flex;
+  align-items: center;
   gap: 1rem;
   margin-bottom: 1rem;
   padding: 0.5rem;
@@ -17,34 +18,77 @@
   border: 1px solid #dee2e6;
 }
 
-.upload-type-selector label {
-  display: flex;
+/* 通用上传选项按钮样式 */
+.upload-option-btn {
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  border-radius: 4px;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-weight: 500;
-  color: #495057;
-  background: transparent;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.upload-type-selector label:hover {
-  background: #e9ecef;
+.upload-option-btn i {
+  font-size: 1.1rem;
 }
 
-.upload-type-selector label.active {
-  background: #007bff;
+.upload-option-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* 本地文件上传按钮 */
+.local-upload-btn {
+  background-color: #28a745;
   color: white;
 }
 
-.upload-type-selector input[type="radio"] {
-  display: none;
+.local-upload-btn:hover:not(:disabled) {
+  background-color: #218838;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
 }
 
-.upload-type-selector i {
-  font-size: 1.1rem;
+.local-upload-btn:active {
+  transform: translateY(0);
+}
+
+.local-upload-btn.active {
+  background-color: #1e7e34;
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.4);
+}
+
+/* YouTube选项按钮 */
+.youtube-option-btn {
+  background-color: #f8f9fa;
+  color: #495057;
+  border: 2px solid #dee2e6;
+}
+
+.youtube-option-btn:hover:not(:disabled) {
+  background-color: #ff0000;
+  color: white;
+  border-color: #ff0000;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(255, 0, 0, 0.3);
+}
+
+.youtube-option-btn.active {
+  background-color: #dc3545;
+  color: white;
+  border-color: #dc3545;
+}
+
+.youtube-option-btn.active:hover {
+  background-color: #c82333;
+  border-color: #c82333;
 }
 
 /* 本地文件上传区域 */

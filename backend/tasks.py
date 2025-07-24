@@ -372,6 +372,7 @@ def upload_task_video(task_id):
         
         return jsonify({
             'message': 'Video uploaded successfully',
+            'filename': filename,
             'video_url': f'/uploads/videos/{filename}',
             'video_type': 'local'
         }), 200

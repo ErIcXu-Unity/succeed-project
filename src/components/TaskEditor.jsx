@@ -574,7 +574,7 @@ const TaskEditor = () => {
                           setPublishAt(tomorrow.toISOString().slice(0, 16));
                         }}
                       >
-                        Tomorrow at 9:00 AM
+                        Tomorrow 
                       </button>
                       <button
                         type="button"
@@ -586,7 +586,7 @@ const TaskEditor = () => {
                           setPublishAt(nextWeek.toISOString().slice(0, 16));
                         }}
                       >
-                        Next Week at 9:00 AM
+                        Next Week 
                       </button>
                     </div>
                   </div>

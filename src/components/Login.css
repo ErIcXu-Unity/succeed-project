@@ -106,7 +106,7 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.modal-content input:not(.password-input) {
+.modal-content input {
   width: 100%;
   padding: 0.6rem;
   margin: 0.6rem 0;
@@ -114,11 +114,7 @@
   border-radius: 5px;
 }
 
-.modal-content .password-input-container {
-  margin: 0.6rem 0;
-}
-
-.modal-content button:not(.password-toggle) {
+.modal-content button {
   width: 100%;
   padding: 0.7rem;
   background-color: var(--unsw-charcoal);
@@ -129,7 +125,7 @@
   cursor: pointer;
 }
 
-.modal-content button:not(.password-toggle):hover {
+.modal-content button:hover {
   background-color: #000;
 }
 
@@ -142,13 +138,4 @@
 
 .close-btn:hover {
   color: #000;
-}
-
-/* 示例文本样式 */
-.example-text {
-  font-size: 0.85rem;
-  color: #999;
-  margin-bottom: 0.5rem;
-  text-align: left;
-  padding-left: 0.2rem;
 }

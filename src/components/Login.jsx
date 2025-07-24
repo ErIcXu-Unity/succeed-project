@@ -137,10 +137,6 @@ const Login = ({ onLoginSuccess }) => {
             
             {error && <div style={{ color: 'red', marginBottom: '1rem' }}>{error}</div>}
             
-            {modalTitle === 'Student Login' && (
-              <div className="example-text">example: 123456@stu.com</div>
-            )}
-            
             <input
               type="text"
               name="username"

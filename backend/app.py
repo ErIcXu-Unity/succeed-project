@@ -78,7 +78,7 @@ def initialize_database(app):
         #         db.drop_all()
         #     except:
         #         print("Warning: Could not drop existing tables. Proceeding with create_all...")
-        
+        # db.drop_all()
         db.create_all()
         
         # Seed default data from seed_data.py

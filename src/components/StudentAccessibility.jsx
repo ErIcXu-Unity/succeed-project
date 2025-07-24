@@ -95,7 +95,7 @@ function StudentAccessibility() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          user_id: userData.user_id,
+          username: userData.username || `${userData.user_id}@stu.com`,
           current_password: passwordData.currentPassword,
           new_password: passwordData.newPassword
         })

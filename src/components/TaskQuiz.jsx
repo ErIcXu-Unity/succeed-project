@@ -286,7 +286,7 @@ const TaskQuiz = () => {
                 
                 setCurrentQuestionIndex(randomizedIndex >= 0 ? randomizedIndex : 0);
                 setAllAnswers(progressData.answers || {});
-                console.log('✅ 进度已恢复，使用会话级随机化保持顺序一致');
+                console.log('✅ Progress has been restored, using session-level randomization to keep the order consistent');
               }
             }
           }
@@ -510,7 +510,7 @@ const TaskQuiz = () => {
 
       if (response.ok) {
         if (showSuccessMessage) {
-          alert('进度保存成功！您可以稍后继续答题。');
+          alert('Your progress has been saved successfully! You can continue answering questions later.');
         }
         if (navigateToHome) {
           navigate('/student/home');
@@ -519,7 +519,7 @@ const TaskQuiz = () => {
       } else {
         const errorData = await response.json();
         if (showSuccessMessage) {
-          alert(`保存进度失败: ${errorData.error || 'Unknown error'}`);
+          alert(`Failed to save progress: ${errorData.error || 'Unknown error'}`);
         }
         console.error('Save progress failed:', errorData);
         return false;
@@ -527,7 +527,7 @@ const TaskQuiz = () => {
     } catch (error) {
       console.error('Error saving progress:', error);
       if (showSuccessMessage) {
-        alert('保存进度时出错，请重试。');
+        alert('An error occurred while saving your progress. Please try again.');
       }
       return false;
     } finally {
@@ -1115,8 +1115,8 @@ const TaskQuiz = () => {
           <div className={`network-status ${networkStatus}`}>
             <i className={`fas ${networkStatus === 'online' ? 'fa-wifi' : networkStatus === 'offline' ? 'fa-wifi-slash' : 'fa-spinner fa-spin'}`}></i>
             <span>
-              {networkStatus === 'online' ? '已连接' : 
-               networkStatus === 'offline' ? '离线' : '检查中...'}
+              {networkStatus === 'online' ? 'Connected' : 
+               networkStatus === 'offline' ? 'Offline' : 'Checking...'}
             </span>
           </div>
           <div className="auto-save-status">

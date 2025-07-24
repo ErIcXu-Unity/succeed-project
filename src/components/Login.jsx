@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Register from './Register.jsx';
+import PasswordInput from './PasswordInput.jsx';
 import './Login.css';
 
 const Login = ({ onLoginSuccess }) => {
@@ -143,8 +144,8 @@ const Login = ({ onLoginSuccess }) => {
               value={loginData.username}
               onChange={handleInputChange}
             />
-            <input
-              type="password"
+            
+            <PasswordInput
               name="password"
               placeholder="Password"
               value={loginData.password}

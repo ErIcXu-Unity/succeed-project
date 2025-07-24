@@ -149,3 +149,136 @@ button:focus, a:focus {
 .colorblind {
   filter: grayscale(1) contrast(1.2);
 }
+
+/* 密码修改表单样式 */
+.password-change-form {
+  background: var(--card-bg);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.password-change-form h3 {
+  margin-bottom: 1rem;
+  color: var(--unsw-charcoal);
+  font-size: 1.3rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-weight: 500;
+  color: var(--unsw-charcoal);
+  font-size: 0.95rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.submit-btn {
+  flex: 1;
+  padding: 0.8rem 1.5rem;
+  background: var(--unsw-charcoal);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #000;
+  transform: translateY(-1px);
+}
+
+.submit-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.cancel-btn {
+  flex: 1;
+  padding: 0.8rem 1.5rem;
+  background: transparent;
+  color: var(--unsw-charcoal);
+  border: 1px solid var(--unsw-charcoal);
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.cancel-btn:hover {
+  background: var(--unsw-charcoal);
+  color: white;
+}
+
+.error-message {
+  background: #ffeaea;
+  color: #d63384;
+  padding: 0.75rem;
+  border-radius: 5px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #d63384;
+  font-size: 0.9rem;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.success-message {
+  background: #d1e7dd;
+  color: #0f5132;
+  padding: 0.75rem;
+  border-radius: 5px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #0f5132;
+  font-size: 0.9rem;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .password-change-form {
+    padding: 1rem;
+  }
+  
+  .controls {
+    grid-template-columns: 1fr;
+  }
+}

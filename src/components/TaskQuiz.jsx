@@ -259,6 +259,24 @@ const TaskQuiz = () => {
             });
             
             setQuestions(randomizedQuestions);
+            
+            // 恢复答题进度（会话级随机化支持进度保存）
+            const progressResponse = await fetch(`http://localhost:5001/api/tasks/${taskId}/progress?student_id=${user.user_id}`);
+            if (progressResponse.ok) {
+              const progressData = await progressResponse.json();
+              if (progressData.has_progress) {
+                // 需要将原始题目索引转换为随机化后的索引
+                const originalIndex = progressData.current_question_index || 0;
+                const originalQuestionId = questionsData[originalIndex]?.id;
+                const randomizedIndex = shuffledIndices?.findIndex(mapping => mapping.questionId === originalQuestionId) || 0;
+                
+                setCurrentQuestionIndex(randomizedIndex >= 0 ? randomizedIndex : 0);
+
+                setAllAnswers(progressData.answers || {});
+                console.log('✅ Progress has been restored, using session-level randomization to keep the order consistent');
+
+              }
+            }
           } else {
             // 没有用户信息或题目为空，使用原始顺序
             shuffledIndices = questionsData.map((_, index) => ({
@@ -272,24 +290,6 @@ const TaskQuiz = () => {
           // 设置任务开始时间（在所有情况下都设置）
           const startTime = new Date().toISOString();
           setTaskStartTime(startTime);
-
-          // 恢复答题进度（会话级随机化支持进度保存）
-          if (user?.user_id) {
-            const progressResponse = await fetch(`http://localhost:5001/api/tasks/${taskId}/progress?student_id=${user.user_id}`);
-            if (progressResponse.ok) {
-              const progressData = await progressResponse.json();
-              if (progressData.has_progress) {
-                // 需要将原始题目索引转换为随机化后的索引
-                const originalIndex = progressData.current_question_index || 0;
-                const originalQuestionId = questionsData[originalIndex]?.id;
-                const randomizedIndex = shuffledIndices?.findIndex(mapping => mapping.questionId === originalQuestionId) || 0;
-                
-                setCurrentQuestionIndex(randomizedIndex >= 0 ? randomizedIndex : 0);
-                setAllAnswers(progressData.answers || {});
-                console.log('✅ Progress has been restored, using session-level randomization to keep the order consistent');
-              }
-            }
-          }
         } else {
           setError('Failed to load questions');
         }

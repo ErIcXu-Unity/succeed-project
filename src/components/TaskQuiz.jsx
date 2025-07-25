@@ -749,15 +749,50 @@ const TaskQuiz = () => {
     }
   };
 
-  // 重试测验 - 重新随机化
-  const retryQuiz = () => {
+  // 重试测验 - 重新随机化并清空进度
+  const retryQuiz = async () => {
     const user = JSON.parse(localStorage.getItem('user_data'));
-    if (user?.user_id) {
-      // 重置会话，下次进入将重新随机化
-      restartSession(user.user_id, taskId);
+    
+    if (!user?.user_id) {
+      console.warn('⚠️ 用户信息不存在，直接重新加载页面');
+      window.location.reload();
+      return;
+    }
+
+    try {
+      console.log('🔄 开始重试测验，正在清除进度数据...');
+      
+      // 先清除后端进度数据
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5秒超时
+      
+      const deleteResponse = await fetch(`http://localhost:5001/api/tasks/${taskId}/progress?student_id=${user.user_id}`, {
+        method: 'DELETE',
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (deleteResponse.ok) {
+        console.log('✅ 后端进度数据已清除');
+      } else {
+        console.warn('⚠️ 后端进度清除可能失败，状态码:', deleteResponse.status);
+      }
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        console.warn('⚠️ 清除进度数据请求超时，继续执行重试操作');
+      } else if (error.message.includes('Failed to fetch')) {
+        console.warn('⚠️ 网络连接失败，无法清除后端进度数据');
+      } else {
+        console.warn('⚠️ 清除进度数据时发生错误:', error.message);
+      }
     }
     
+    // 清除前端会话数据（保持原有逻辑）
+    restartSession(user.user_id, taskId);
+    
     // 重新加载页面以应用新的随机化
+    console.log('🔄 重新加载页面应用新的随机化');
     window.location.reload();
   };
 

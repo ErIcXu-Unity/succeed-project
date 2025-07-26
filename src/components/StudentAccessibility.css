@@ -6,7 +6,14 @@
   --gray-light: #f0f0f0;
   --gray-mid: #e0e0e0;
   --focus: #065fd4;
+  
+  /* 新增颜色变量 */
+  --success-green: #28a745;
+  --warning-orange: #ffc107;
+  --danger-red: #dc3545;
+  --info-blue: #17a2b8;
 }
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -29,7 +36,9 @@
   align-items: center;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
 .student-accessibility header img { height: 40px; margin-right: 1rem; }
+
 .student-accessibility header h1 {
   flex: 1;
   font-size: 1.5rem;
@@ -37,6 +46,7 @@
   text-align: center;
   color: var(--unsw-charcoal);
 }
+
 .back-link {
   color: var(--unsw-charcoal);
   text-decoration: none;
@@ -45,6 +55,7 @@
   border: 2px solid transparent;
   transition: border 0.2s;
 }
+
 .back-link:hover, .back-link:focus {
   border-color: var(--unsw-charcoal);
   outline: none;
@@ -54,11 +65,13 @@
   background: var(--card-bg);
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
+
 .student-accessibility nav ul {
   display: flex;
   justify-content: center;
   list-style: none;
 }
+
 .student-accessibility nav a {
   display: block;
   padding: 0.75rem 1.25rem;
@@ -67,10 +80,12 @@
   font-weight: 500;
   transition: background 0.2s;
 }
+
 .student-accessibility nav a.active {
   background: var(--unsw-yellow-dark);
   color: #fff;
 }
+
 .student-accessibility nav a:hover, .student-accessibility nav a:focus {
   background: var(--unsw-yellow);
   color: var(--unsw-charcoal);
@@ -79,8 +94,64 @@
 main {
   flex: 1;
   padding: 2rem;
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
+}
+
+/* 新增：无障碍设置头部 */
+.accessibility-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: var(--card-bg);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.accessibility-header h1 {
+  color: var(--unsw-charcoal);
+  font-size: 1.8rem;
+}
+
+.reset-btn {
+  padding: 0.5rem 1rem;
+  background: var(--danger-red);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.reset-btn:hover {
+  background: #c82333;
+  transform: translateY(-1px);
+}
+
+/* 新增：控制区域网格布局 */
+.controls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.control-section {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.control-section h2 {
+  color: var(--unsw-charcoal);
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+  border-bottom: 2px solid var(--unsw-yellow);
+  padding-bottom: 0.5rem;
 }
 
 .controls {
@@ -89,16 +160,26 @@ main {
   gap: 1rem;
   margin-bottom: 2rem;
 }
+
 .control-card {
   background: var(--card-bg);
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   padding: 1rem;
+  margin-bottom: 1rem;
 }
+
 .control-card h2 {
   font-size: 1.1rem;
   margin-bottom: 0.5rem;
 }
+
+.control-card h3 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  color: var(--unsw-charcoal);
+}
+
 .control-card button {
   padding: 0.5rem 1rem;
   background: var(--unsw-charcoal);
@@ -107,22 +188,137 @@ main {
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.95rem;
-  transition: background 0.2s;
+  transition: all 0.2s;
+  width: 100%;
+  margin-bottom: 0.5rem;
 }
-.control-card button:hover,
-.control-card button:focus {
+
+.control-card button:hover:not(:disabled),
+.control-card button:focus:not(:disabled) {
   background: #000;
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.control-card button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.control-card button[aria-pressed="true"] {
+  background: var(--success-green);
+}
+
+.control-card select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 2px solid var(--gray-mid);
+  border-radius: 4px;
+  font-size: 0.95rem;
+  background: white;
+}
+
+.control-card select:focus {
+  border-color: var(--focus);
   outline: none;
 }
 
-.sample {
-  background: var(--card-bg);
-  padding: 1rem;
-  border-radius: 6px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+.control-card small {
+  display: block;
+  color: #666;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
 }
-.sample h2 { font-size: 1.2rem; margin-bottom: 0.5rem; }
-.sample p { font-size: 1rem; }
+
+/* 新增：TTS控制区域 */
+.tts-controls {
+  margin-top: 1rem;
+}
+
+.tts-controls label {
+  display: block;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: var(--unsw-charcoal);
+}
+
+.tts-controls input[type="range"] {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.tts-controls select {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+/* TTS Enable Setting */
+.tts-enable-setting {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid var(--gray-mid);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.tts-enable-setting:hover {
+  background: #e9ecef;
+}
+
+.tts-enable-setting input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.tts-enable-setting span {
+  font-weight: 500;
+  color: var(--unsw-charcoal);
+  user-select: none;
+}
+
+
+
+/* 新增：快捷键说明 */
+.keyboard-shortcuts {
+  background: var(--card-bg);
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.keyboard-shortcuts h2 {
+  margin-bottom: 1rem;
+  color: var(--unsw-charcoal);
+}
+
+.keyboard-shortcuts ul {
+  list-style: none;
+}
+
+.keyboard-shortcuts li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--gray-mid);
+}
+
+.keyboard-shortcuts li:last-child {
+  border-bottom: none;
+}
+
+.keyboard-shortcuts kbd {
+  background: var(--gray-mid);
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 0.9rem;
+  margin-right: 0.5rem;
+}
 
 footer {
   background: var(--card-bg);
@@ -134,7 +330,7 @@ footer {
 }
 
 /* Focus 指示 */
-button:focus, a:focus {
+button:focus, a:focus, select:focus, input:focus {
   outline: 3px solid var(--focus);
   outline-offset: 2px;
 }
@@ -143,11 +339,105 @@ button:focus, a:focus {
 .high-contrast {
   filter: brightness(1.2) contrast(1.5);
 }
+
 .font-large {
   font-size: 1.2rem;
 }
+
 .colorblind {
   filter: grayscale(1) contrast(1.2);
+}
+
+/* 新增：主题样式 */
+.theme-darkMode {
+  background: #1a1a1a !important;
+  color: #e0e0e0 !important;
+}
+
+.theme-darkMode .control-section,
+.theme-darkMode .control-card,
+.theme-darkMode .sample,
+.theme-darkMode .keyboard-shortcuts,
+.theme-darkMode .accessibility-header {
+  background: #2d2d2d !important;
+  color: #e0e0e0 !important;
+}
+
+.theme-yellowBlack {
+  background: #000000 !important;
+  color: #ffff00 !important;
+}
+
+.theme-yellowBlack .control-section,
+.theme-yellowBlack .control-card,
+.theme-yellowBlack .sample,
+.theme-yellowBlack .keyboard-shortcuts,
+.theme-yellowBlack .accessibility-header {
+  background: #1a1a00 !important;
+  color: #ffff00 !important;
+}
+
+.theme-blueWhite {
+  background: #e6f3ff !important;
+  color: #003366 !important;
+}
+
+.theme-blueWhite .control-section,
+.theme-blueWhite .control-card,
+.theme-blueWhite .sample,
+.theme-blueWhite .keyboard-shortcuts,
+.theme-blueWhite .accessibility-header {
+  background: #cce6ff !important;
+  color: #003366 !important;
+}
+
+.theme-protanopia {
+  filter: sepia(100%) saturate(200%) hue-rotate(190deg);
+}
+
+.theme-deuteranopia {
+  filter: sepia(100%) saturate(150%) hue-rotate(270deg);
+}
+
+/* 新增：减少动画模式 */
+.reduce-motion * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* 新增：键盘导航增强 */
+.keyboard-nav-enhanced *:focus {
+  outline: 4px solid var(--focus) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 2px rgba(6, 95, 212, 0.3) !important;
+}
+
+/* 新增：阅读指导线 */
+.reading-guide::before {
+  content: '';
+  position: fixed;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--focus), transparent);
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* 新增：专注模式 */
+.focus-mode .student-accessibility nav,
+.focus-mode .accessibility-header,
+.focus-mode .keyboard-shortcuts {
+  opacity: 0.3;
+  transition: opacity 0.3s;
+}
+
+.focus-mode .student-accessibility nav:hover,
+.focus-mode .accessibility-header:hover,
+.focus-mode .keyboard-shortcuts:hover {
+  opacity: 1;
 }
 
 /* 密码修改表单样式 */
@@ -270,6 +560,16 @@ button:focus, a:focus {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
+  .controls-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .accessibility-header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
   .form-actions {
     flex-direction: column;
   }
@@ -280,5 +580,60 @@ button:focus, a:focus {
   
   .controls {
     grid-template-columns: 1fr;
+  }
+  
+  main {
+    padding: 1rem;
+  }
+}
+
+/* 新增：高对比度模式下的特殊样式 */
+.theme-highContrast {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+.theme-highContrast .control-section,
+.theme-highContrast .control-card,
+.theme-highContrast .sample,
+.theme-highContrast .keyboard-shortcuts,
+.theme-highContrast .accessibility-header {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border: 2px solid #ffffff !important;
+}
+
+.theme-highContrast button {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 2px solid #ffffff !important;
+}
+
+.theme-highContrast select,
+.theme-highContrast input {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border: 2px solid #ffffff !important;
+}
+
+/* 新增：动画减少模式的覆盖 */
+.reduce-motion * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+.reduce-motion .slideDown,
+.reduce-motion .fadeIn {
+  animation: none !important;
+}
+
+/* 新增：打印样式 */
+@media print {
+  .accessibility-header,
+  .controls-grid,
+  .keyboard-shortcuts {
+    display: none;
   }
 }

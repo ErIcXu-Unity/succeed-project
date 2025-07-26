@@ -1,0 +1,340 @@
+:root {
+  --unsw-yellow: #ffd500;
+  --unsw-yellow-dark: #ffbc00;
+  --unsw-charcoal: #1f1a19;
+  --primary-blue: #065fd4;
+  --success-green: #28a745;
+  --warning-orange: #fd7e14;
+  --danger-red: #dc3545;
+  --info-blue: #17a2b8;
+  --gray-light: #f8f9fa;
+  --gray-mid: #e9ecef;
+  --gray-dark: #6c757d;
+  --white: #ffffff;
+  --shadow-light: 0 2px 4px rgba(0,0,0,0.1);
+  --shadow-medium: 0 4px 12px rgba(0,0,0,0.15);
+  --shadow-heavy: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.teacher-settings-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: var(--gray-light);
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.settings-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, var(--unsw-yellow) 0%, var(--unsw-yellow-dark) 100%);
+  border-radius: 15px;
+  box-shadow: var(--shadow-medium);
+  position: relative;
+  overflow: hidden;
+}
+
+.settings-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="50" height="50" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(31,26,25,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+}
+
+.settings-header h1 {
+  color: var(--unsw-charcoal);
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.settings-header h1 i {
+  margin-right: 1rem;
+  font-size: 2rem;
+}
+
+.settings-header p {
+  color: var(--unsw-charcoal);
+  font-size: 1.1rem;
+  opacity: 0.8;
+  position: relative;
+  z-index: 1;
+}
+
+.settings-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.settings-card {
+  background: var(--white);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-light);
+  border: 1px solid var(--gray-mid);
+  transition: all 0.3s ease;
+}
+
+.settings-card:hover {
+  box-shadow: var(--shadow-medium);
+  transform: translateY(-2px);
+}
+
+.settings-card h2 {
+  color: var(--unsw-charcoal);
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--gray-mid);
+}
+
+.settings-card h2 i {
+  color: var(--primary-blue);
+  font-size: 1.2rem;
+}
+
+.setting-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.setting-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.setting-item label {
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  color: var(--unsw-charcoal);
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.setting-item input[type="checkbox"] {
+  display: none;
+}
+
+.setting-item input[type="checkbox"] + .checkmark {
+  width: 20px;
+  height: 20px;
+  background: var(--white);
+  border: 2px solid var(--gray-dark);
+  border-radius: 4px;
+  margin-right: 0.75rem;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.setting-item input[type="checkbox"]:checked + .checkmark {
+  background: var(--primary-blue);
+  border-color: var(--primary-blue);
+}
+
+.setting-item input[type="checkbox"]:checked + .checkmark::after {
+  content: '✓';
+  position: absolute;
+  color: var(--white);
+  font-size: 14px;
+  font-weight: bold;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.setting-select {
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--gray-mid);
+  border-radius: 8px;
+  font-size: 1rem;
+  background: var(--white);
+  color: var(--unsw-charcoal);
+  transition: all 0.3s ease;
+  margin-left: auto;
+  min-width: 150px;
+}
+
+.setting-select:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(6, 95, 212, 0.1);
+}
+
+.setting-description {
+  font-size: 0.9rem;
+  color: var(--gray-dark);
+  margin-left: 2.25rem;
+  font-style: italic;
+}
+
+.user-info-display {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--gray-light);
+  border-radius: 8px;
+  border-left: 4px solid var(--primary-blue);
+}
+
+.info-item label {
+  font-weight: 600;
+  color: var(--unsw-charcoal);
+}
+
+.info-item span {
+  color: var(--gray-dark);
+  font-weight: 500;
+}
+
+.settings-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: var(--shadow-light);
+}
+
+.save-btn, .reset-btn {
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.save-btn {
+  background: var(--success-green);
+  color: var(--white);
+}
+
+.save-btn:hover:not(:disabled) {
+  background: #218838;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.save-btn:disabled {
+  background: var(--gray-dark);
+  cursor: not-allowed;
+}
+
+.reset-btn {
+  background: var(--white);
+  color: var(--danger-red);
+  border: 2px solid var(--danger-red);
+}
+
+.reset-btn:hover {
+  background: var(--danger-red);
+  color: var(--white);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.settings-message {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--success-green);
+  color: var(--white);
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: var(--shadow-heavy);
+  font-weight: 500;
+  z-index: 1000;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .teacher-settings-container {
+    padding: 1rem;
+  }
+
+  .settings-header h1 {
+    font-size: 2rem;
+  }
+
+  .settings-card {
+    padding: 1rem;
+  }
+
+  .settings-actions {
+    flex-direction: column;
+  }
+
+  .save-btn, .reset-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .info-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .setting-select {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .settings-header {
+    padding: 1.5rem;
+  }
+
+  .settings-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .settings-message {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    text-align: center;
+  }
+} 

@@ -63,7 +63,7 @@ def initialize_database(app):
     from seed_data import seed_all_data
     
     with app.app_context():
-        # Recreate schema from scratch each run (development only)
+        # # Recreate schema from scratch each run (development only)
         # try:
         #     # Try to drop tables with CASCADE for PostgreSQL
         #     from sqlalchemy import text

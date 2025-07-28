@@ -6,6 +6,7 @@ import EachgameGrade from './components/EachgameGrade.jsx';
 import TeacherLayout from './components/TeacherLayout.jsx';
 import TeacherReports from './components/TeacherReports.jsx';
 import TeacherStudents from './components/TeacherStudents.jsx';
+import TeacherStudentDetail from './components/TeacherStudentDetail.jsx';
 import TeacherSettings from './components/TeacherSettings.jsx';
 import StudentLayout from './components/StudentLayout.jsx';
 import StudentDashboard from './components/StudentDashboard.jsx';
@@ -111,6 +112,7 @@ function AppWrapper() {
                 <Route index element={<TeacherDashboard />} />
                 <Route path="reports" element={<TeacherReports />} />
                 <Route path="students" element={<TeacherStudents />} />
+                <Route path="students/:studentId" element={<TeacherStudentDetail />} />
                 <Route path="settings" element={<TeacherSettings />} />
                 <Route path="gamegrade" element={<EachgameGrade />} />
               </Route>

@@ -9,6 +9,8 @@ const TeacherDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [studentCount, setStudentCount] = useState(0);
+  const [completionRate, setCompletionRate] = useState(0);
 
   // 搜索筛选状态
   const [searchTerm, setSearchTerm] = useState('');
@@ -19,6 +21,7 @@ const TeacherDashboard = () => {
 
   useEffect(() => {
     fetchTasks();
+    fetchDashboardStats();
   }, []);
 
   // Watch for navigation state changes to refresh data
@@ -43,7 +46,7 @@ const TeacherDashboard = () => {
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('focus', handleFocus);
-    
+
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
@@ -57,7 +60,7 @@ const TeacherDashboard = () => {
       // Add timestamp to prevent caching issues with task status updates
       const timestamp = new Date().getTime();
       const response = await fetch(`http://localhost:5001/api/tasks?role=${role}&_t=${timestamp}`);
-      
+
       if (response.ok) {
         const data = await response.json();
         setTasks(data);
@@ -68,6 +71,19 @@ const TeacherDashboard = () => {
       console.error('Error fetching tasks:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchDashboardStats = async () => {
+    try {
+      const response = await fetch('http://localhost:5001/api/students/dashboard-summary');
+      if (response.ok) {
+        const data = await response.json();
+        setStudentCount(data.total_students);
+        setCompletionRate(data.completion_rate);
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
     }
   };
 
@@ -112,7 +128,7 @@ const TeacherDashboard = () => {
   const getTaskStatus = (task) => {
     const now = new Date();
     const publishAt = task.publish_at ? new Date(task.publish_at) : null;
-    
+
     if (!publishAt) return 'Published';
     if (publishAt > now) return 'Scheduled';
     return 'Published';
@@ -158,20 +174,20 @@ const TeacherDashboard = () => {
   // 清理描述文字，移除过多的emoji和格式化
   const getCleanDescription = (introduction) => {
     if (!introduction) return 'No description available';
-    
+
     // 移除连续的emoji和特殊字符，只保留第一句话
     let cleaned = introduction
       .replace(/[🎯🧪⚗️🔬📝📊⚡🧬📚🎮🏃‍♂️🎊🎉]/g, '') // 移除emoji
       .replace(/\n+/g, ' ') // 将换行替换为空格
       .replace(/\s+/g, ' ') // 合并多个空格
       .trim();
-    
+
     // 取第一句话或前100个字符
     const sentences = cleaned.split(/[.!?]/);
     if (sentences[0] && sentences[0].length > 20) {
       return sentences[0].trim() + (sentences.length > 1 ? '...' : '');
     }
-    
+
     return cleaned.length > 100 ? cleaned.substring(0, 100) + '...' : cleaned;
   };
 
@@ -180,12 +196,12 @@ const TeacherDashboard = () => {
     let filteredTasks = tasks.filter(task => {
       // 关键词搜索
       const matchesSearch = task.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (task.introduction && task.introduction.toLowerCase().includes(searchTerm.toLowerCase()));
-      
+        (task.introduction && task.introduction.toLowerCase().includes(searchTerm.toLowerCase()));
+
       // 状态筛选
       const taskStatus = getTaskStatus(task);
       const matchesStatus = !statusFilter || taskStatus.toLowerCase() === statusFilter.toLowerCase();
-      
+
       // 问题数量筛选
       let matchesQuestions = true;
       if (questionFilter === 'empty') {
@@ -195,14 +211,14 @@ const TeacherDashboard = () => {
       } else if (questionFilter === 'complete') {
         matchesQuestions = task.question_count >= 3;
       }
-      
+
       return matchesSearch && matchesStatus && matchesQuestions;
     });
 
     // 排序
     filteredTasks.sort((a, b) => {
       let aValue, bValue;
-      
+
       switch (sortBy) {
         case 'name':
           aValue = a.name.toLowerCase();
@@ -228,7 +244,7 @@ const TeacherDashboard = () => {
           aValue = a.name.toLowerCase();
           bValue = b.name.toLowerCase();
       }
-      
+
       if (sortOrder === 'asc') {
         return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
       } else {
@@ -296,7 +312,7 @@ const TeacherDashboard = () => {
                 <i className="fas fa-users"></i>
               </div>
               <div className="stat-info">
-                <h3>24</h3>
+                <h3>{studentCount}</h3>  {/* 动态显示 */}
                 <p>Active Students</p>
               </div>
             </div>
@@ -305,7 +321,7 @@ const TeacherDashboard = () => {
                 <i className="fas fa-chart-line"></i>
               </div>
               <div className="stat-info">
-                <h3>78%</h3>
+                <h3>{completionRate}%</h3>  {/* 动态显示 */}
                 <p>Completion Rate</p>
               </div>
             </div>
@@ -334,7 +350,7 @@ const TeacherDashboard = () => {
                 className="search-input"
               />
               {searchTerm && (
-                <button 
+                <button
                   className="clear-search"
                   onClick={() => setSearchTerm('')}
                   title="Clear search"
@@ -404,7 +420,7 @@ const TeacherDashboard = () => {
               </select>
             </div>
 
-            <button 
+            <button
               className="clear-filters-btn"
               onClick={handleClearFilters}
               title="Clear all filters"
@@ -452,11 +468,11 @@ const TeacherDashboard = () => {
                 return (
                   <div key={task.id} className="task-card">
                     <div className="task-card-image">
-                      <img 
-                        src={courseImage} 
+                      <img
+                        src={courseImage}
                         alt={task.name}
-                        onError={(e) => { 
-                          e.target.src = '/assets/task1.jpg'; 
+                        onError={(e) => {
+                          e.target.src = '/assets/task1.jpg';
                         }}
                       />
                       <div className="task-card-overlay">
@@ -486,9 +502,9 @@ const TeacherDashboard = () => {
                           </span>
                         </div>
                       </div>
-                      
+
                       <p className="task-description">{cleanDescription}</p>
-                      
+
                       <div className="task-stats">
                         {task.publish_at && (
                           <div className="stat-item">
@@ -503,7 +519,7 @@ const TeacherDashboard = () => {
                       </div>
 
                       <div className="task-actions">
-                        <button 
+                        <button
                           className="btn btn-edit"
                           onClick={() => handleEditTask(task.id)}
                           title="Edit task"
@@ -511,7 +527,7 @@ const TeacherDashboard = () => {
                           <i className="fas fa-edit"></i>
                           Edit
                         </button>
-                        <button 
+                        <button
                           className="btn btn-grade"
                           onClick={() => handleGradeTask(task.id)}
                           title="View grades"
@@ -519,7 +535,7 @@ const TeacherDashboard = () => {
                           <i className="fas fa-chart-bar"></i>
                           Grades
                         </button>
-                        <button 
+                        <button
                           className="btn btn-delete"
                           onClick={() => setDeleteConfirm(task.id)}
                           title="Delete task"
@@ -544,14 +560,14 @@ const TeacherDashboard = () => {
             <h3>Confirm Deletion</h3>
             <p>Are you sure you want to delete this task? This action cannot be undone.</p>
             <div className="modal-actions">
-              <button 
+              <button
                 className="btn btn-secondary"
                 onClick={() => setDeleteConfirm(null)}
                 disabled={deleting}
               >
                 Cancel
               </button>
-              <button 
+              <button
                 className="btn btn-danger"
                 onClick={() => handleDeleteTask(deleteConfirm)}
                 disabled={deleting}

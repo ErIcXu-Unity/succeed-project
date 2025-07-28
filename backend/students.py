@@ -171,3 +171,68 @@ def get_student_history(student_id):
         'total_completed': len(history_data),
         'student_name': student.real_name
     }), 200
+
+@students_bp.route('/dashboard-summary', methods=['GET'])
+def get_dashboard_summary():
+    """获取仪表盘所需的学生总数和完成率"""
+    try:
+        # 1. 学生总数（直接从students表计数）
+        total_students = db.session.query(db.func.count(Student.id)).scalar()
+        print(f"学生表记录数: {total_students}")
+
+        # 2. 完成率（已完成至少一个任务的学生比例）
+        completed_students = db.session.query(db.func.count(db.distinct(StudentTaskResult.student_id))).scalar()
+        completion_rate = round((completed_students / total_students * 100), 2) if total_students > 0 else 0
+        
+        return jsonify({
+            "total_students": total_students,
+            "completion_rate": completion_rate
+        }), 200
+        
+    except Exception as e:
+        return jsonify({"error": f"统计失败: {str(e)}"}), 500
+
+
+# 获取所有学生列表
+@students_bp.route('/list', methods=['GET'])
+def get_students_list():
+    try:
+        students = Student.query.all()
+        result = []
+        for s in students:
+            result.append({
+                "student_id": s.student_id,
+                "name": s.real_name,
+                "class": "Class A"  # 暂时硬编码，后续可关联班级表
+            })
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+# 获取学生详情
+@students_bp.route('/<student_id>/details', methods=['GET'])
+def get_student_details(student_id):
+    try:
+        student = Student.query.filter_by(student_id=student_id).first_or_404()
+        
+        # 获取学生任务完成情况
+        task_results = StudentTaskResult.query.filter_by(student_id=student_id).all()
+        
+        return jsonify({
+            "student_info": {
+                "id": student.student_id,
+                "name": student.real_name,
+                "class": "Class A",
+                "username": student.username
+            },
+            "task_history": [
+                {
+                    "task_id": r.task_id,
+                    "task_name": r.task_name,
+                    "score": r.total_score,
+                    "completed_at": r.completed_at.isoformat()
+                } for r in task_results
+            ]
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 404

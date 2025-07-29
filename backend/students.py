@@ -236,3 +236,63 @@ def get_student_details(student_id):
         }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 404
+    
+@students_bp.route('/dashboard-report', methods=['GET'])
+def get_dashboard_report():
+    """获取仪表盘总览数据：学生数、任务数、完成率、平均得分、每个任务完成情况"""
+    try:
+        # 总学生数
+        total_students = db.session.query(db.func.count(Student.id)).scalar()
+
+        # 总任务数
+        total_tasks = db.session.query(db.func.count(Task.id)).scalar()
+
+        # 完成率
+        completed_students = db.session.query(db.func.count(db.distinct(StudentTaskResult.student_id))).scalar()
+        completion_rate = round((completed_students / total_students * 100), 1) if total_students > 0 else 0.0
+
+        # 平均得分
+        task_results = StudentTaskResult.query.all()
+        total_score = 0
+        total_possible = 0
+        for r in task_results:
+            questions = Question.query.filter_by(task_id=r.task_id).all()
+            max_score = sum(q.score for q in questions)
+            if max_score > 0:
+                total_score += r.total_score
+                total_possible += max_score
+        average_score = round((total_score / total_possible * 100), 1) if total_possible > 0 else 0.0
+
+        # 每个任务的完成情况
+        all_tasks = Task.query.all()
+        task_performance = []
+
+        for task in all_tasks:
+            task_results = StudentTaskResult.query.filter_by(task_id=task.id).all()
+            submitted_count = len(task_results)
+            task_questions = Question.query.filter_by(task_id=task.id).all()
+            max_score = sum(q.score for q in task_questions)
+
+            avg_score = 0.0
+            if submitted_count > 0 and max_score > 0:
+                avg_score = round(sum(r.total_score for r in task_results) / (submitted_count * max_score) * 100, 1)
+
+            completion = round((submitted_count / total_students * 100), 1) if total_students > 0 else 0.0
+
+            task_performance.append({
+                "name": task.name,
+                "completion": completion,
+                "avgScore": avg_score,
+                "attempts": submitted_count
+            })
+
+        return jsonify({
+            "total_students": total_students,
+            "total_tasks": total_tasks,
+            "completion_rate": completion_rate,
+            "average_score": average_score,
+            "task_performance": task_performance
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": f"统计失败: {str(e)}"}), 500

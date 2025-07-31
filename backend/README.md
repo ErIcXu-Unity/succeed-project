@@ -1,132 +1,289 @@
-# Escape Room Backend Setup Guide
+# 🎓 Escape Room Educational Platform - Backend API
 
-## Prerequisites
+A robust Flask-based backend service for the UNSW Escape Room Educational Platform, providing comprehensive APIs for managing educational content, user authentication, and interactive learning experiences.
 
-1. Python 3.8+ installed
-2. PostgreSQL database (or SQLite for testing)
-3. Node.js and npm (for frontend)
+## 🏗️ Architecture Overview
 
-## Backend Setup
+The backend follows a **modular blueprint architecture** with separated concerns for maintainability and scalability:
 
-1. **Install dependencies:**
-
-```bash
-cd backend
-pip install flask flask-sqlalchemy flask-cors python-dotenv psycopg2-binary werkzeug
+```
+backend/
+├── app.py              # Application factory & main entry point
+├── models.py           # SQLAlchemy database models
+├── auth.py             # Authentication & authorization
+├── tasks.py            # Task management endpoints
+├── questions.py        # Question CRUD operations  
+├── submissions.py      # Student submissions & grading
+├── students.py         # Student progress & analytics
+├── uploads.py          # File upload & media handling
+├── requirements.txt    # Python dependencies
+├── seed_data.py        # Database seeding script
+└── migrate_questions.py # Database migration utilities
 ```
 
-2. **Create environment file:**
-   Create a `.env` file in the `backend` directory:
+## 🚀 Features
+
+### Core Functionality
+- **🔐 Authentication System**: Secure login/registration for students and teachers
+- **📚 Content Management**: Create and manage educational tasks and questions
+- **🎮 Interactive Questions**: Support for 6 different question types
+- **📊 Progress Tracking**: Comprehensive student analytics and achievements
+- **📁 Media Handling**: Upload and serve images, videos, and documents
+- **🏆 Achievement System**: Badges and progress gamification
+
+### Question Types Supported
+1. **Single Choice** - Traditional multiple choice (A/B/C/D)
+2. **Multiple Choice** - Multiple correct answers
+3. **Fill in Blank** - Text completion exercises
+4. **Puzzle Game** - Fragment assembly challenges
+5. **Matching Task** - Connect related items
+6. **Error Spotting** - Interactive image-based error identification
+
+## 🛠️ Technology Stack
+
+- **Framework**: Flask 2.0+ with Blueprint architecture
+- **Database**: PostgreSQL with SQLAlchemy ORM
+- **Authentication**: Session-based with secure password hashing
+- **File Storage**: Local filesystem with organized directory structure
+- **CORS**: Configured for cross-origin requests
+- **Environment**: python-dotenv for configuration management
+
+## 📦 Installation & Setup
+
+### Prerequisites
+- Python 3.8 or higher
+- PostgreSQL 12+ (or SQLite for development)
+- Virtual environment (recommended)
+
+### Step 1: Environment Setup
+```bash
+# Clone and navigate to backend directory
+cd backend
+
+# Create virtual environment
+python -m venv venv
+
+# Activate virtual environment
+# Linux/macOS:
+source venv/bin/activate
+# Windows:
+venv\Scripts\activate
+```
+
+### Step 2: Install Dependencies
+```bash
+# Install all required packages
+pip install -r requirements.txt
+
+# Or install manually:
+pip install Flask>=2.0.0 Flask-SQLAlchemy>=2.5.1 Flask-CORS>=3.0.10 python-dotenv>=0.19.0 Werkzeug>=2.0.0 psycopg2-binary>=2.9.0
+```
+
+### Step 3: Database Configuration
+Create a `.env` file in the backend directory:
 
 ```env
-# For PostgreSQL
-DATABASE_URL=postgresql://username:password@localhost:5432/your_database_name
+# Production Database (PostgreSQL)
+DATABASE_URL=postgresql://username:password@localhost:5432/escape_room_db
 
-# For SQLite (simpler for testing)
-DATABASE_URL=sqlite:///escape_room.db
+# Development Database (SQLite)
+# DATABASE_URL=sqlite:///escape_room.db
 
+# Application Settings
 FLASK_ENV=development
 FLASK_DEBUG=True
+SECRET_KEY=your-secret-key-here
+
+# Upload Configuration
+MAX_CONTENT_LENGTH=16777216  # 16MB max file size
 ```
 
-3. **Initialize the database:**
-
+### Step 4: Database Initialization
 ```bash
-python init_db.py
+# Initialize database tables
+python -c "from models import db; from app import create_app; app = create_app(); app.app_context().push(); db.create_all()"
+
+# Seed database with sample data (optional)
+python seed_data.py
 ```
 
-4. **Run the backend server:**
-
+### Step 5: Start the Server
 ```bash
+# Start development server
+python app.py
+
+# Server will run on http://localhost:5000
+```
+
+## 🔌 API Endpoints
+
+### Authentication Endpoints
+```http
+POST   /register                    # Student registration
+POST   /login                       # User login (student/teacher)
+POST   /logout                      # User logout
+GET    /check-auth                  # Check authentication status
+```
+
+### Task Management
+```http
+GET    /api/tasks                   # List all tasks (role-based filtering)
+POST   /api/tasks                   # Create new task (teachers only)
+GET    /api/tasks/{id}              # Get specific task details
+PUT    /api/tasks/{id}              # Update task (teachers only)
+DELETE /api/tasks/{id}              # Delete task (teachers only)
+```
+
+### Question Management
+```http
+GET    /api/tasks/{id}/questions    # Get all questions for a task
+POST   /api/tasks/{id}/questions    # Create new question (all 6 types supported)
+GET    /api/questions/{id}          # Get specific question
+PUT    /api/questions/{id}          # Update question (teachers only)
+DELETE /api/questions/{id}          # Delete question (teachers only)
+```
+
+### Student Progress & Submissions
+```http
+POST   /api/tasks/{id}/submit       # Submit completed task
+POST   /api/tasks/{id}/save-progress # Save partial progress
+GET    /api/students/{id}/achievements # Get student achievements
+GET    /api/students/{id}/results   # Get student task results
+GET    /api/students/{id}/progress  # Get detailed progress data
+```
+
+### File Upload & Media
+```http
+POST   /api/upload/image            # Upload question images
+POST   /api/upload/video            # Upload question videos  
+GET    /api/uploads/questions/{path} # Serve uploaded images
+GET    /api/uploads/videos/{path}   # Serve uploaded videos
+```
+
+### Analytics & Reporting (Teachers)
+```http
+GET    /api/teacher/dashboard       # Teacher dashboard statistics
+GET    /api/teacher/students        # List all students with progress
+GET    /api/teacher/task/{id}/results # Task-specific results
+GET    /api/teacher/reports         # Comprehensive reporting data
+```
+
+## 🗄️ Database Schema
+
+### Core Tables
+- **students**: Student accounts and profiles
+- **teachers**: Teacher accounts and permissions
+- **tasks**: Educational escape room tasks
+- **questions**: Individual questions with type-specific data
+- **achievements**: Available badges and milestones
+- **student_achievements**: Student badge records
+- **student_task_results**: Task completion scores
+
+### Question Data Structure
+Questions support flexible JSON data storage for different types:
+
+```json
+{
+  "question_type": "puzzle_game",
+  "question_data": {
+    "puzzle_solution": "x² + 4x + 4 = 0",
+    "puzzle_fragments": ["x²", "+", "4x", "+", "4", "=", "0"]
+  }
+}
+```
+
+## 🔒 Security Features
+
+- **Password Hashing**: Werkzeug secure password hashing
+- **Session Management**: Flask-based session handling
+- **CORS Protection**: Configured allowed origins
+- **File Upload Security**: Type validation and size limits
+- **SQL Injection Prevention**: SQLAlchemy ORM parameter binding
+- **Input Validation**: Comprehensive request data validation
+
+## 📊 Monitoring & Logging
+
+### Development
+```bash
+# Enable debug mode
+export FLASK_DEBUG=True
 python app.py
 ```
 
-The backend will run on `http://localhost:5000`
+### Production Considerations
+- Use gunicorn or uWSGI for production deployment
+- Implement proper logging with rotating file handlers
+- Set up database connection pooling
+- Configure reverse proxy (nginx/Apache)
+- Enable SSL/TLS certificates
 
-## Frontend Setup
+## 🧪 Testing
 
-1. **Install dependencies:**
-
+### Manual Testing
 ```bash
-cd ..  # go back to project root
-npm install
+# Test database connection
+python -c "from models import db; from app import create_app; app = create_app(); app.app_context().push(); print('Database connection successful!')"
+
+# Test API endpoints
+curl -X GET http://localhost:5000/api/tasks
+curl -X POST http://localhost:5000/register -H "Content-Type: application/json" -d '{"name":"Test Student","student_id":"1234567","password":"test123"}'
 ```
 
-2. **Run the frontend:**
-
+### Sample Data
+Run the seed script to populate the database with sample data:
 ```bash
-npm start
+python seed_data.py
 ```
 
-The frontend will run on `http://localhost:3000`
+This creates:
+- Sample tasks with various question types
+- Test student and teacher accounts
+- Achievement badges
+- Demo questions demonstrating all 6 question types
 
-## Testing the New Features
+## 🚀 Deployment
 
-### 1. Student Registration
+### Environment Variables
+```env
+DATABASE_URL=postgresql://user:pass@host:5432/db
+FLASK_ENV=production
+FLASK_DEBUG=False
+SECRET_KEY=your-production-secret-key
+MAX_CONTENT_LENGTH=52428800  # 50MB for production
+```
 
-1. Go to `http://localhost:3000`
-2. Click "Student Register"
-3. Fill in the form:
-   - Full Name: "John Doe"
-   - Student ID: "1234567" (7 digits)
-   - Email will auto-generate: "1234567@stu.com"
-   - Password: "password123"
-   - Confirm Password: "password123"
-4. Click Register
+### Docker Deployment
+```dockerfile
+FROM python:3.9-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+EXPOSE 5000
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:create_app()"]
+```
 
-### 2. Student Login
+## 🔧 Migration & Maintenance
 
-1. Click "Student Login"
-2. Enter:
-   - Username: "1234567@stu.com"
-   - Password: "password123"
-3. Should redirect to student dashboard
+### Database Migration
+For existing installations, use the migration script:
+```bash
+python migrate_questions.py
+```
 
-### 3. Teacher Login (Fake for now)
+### Backup & Recovery
+```bash
+# PostgreSQL backup
+pg_dump escape_room_db > backup.sql
 
-- Teachers still need to be manually added to database
-- You can add one through database console or create teacher registration
+# PostgreSQL restore
+psql escape_room_db < backup.sql
+```
 
-## Database Tables
+### Debug Mode
+```bash
+export FLASK_DEBUG=True
+export FLASK_ENV=development
+python app.py
+```
 
-After running `init_db.py`, you'll have:
-
-- **students**: Student accounts with actual student_id as string
-- **teachers**: Teacher accounts
-- **tasks**: 4 sample tasks
-- **questions**: Sample questions for tasks 1 & 2
-- **achievements**: One achievement per task
-- **student_achievements**: Links students to achievements (with redundant fields)
-- **student_task_results**: Student task scores (with redundant fields)
-
-## API Endpoints
-
-### Authentication
-
-- `POST /register` - Student registration
-- `POST /login` - Student/Teacher login
-
-### Tasks & Questions
-
-- `GET /api/tasks` - Get all tasks
-- `GET /api/tasks/<task_id>/questions` - Get questions for a task
-- `POST /api/tasks/<task_id>/submit` - Submit task answers
-
-### Reports
-
-- `GET /api/students/<student_id>/achievements` - Get student achievements
-- `GET /api/students/<student_id>/results` - Get student task results
-
-## Key Changes Made
-
-1. **Frontend**: Real login/register system replacing fake authentication
-2. **Database**: Using actual student_id (string) instead of auto-increment IDs
-3. **Redundant Fields**: Added student_name, task_name, achievement_name for better performance
-4. **API**: Updated to work with string student_id values
-
-## Troubleshooting
-
-- Make sure PostgreSQL is running and accessible
-- Check `.env` file has correct database URL
-- Ensure both frontend and backend are running on different ports
-- Check browser console for any CORS or network errors

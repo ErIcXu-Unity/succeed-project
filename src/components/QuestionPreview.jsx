@@ -1,11 +1,48 @@
 import React from 'react';
 
 const QuestionPreview = ({ question }) => {
+  const renderQuestionBasics = () => (
+    <div className="question-content">
+      <h4>Question Content</h4>
+      <p>{question.question}</p>
+      
+      {question.description && (
+        <div className="question-description">
+          <h5>Description</h5>
+          <p>{question.description}</p>
+        </div>
+      )}
+      
+      {question.image_url && (
+        <div className="question-media">
+          <h5>Image</h5>
+          <img 
+            src={question.image_url.startsWith('http') ? question.image_url : `http://localhost:5001${question.image_url}`} 
+            alt="Question image" 
+            style={{ maxWidth: '200px', maxHeight: '150px', borderRadius: '8px' }}
+          />
+        </div>
+      )}
+      
+      {question.video_type && question.video_url && (
+        <div className="question-media">
+          <h5>Video</h5>
+          <div className="video-preview">
+            <i className={`${question.video_type === 'youtube' ? 'fab fa-youtube' : 'fas fa-video'}`}></i>
+            <span>{question.video_type === 'youtube' ? 'YouTube Video' : 'Local Video'}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   const renderQuestionContent = () => {
     switch (question.question_type) {
       case 'single_choice':
         return (
           <div className="question-options">
+            {renderQuestionBasics()}
+            
             <h4>Options (Single Choice)</h4>
             <div className="options-preview">
               <div className="option-item">
@@ -33,6 +70,8 @@ const QuestionPreview = ({ question }) => {
         const correctAnswers = question.question_data?.correct_answers || [];
         return (
           <div className="question-options">
+            {renderQuestionBasics()}
+            
             <h4>Options (Multiple Choice)</h4>
             <div className="options-preview">
               {options.map((option, index) => (
@@ -56,6 +95,8 @@ const QuestionPreview = ({ question }) => {
         const blankAnswers = question.question_data?.blank_answers || [];
         return (
           <div className="question-options">
+            {renderQuestionBasics()}
+            
             <h4>Fill in the Blank</h4>
             <div className="blank-answers-preview">
               <p className="instruction">Students need to fill in the blanks marked with _____</p>
@@ -74,20 +115,57 @@ const QuestionPreview = ({ question }) => {
         const puzzleFragments = question.question_data?.puzzle_fragments || [];
         return (
           <div className="question-options">
-            <h4>Puzzle Game</h4>
-            <div className="puzzle-preview">
-              <div className="puzzle-solution">
-                <span className="puzzle-label">Complete Solution:</span>
-                <span className="puzzle-text">{puzzleSolution}</span>
+            {renderQuestionBasics()}
+            
+            <div className="puzzle-game-preview">
+              <div className="puzzle-header">
+                <div className="puzzle-icon">
+                  <i className="fas fa-puzzle-piece"></i>
+                </div>
+                <h4>Interactive Puzzle Game</h4>
+                <div className="puzzle-stats">
+                  <span className="fragment-count">
+                    <i className="fas fa-th-large"></i>
+                    {puzzleFragments.length} fragments
+                  </span>
+                </div>
               </div>
-              <div className="puzzle-fragments">
-                <span className="puzzle-label">Fragments to Assemble:</span>
-                <div className="fragments-list">
-                  {puzzleFragments.map((fragment, index) => (
-                    <span key={index} className="fragment-item">
-                      {fragment}
-                    </span>
-                  ))}
+              
+              <div className="puzzle-content">
+                <div className="solution-display">
+                  <div className="solution-header">
+                    <i className="fas fa-trophy"></i>
+                    <span>Target Solution</span>
+                  </div>
+                  <div className="solution-box">
+                    <div className="solution-text">{puzzleSolution}</div>
+                  </div>
+                </div>
+                
+                <div className="fragments-display">
+                  <div className="fragments-header">
+                    <i className="fas fa-cubes"></i>
+                    <span>Available Fragments</span>
+                  </div>
+                  <div className="fragments-container">
+                    {puzzleFragments.map((fragment, index) => (
+                      <div key={index} className="preview-fragment">
+                        <div className="fragment-content">{fragment}</div>
+                        <div className="fragment-number">{index + 1}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="puzzle-instructions">
+                  <div className="instruction-item">
+                    <i className="fas fa-hand-pointer"></i>
+                    <span>Students drag and drop fragments to build the solution</span>
+                  </div>
+                  <div className="instruction-item">
+                    <i className="fas fa-check-circle"></i>
+                    <span>Interactive validation provides immediate feedback</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -100,6 +178,8 @@ const QuestionPreview = ({ question }) => {
         const correctMatches = question.question_data?.correct_matches || [];
         return (
           <div className="question-options">
+            {renderQuestionBasics()}
+            
             <h4>Matching Task</h4>
             <div className="matching-preview">
               <div className="matching-columns">
@@ -136,6 +216,8 @@ const QuestionPreview = ({ question }) => {
         const errorSpots = question.question_data?.error_spots || [];
         return (
           <div className="question-options">
+            {renderQuestionBasics()}
+            
             <h4>Error Spotting</h4>
             <div className="error-spotting-preview">
               <p className="instruction">Students need to click on error areas in the image</p>
@@ -156,6 +238,8 @@ const QuestionPreview = ({ question }) => {
       default:
         return (
           <div className="question-options">
+            {renderQuestionBasics()}
+            
             <h4>Unknown Question Type</h4>
             <p>Question type: {question.question_type}</p>
           </div>
@@ -165,38 +249,6 @@ const QuestionPreview = ({ question }) => {
 
   return (
     <div className="question-preview">
-      <div className="question-content">
-        <h4>Question Content</h4>
-        <p>{question.question}</p>
-        
-        {question.description && (
-          <div className="question-description">
-            <h5>Description</h5>
-            <p>{question.description}</p>
-          </div>
-        )}
-        
-        {question.image_url && (
-          <div className="question-media">
-            <h5>Image</h5>
-            <img 
-              src={question.image_url.startsWith('http') ? question.image_url : `http://localhost:5001${question.image_url}`} 
-              alt="Question image" 
-              style={{ maxWidth: '200px', maxHeight: '150px', borderRadius: '8px' }}
-            />
-          </div>
-        )}
-        
-        {question.video_type && question.video_url && (
-          <div className="question-media">
-            <h5>Video</h5>
-            <div className="video-preview">
-              <i className={`${question.video_type === 'youtube' ? 'fab fa-youtube' : 'fas fa-video'}`}></i>
-              <span>{question.video_type === 'youtube' ? 'YouTube Video' : 'Local Video'}</span>
-            </div>
-          </div>
-        )}
-      </div>
 
       {renderQuestionContent()}
 

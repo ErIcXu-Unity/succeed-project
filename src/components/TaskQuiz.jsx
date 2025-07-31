@@ -960,9 +960,36 @@ const TaskQuiz = () => {
                 return 'Invalid option';
               }
               
-              // Handle future question types
+              // Handle puzzle game answers
               if (question.question_type === 'puzzle_game') {
-                return 'Coming soon - Puzzle Game answers will be displayed here';
+                if (Array.isArray(userAnswer)) {
+                  return (
+                    <div className="puzzle-game-answer">
+                      <div className="puzzle-answer-label">
+                        <i className="fas fa-puzzle-piece"></i>
+                        Student's Assembly:
+                      </div>
+                      <div className="puzzle-answer-content">
+                        {userAnswer.map((fragment, index) => (
+                          <span key={index} className="puzzle-answer-fragment">
+                            {fragment}
+                          </span>
+                        )).reduce((prev, curr, index) => 
+                          index === 0 ? [curr] : [...prev, <span key={`space-${index}`} className="puzzle-space"> </span>, curr], []
+                        )}
+                      </div>
+                      <div className="puzzle-answer-text">
+                        "{userAnswer.join(' ')}"
+                      </div>
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div className="puzzle-game-answer">
+                      <span className="puzzle-answer-text">"{userAnswer || '(empty)'}"</span>
+                    </div>
+                  );
+                }
               }
               
               if (question.question_type === 'matching_task') {
@@ -1068,9 +1095,39 @@ const TaskQuiz = () => {
                 return 'Invalid option';
               }
               
-              // Handle future question types
+              // Handle puzzle game correct answers
               if (question.question_type === 'puzzle_game') {
-                return 'Coming soon - Puzzle Game correct answers will be displayed here';
+                const correctSolution = question.puzzle_solution || '';
+                const fragments = question.puzzle_fragments || [];
+                
+                if (correctSolution && fragments.length > 0) {
+                  return (
+                    <div className="puzzle-game-correct-answer">
+                      <div className="puzzle-correct-label">
+                        <i className="fas fa-puzzle-piece"></i>
+                        Correct Assembly:
+                      </div>
+                      <div className="puzzle-correct-content">
+                        {fragments.map((fragment, index) => (
+                          <span key={index} className="puzzle-correct-fragment">
+                            {fragment}
+                          </span>
+                        )).reduce((prev, curr, index) => 
+                          index === 0 ? [curr] : [...prev, <span key={`space-${index}`} className="puzzle-space"> </span>, curr], []
+                        )}
+                      </div>
+                      <div className="puzzle-correct-solution">
+                        <strong>Solution:</strong> "{correctSolution}"
+                      </div>
+                    </div>
+                  );
+                } else {
+                  return (
+                    <div className="puzzle-game-correct-answer">
+                      <span className="puzzle-correct-text">"{correctSolution || 'No solution available'}"</span>
+                    </div>
+                  );
+                }
               }
               
               if (question.question_type === 'matching_task') {

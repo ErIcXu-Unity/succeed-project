@@ -993,7 +993,56 @@ const TaskQuiz = () => {
               }
               
               if (question.question_type === 'matching_task') {
-                return 'Coming soon - Matching Task answers will be displayed here';
+                if (typeof userAnswer === 'object' && userAnswer !== null) {
+                  // Parse question data to get items
+                  let questionData = {};
+                  try {
+                    if (typeof question.question_data === 'string') {
+                      questionData = JSON.parse(question.question_data);
+                    } else {
+                      questionData = question.question_data || {};
+                    }
+                  } catch (error) {
+                    console.error('Error parsing matching task question_data:', error);
+                    questionData = {};
+                  }
+                  
+                  const leftItems = questionData.left_items || [];
+                  const rightItems = questionData.right_items || [];
+                  
+                  if (leftItems.length > 0 && rightItems.length > 0) {
+                    return (
+                      <div className="matching-task-answers">
+                        <div className="matching-answer-label">
+                          <i className="fas fa-exchange-alt"></i>
+                          Student's Matches:
+                        </div>
+                        <div className="matching-answer-pairs">
+                          {Object.entries(userAnswer).map(([leftIndex, rightIndex]) => {
+                            const leftItem = leftItems[parseInt(leftIndex)] || `Item ${parseInt(leftIndex) + 1}`;
+                            const rightItem = rightItems[parseInt(rightIndex)] || `Item ${String.fromCharCode(65 + parseInt(rightIndex))}`;
+                            return (
+                              <div key={`${leftIndex}-${rightIndex}`} className="matching-answer-pair">
+                                <span className="left-match-item">
+                                  <span className="match-number">{parseInt(leftIndex) + 1}</span>
+                                  <span className="match-text">"{leftItem}"</span>
+                                </span>
+                                <div className="match-arrow">
+                                  <i className="fas fa-arrow-right"></i>
+                                </div>
+                                <span className="right-match-item">
+                                  <span className="match-letter">{String.fromCharCode(65 + parseInt(rightIndex))}</span>
+                                  <span className="match-text">"{rightItem}"</span>
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  }
+                }
+                return 'No matches selected';
               }
               
               if (question.question_type === 'error_spotting') {
@@ -1131,7 +1180,55 @@ const TaskQuiz = () => {
               }
               
               if (question.question_type === 'matching_task') {
-                return 'Coming soon - Matching Task correct answers will be displayed here';
+                try {
+                  // Parse question data to get correct answers
+                  let questionData = {};
+                  if (typeof question.question_data === 'string') {
+                    questionData = JSON.parse(question.question_data);
+                  } else {
+                    questionData = question.question_data || {};
+                  }
+                  
+                  const leftItems = questionData.left_items || [];
+                  const rightItems = questionData.right_items || [];
+                  const correctMatches = questionData.correct_matches || [];
+                  
+                  if (correctMatches.length > 0 && leftItems.length > 0 && rightItems.length > 0) {
+                    return (
+                      <div className="matching-task-correct-answers">
+                        <div className="matching-correct-label">
+                          <i className="fas fa-exchange-alt"></i>
+                          Correct Matches:
+                        </div>
+                        <div className="matching-correct-pairs">
+                          {correctMatches.map((match, index) => {
+                            const leftItem = leftItems[match.left] || `Item ${match.left + 1}`;
+                            const rightItem = rightItems[match.right] || `Item ${String.fromCharCode(65 + match.right)}`;
+                            return (
+                              <div key={index} className="matching-correct-pair">
+                                <span className="left-correct-item">
+                                  <span className="match-number">{match.left + 1}</span>
+                                  <span className="match-text">"{leftItem}"</span>
+                                </span>
+                                <div className="match-arrow correct">
+                                  <i className="fas fa-arrow-right"></i>
+                                </div>
+                                <span className="right-correct-item">
+                                  <span className="match-letter">{String.fromCharCode(65 + match.right)}</span>
+                                  <span className="match-text">"{rightItem}"</span>
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  }
+                  return 'No correct matches found';
+                } catch (error) {
+                  console.error('Error parsing matching task correct answers:', error);
+                  return 'Error loading correct answers';
+                }
               }
               
               if (question.question_type === 'error_spotting') {

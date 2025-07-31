@@ -110,22 +110,43 @@ const MatchingTaskEditor = ({ formData, setFormData }) => {
         <div className="correct-matches">
           <h4>Correct Matches</h4>
           <p>Define which left items match with which right items:</p>
-          {formData.left_items.map((leftItem, leftIndex) => (
-            <div key={leftIndex} className="match-definition">
-              <span>"{leftItem || `Left ${leftIndex + 1}`}" matches with:</span>
-              <select
-                value={formData.correct_matches.find(m => m.left === leftIndex)?.right || ''}
-                onChange={(e) => handleMatchChange(leftIndex, e.target.value)}
-              >
-                <option value="">Select right item...</option>
-                {formData.right_items.map((rightItem, rightIndex) => (
-                  <option key={rightIndex} value={rightIndex}>
-                    "{rightItem || `Right ${rightIndex + 1}`}"
-                  </option>
-                ))}
-              </select>
-            </div>
-          ))}
+          {formData.left_items.map((leftItem, leftIndex) => {
+            const currentMatch = formData.correct_matches.find(m => m.left === leftIndex);
+            const isMatched = currentMatch !== undefined;
+            
+            return (
+              <div key={leftIndex} className={`match-definition ${isMatched ? 'matched' : 'unmatched'}`}>
+                <span>"{leftItem || `Left ${leftIndex + 1}`}" matches with:</span>
+                <select
+                  value={currentMatch?.right || ''}
+                  onChange={(e) => handleMatchChange(leftIndex, e.target.value)}
+                  className={isMatched ? 'matched-select' : 'unmatched-select'}
+                >
+                  <option value="">Select right item...</option>
+                  {formData.right_items.map((rightItem, rightIndex) => (
+                    <option key={rightIndex} value={rightIndex}>
+                      "{rightItem || `Right ${rightIndex + 1}`}"
+                    </option>
+                  ))}
+                </select>
+                <span className={`match-status ${isMatched ? 'complete' : 'incomplete'}`}>
+                  {isMatched ? '✓ Matched' : '⚠ Not matched'}
+                </span>
+              </div>
+            );
+          })}
+          
+          {/* Debug information */}
+          <div className="match-summary">
+            <small>
+              <strong>Matches defined:</strong> {formData.correct_matches.length} of {formData.left_items.length}
+              {formData.correct_matches.length > 0 && (
+                <span> | <strong>Current matches:</strong> {
+                  formData.correct_matches.map(m => `${m.left + 1}→${String.fromCharCode(65 + m.right)}`).join(', ')
+                }</span>
+              )}
+            </small>
+          </div>
         </div>
       </div>
     </div>

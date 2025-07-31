@@ -35,9 +35,25 @@ const MatchingTaskQuestionCreate = () => {
       return false;
     }
     
+    // Check if all left items have been matched
     if (!formData.correct_matches || !formData.left_items || 
-        formData.correct_matches.length !== formData.left_items.length) {
-      setError('All left items must have matching right items');
+        formData.correct_matches.length === 0) {
+      setError('At least one correct match is required');
+      return false;
+    }
+
+    // Check if all left items have matches defined
+    const leftItemsWithMatches = new Set(formData.correct_matches.map(match => match.left));
+    const unmatched = [];
+    
+    for (let i = 0; i < formData.left_items.length; i++) {
+      if (!leftItemsWithMatches.has(i)) {
+        unmatched.push(i + 1);
+      }
+    }
+    
+    if (unmatched.length > 0) {
+      setError(`Please define matches for left item(s): ${unmatched.join(', ')}`);
       return false;
     }
 

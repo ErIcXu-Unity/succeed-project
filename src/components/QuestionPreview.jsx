@@ -1,6 +1,48 @@
 import React from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
-const QuestionPreview = ({ question }) => {
+const QuestionPreview = ({ question, onEdit }) => {
+  const navigate = useNavigate();
+  const { taskId } = useParams();
+  
+  const handleEditClick = () => {
+    if (onEdit) {
+      onEdit(question);
+    } else {
+      // Default navigation behavior
+      navigateToEdit();
+    }
+  };
+
+  const handleDoubleClick = () => {
+    if (onEdit) {
+      onEdit(question);
+    } else {
+      // Default navigation behavior
+      navigateToEdit();
+    }
+  };
+
+  const navigateToEdit = () => {
+    if (question.id && taskId) {
+      const questionType = question.question_type || 'single_choice';
+      // Map question types to route names if needed
+      const routeTypeMap = {
+        'single_choice': 'single-choice',
+        'multiple_choice': 'multiple-choice', 
+        'fill_blank': 'fill-blank',
+        'puzzle_game': 'puzzle-game',
+        'matching_task': 'matching-task',
+        'error_spotting': 'error-spotting'
+      };
+      
+      const routeType = routeTypeMap[questionType] || questionType;
+      const editUrl = `/teacher/tasks/${taskId}/create/${routeType}?questionId=${question.id}`;
+      
+      console.log('Navigating to edit URL:', editUrl);
+      navigate(editUrl);
+    }
+  };
   const renderQuestionBasics = () => (
     <div className="question-content">
       <h4>Question Content</h4>
@@ -176,38 +218,110 @@ const QuestionPreview = ({ question }) => {
         const leftItems = question.question_data?.left_items || [];
         const rightItems = question.question_data?.right_items || [];
         const correctMatches = question.question_data?.correct_matches || [];
+        
+        // Create a map of correct matches for easy lookup
+        const matchMap = {};
+        correctMatches.forEach(match => {
+          matchMap[match.left] = match.right;
+        });
+        
         return (
           <div className="question-options">
             {renderQuestionBasics()}
             
-            <h4>Matching Task</h4>
-            <div className="matching-preview">
-              <div className="matching-columns">
-                <div className="left-items">
-                  <h5>Left Items:</h5>
-                  {leftItems.map((item, index) => (
-                    <div key={index} className="match-item">
-                      {index + 1}. {item}
-                    </div>
-                  ))}
+            <div className="matching-task-preview">
+              <div className="matching-header">
+                <div className="task-icon">
+                  <i className="fas fa-exchange-alt"></i>
                 </div>
-                <div className="right-items">
-                  <h5>Right Items:</h5>
-                  {rightItems.map((item, index) => (
-                    <div key={index} className="match-item">
-                      {String.fromCharCode(65 + index)}. {item}
-                    </div>
-                  ))}
+                <h4>Interactive Matching Task</h4>
+                <div className="task-stats">
+                  <span className="stat-item">
+                    <i className="fas fa-list"></i>
+                    {leftItems.length} items to match
+                  </span>
+                  <span className="stat-item">
+                    <i className="fas fa-bullseye"></i>
+                    {rightItems.length} targets
+                  </span>
                 </div>
               </div>
-              <div className="correct-matches">
-                <h5>Correct Matches:</h5>
-                {correctMatches.map((match, index) => (
-                  <div key={index} className="match-pair">
-                    {match.left + 1} ↔ {String.fromCharCode(65 + match.right)}
+
+              <div className="preview-matching-container">
+                {/* Left Column Preview */}
+                <div className="preview-left-column">
+                  <h5>
+                    <i className="fas fa-list"></i>
+                    Items to Match
+                  </h5>
+                  <div className="preview-left-items">
+                    {leftItems.map((item, index) => (
+                      <div key={index} className="preview-left-item matched">
+                        <div className="item-number">{index + 1}</div>
+                        <div className="item-content">{item}</div>
+                        <div className="drag-handle">
+                          <i className="fas fa-grip-vertical"></i>
+                        </div>
+                        {matchMap[index] !== undefined && (
+                          <div className="preview-connection-line" data-target={String.fromCharCode(65 + matchMap[index])}></div>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
+
+                {/* Connection Area Preview */}
+                <div className="preview-connection-area">
+                  <div className="connection-instructions">
+                    <i className="fas fa-hand-pointer"></i>
+                    <span>Drag to connect</span>
+                  </div>
+                </div>
+
+                {/* Right Column Preview */}
+                <div className="preview-right-column">
+                  <h5>
+                    <i className="fas fa-bullseye"></i>
+                    Match Targets
+                  </h5>
+                  <div className="preview-right-items">
+                    {rightItems.map((item, index) => (
+                      <div key={index} className={`preview-right-item ${Object.values(matchMap).includes(index) ? 'matched' : ''}`}>
+                        <div className="item-letter">{String.fromCharCode(65 + index)}</div>
+                        <div className="item-content">{item}</div>
+                        <div className="drop-zone">
+                          <i className="fas fa-crosshairs"></i>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
+
+              <div className="matching-solution-summary">
+                <div className="solution-header">
+                  <i className="fas fa-key"></i>
+                  <span>Correct Matches</span>
+                </div>
+                <div className="solution-matches">
+                  {correctMatches.map((match, index) => (
+                    <div key={index} className="solution-match-pair">
+                      <div className="match-left">
+                        <span className="match-number">{match.left + 1}</span>
+                        <span className="match-text">{leftItems[match.left]}</span>
+                      </div>
+                      <div className="match-connector">
+                        <i className="fas fa-arrow-right"></i>
+                      </div>
+                      <div className="match-right">
+                        <span className="match-letter">{String.fromCharCode(65 + match.right)}</span>
+                        <span className="match-text">{rightItems[match.right]}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
             </div>
           </div>
         );
@@ -248,24 +362,46 @@ const QuestionPreview = ({ question }) => {
   };
 
   return (
-    <div className="question-preview">
-
-      {renderQuestionContent()}
-
-      <div className="question-settings-preview">
-        <div className="question-type-badge">
-          <i className="fas fa-tag"></i>
-          <span>{question.question_type.replace('_', ' ').toUpperCase()}</span>
+    <div className="question-preview" onDoubleClick={handleDoubleClick}>
+      <div className="question-preview-header">
+        <div className="question-info">
+          <div className="question-type-badge">
+            <i className="fas fa-tag"></i>
+            <span>{question.question_type.replace('_', ' ').toUpperCase()}</span>
+          </div>
+          <div className="question-meta">
+            <div className="setting-item">
+              <span className="setting-label">Difficulty:</span>
+              <span className={`difficulty-badge ${question.difficulty.toLowerCase()}`}>
+                {question.difficulty}
+              </span>
+            </div>
+            <div className="setting-item">
+              <span className="setting-label">Score:</span>
+              <span className="score-badge">{question.score}</span>
+            </div>
+          </div>
         </div>
-        <div className="setting-item">
-          <span className="setting-label">Difficulty:</span>
-          <span className={`difficulty-badge ${question.difficulty.toLowerCase()}`}>
-            {question.difficulty}
-          </span>
+        <div className="question-actions">
+          <button 
+            className="edit-question-btn" 
+            onClick={handleEditClick}
+            title="Edit this question"
+          >
+            <i className="fas fa-edit"></i>
+            Edit
+          </button>
         </div>
-        <div className="setting-item">
-          <span className="setting-label">Score:</span>
-          <span className="score-badge">{question.score}</span>
+      </div>
+
+      <div className="question-preview-content">
+        {renderQuestionContent()}
+      </div>
+
+      <div className="question-preview-footer">
+        <div className="edit-hint">
+          <i className="fas fa-info-circle"></i>
+          <span>Double-click anywhere or use the Edit button to modify this question</span>
         </div>
       </div>
     </div>

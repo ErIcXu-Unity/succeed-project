@@ -878,6 +878,8 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
     const [draggedItem, setDraggedItem] = useState(null);
     const [showValidation, setShowValidation] = useState(false);
     const [validationResult, setValidationResult] = useState({ isValid: false, message: '' });
+    const [dragOverTarget, setDragOverTarget] = useState(null);
+    const [selectedLeftItem, setSelectedLeftItem] = useState(null);
 
     // Parse question data
     let questionData = {};
@@ -912,15 +914,33 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
       setDraggedItem(leftIndex);
       e.dataTransfer.setData('text/plain', leftIndex.toString());
       e.dataTransfer.effectAllowed = 'move';
+      e.target.style.opacity = '0.6';
     };
 
-    const handleDragEnd = () => {
+    const handleDragEnd = (e) => {
       setDraggedItem(null);
+      setDragOverTarget(null);
+      e.target.style.opacity = '1';
     };
 
     const handleDragOver = (e) => {
       e.preventDefault();
       e.dataTransfer.dropEffect = 'move';
+    };
+
+    const handleDragEnter = (e, rightIndex) => {
+      e.preventDefault();
+      if (draggedItem !== null) {
+        setDragOverTarget(rightIndex);
+      }
+    };
+
+    const handleDragLeave = (e, rightIndex) => {
+      e.preventDefault();
+      // Only clear if we're actually leaving this target
+      if (!e.currentTarget.contains(e.relatedTarget)) {
+        setDragOverTarget(null);
+      }
     };
 
     const handleDrop = (e, rightIndex) => {
@@ -934,21 +954,9 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
         }));
         setShowValidation(false);
       }
+      setDragOverTarget(null);
     };
 
-    const handleDirectMatch = (leftIndex, rightIndex) => {
-      if (rightIndex === '') {
-        const newMatches = { ...matches };
-        delete newMatches[leftIndex];
-        setMatches(newMatches);
-      } else {
-        setMatches(prev => ({
-          ...prev,
-          [leftIndex]: parseInt(rightIndex)
-        }));
-      }
-      setShowValidation(false);
-    };
 
     const validateMatches = () => {
       let isValid = true;
@@ -991,6 +999,28 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
     const clearMatches = () => {
       setMatches({});
       setShowValidation(false);
+      setSelectedLeftItem(null);
+    };
+
+    const handleLeftItemClick = (leftIndex) => {
+      if (selectedLeftItem === leftIndex) {
+        // Deselect if clicking the same item
+        setSelectedLeftItem(null);
+      } else {
+        setSelectedLeftItem(leftIndex);
+      }
+    };
+
+    const handleRightItemClick = (rightIndex) => {
+      if (selectedLeftItem !== null) {
+        // Create or update match
+        setMatches(prev => ({
+          ...prev,
+          [selectedLeftItem]: rightIndex
+        }));
+        setSelectedLeftItem(null);
+        setShowValidation(false);
+      }
     };
 
     if (leftItems.length === 0 || rightItems.length === 0) {
@@ -1009,6 +1039,15 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
             <i className="fas fa-exchange-alt"></i>
           </div>
           <h4>Match the items from left column to right column</h4>
+          <div className="matching-instructions">
+            <i className="fas fa-hand-pointer"></i>
+            <span>
+              {selectedLeftItem !== null 
+                ? 'Click a target to connect' 
+                : 'Click items to select • Drag to connect'
+              }
+            </span>
+          </div>
           <div className="progress-indicator">
             {Object.keys(matches).length} of {leftItems.length} matched
           </div>
@@ -1025,10 +1064,12 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
               {leftItems.map((item, index) => (
                 <div
                   key={index}
-                  className={`left-item ${matches[index] !== undefined ? 'matched' : ''} ${draggedItem === index ? 'dragging' : ''}`}
+                  className={`left-item ${matches[index] !== undefined ? 'matched' : ''} ${draggedItem === index ? 'dragging' : ''} ${selectedLeftItem === index ? 'selected' : ''}`}
                   draggable
                   onDragStart={(e) => handleDragStart(e, index)}
                   onDragEnd={handleDragEnd}
+                  onClick={() => handleLeftItemClick(index)}
+                  data-item-index={index}
                 >
                   <div className="item-number">{index + 1}</div>
                   <div className="item-content">{item}</div>
@@ -1036,9 +1077,11 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
                     <i className="fas fa-grip-vertical"></i>
                   </div>
                   {matches[index] !== undefined && (
-                    <div className="match-indicator">
-                      <i className="fas fa-arrow-right"></i>
-                      <span>{String.fromCharCode(65 + matches[index])}</span>
+                    <div className="connection-line-simple" data-target={String.fromCharCode(65 + matches[index])}></div>
+                  )}
+                  {selectedLeftItem === index && (
+                    <div className="selection-indicator">
+                      <i className="fas fa-hand-pointer"></i>
                     </div>
                   )}
                 </div>
@@ -1048,22 +1091,22 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
 
           {/* Connection Area */}
           <div className="connection-area">
-            <div className="connection-lines">
-              {Object.entries(matches).map(([leftIndex, rightIndex]) => (
-                <div
-                  key={`${leftIndex}-${rightIndex}`}
-                  className="connection-line"
-                  style={{
-                    top: `${(parseInt(leftIndex) + 0.5) * (100 / leftItems.length)}%`,
-                    bottom: `${100 - (parseInt(rightIndex) + 0.5) * (100 / rightItems.length)}%`
-                  }}
-                />
-              ))}
-            </div>
             <div className="connection-instructions">
-              <i className="fas fa-hand-pointer"></i>
-              <span>Drag items or use dropdowns</span>
+              <i className="fas fa-exchange-alt"></i>
+              <span>Visual connections</span>
             </div>
+            {/* Preview line during drag */}
+            {draggedItem !== null && dragOverTarget !== null && (
+              <div 
+                className="drag-preview-line"
+                style={{
+                  '--start-index': draggedItem,
+                  '--end-index': dragOverTarget,
+                  '--total-left': leftItems.length,
+                  '--total-right': rightItems.length
+                }}
+              ></div>
+            )}
           </div>
 
           {/* Right Column */}
@@ -1076,9 +1119,13 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
               {rightItems.map((item, index) => (
                 <div
                   key={index}
-                  className={`right-item ${Object.values(matches).includes(index) ? 'matched' : ''}`}
+                  className={`right-item ${Object.values(matches).includes(index) ? 'matched' : ''} ${dragOverTarget === index ? 'drag-target' : ''} ${selectedLeftItem !== null ? 'clickable' : ''}`}
                   onDragOver={handleDragOver}
+                  onDragEnter={(e) => handleDragEnter(e, index)}
+                  onDragLeave={(e) => handleDragLeave(e, index)}
                   onDrop={(e) => handleDrop(e, index)}
+                  onClick={() => handleRightItemClick(index)}
+                  data-item-index={index}
                 >
                   <div className="item-letter">{String.fromCharCode(65 + index)}</div>
                   <div className="item-content">{item}</div>
@@ -1091,38 +1138,6 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
           </div>
         </div>
 
-        {/* Alternative Interface - Dropdown Selection */}
-        <div className="dropdown-interface">
-          <h5>
-            <i className="fas fa-caret-down"></i>
-            Alternative: Select matches using dropdowns
-          </h5>
-          <div className="dropdown-matches">
-            {leftItems.map((item, leftIndex) => (
-              <div key={leftIndex} className="dropdown-match">
-                <div className="left-item-dropdown">
-                  <span className="item-number">{leftIndex + 1}</span>
-                  <span className="item-text">"{item}"</span>
-                </div>
-                <div className="match-connector">
-                  <i className="fas fa-arrows-alt-h"></i>
-                </div>
-                <select
-                  value={matches[leftIndex] || ''}
-                  onChange={(e) => handleDirectMatch(leftIndex, e.target.value)}
-                  className="match-select"
-                >
-                  <option value="">Select match...</option>
-                  {rightItems.map((rightItem, rightIndex) => (
-                    <option key={rightIndex} value={rightIndex}>
-                      {String.fromCharCode(65 + rightIndex)}: {rightItem}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* Controls */}
         <div className="matching-controls">

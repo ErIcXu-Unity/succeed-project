@@ -101,14 +101,20 @@ const TaskIntro = () => {
         {/* 任务介绍 */}
         <section className="task-description">
           <h2>🎯 Task Description</h2>
-          <div className="description-content">
-            {task.introduction ? (
-              <div style={{whiteSpace: 'pre-line', wordWrap: 'break-word'}}>
-                {task.introduction}
-              </div>
-            ) : (
-              <p>No task description available</p>
-            )}
+          <div className="description-wrapper">
+            <div className="description-content">
+              {task.introduction ? (
+                <div style={{whiteSpace: 'pre-line', wordWrap: 'break-word'}}>
+                  {task.introduction}
+                </div>
+              ) : (
+                <p>No task description available</p>
+              )}
+            </div>
+            <div className="scroll-indicator">
+              <i className="fas fa-chevron-down"></i>
+              <span>Scroll for more</span>
+            </div>
           </div>
         </section>
 

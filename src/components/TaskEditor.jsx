@@ -162,8 +162,7 @@ const TaskEditor = () => {
           'multiple_choice': 'multiple-choice',
           'fill_blank': 'fill-blank',
           'puzzle_game': 'puzzle-game',
-          'matching_task': 'matching-task',
-          'error_spotting': 'error-spotting'
+          'matching_task': 'matching-task'
         };
         
         const route = routeMap[questionType] || 'single-choice';
@@ -684,13 +683,6 @@ const TaskEditor = () => {
                   >
                     <i className="fas fa-exchange-alt"></i>
                     <span>Matching Task</span>
-                  </button>
-                  <button 
-                    onClick={() => addQuestion('error_spotting')}
-                    className="question-type-option"
-                  >
-                    <i className="fas fa-search"></i>
-                    <span>Error Spotting</span>
                   </button>
                 </div>
               )}

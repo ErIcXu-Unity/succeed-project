@@ -866,8 +866,7 @@ const TaskQuiz = () => {
             let isCorrect = false;
             if (question.question_type === 'fill_blank' || 
                 question.question_type === 'puzzle_game' || 
-                question.question_type === 'matching_task' || 
-                question.question_type === 'error_spotting' ||
+                question.question_type === 'matching_task' ||
                 question.question_type === 'multiple_choice') {
               // For complex question types and multiple choice, check backend results
               const questionResult = quizResults?.results?.find(r => r.question_id === question.id);
@@ -1045,9 +1044,6 @@ const TaskQuiz = () => {
                 return 'No matches selected';
               }
               
-              if (question.question_type === 'error_spotting') {
-                return 'Coming soon - Error Spotting answers will be displayed here';
-              }
               
               // Handle other question types
               if (question.options && typeof question.options === 'object') {
@@ -1231,9 +1227,6 @@ const TaskQuiz = () => {
                 }
               }
               
-              if (question.question_type === 'error_spotting') {
-                return 'Coming soon - Error Spotting correct answers will be displayed here';
-              }
               
               // Handle other question types
               if (!correctAnswer && correctAnswer !== 0) return 'Unknown';

@@ -25,7 +25,6 @@ import SingleChoiceQuestionCreate from './pages/SingleChoiceQuestionCreate.jsx';
 import MultipleChoiceQuestionCreate from './pages/MultipleChoiceQuestionCreate.jsx';
 import PuzzleGameQuestionCreate from './pages/PuzzleGameQuestionCreate.jsx';
 import MatchingTaskQuestionCreate from './pages/MatchingTaskQuestionCreate.jsx';
-import ErrorSpottingQuestionCreate from './pages/ErrorSpottingQuestionCreate.jsx';
 
 import './App.css';
 
@@ -125,7 +124,6 @@ function AppWrapper() {
               <Route path="/teacher/tasks/:taskId/create/fill-blank" element={<FillBlankQuestionCreate />} />
               <Route path="/teacher/tasks/:taskId/create/puzzle-game" element={<PuzzleGameQuestionCreate />} />
               <Route path="/teacher/tasks/:taskId/create/matching-task" element={<MatchingTaskQuestionCreate />} />
-              <Route path="/teacher/tasks/:taskId/create/error-spotting" element={<ErrorSpottingQuestionCreate />} />
               {/* Test route for QuestionRenderer */}
               <Route path="/test-questions" element={<QuestionRendererTest />} />
               <Route path="*" element={<Navigate to="/teacher" replace />} />

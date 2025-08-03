@@ -33,7 +33,6 @@ const QuestionPreview = ({ question, onEdit }) => {
         'fill_blank': 'fill-blank',
         'puzzle_game': 'puzzle-game',
         'matching_task': 'matching-task',
-        'error_spotting': 'error-spotting'
       };
       
       const routeType = routeTypeMap[questionType] || questionType;
@@ -326,28 +325,6 @@ const QuestionPreview = ({ question, onEdit }) => {
           </div>
         );
 
-      case 'error_spotting':
-        const errorSpots = question.question_data?.error_spots || [];
-        return (
-          <div className="question-options">
-            {renderQuestionBasics()}
-            
-            <h4>Error Spotting</h4>
-            <div className="error-spotting-preview">
-              <p className="instruction">Students need to click on error areas in the image</p>
-              <div className="error-spots-list">
-                <h5>Error Spots ({errorSpots.length}):</h5>
-                {errorSpots.map((spot, index) => (
-                  <div key={index} className="error-spot-item">
-                    <span className="spot-number">{index + 1}.</span>
-                    <span className="spot-location">({spot.x}, {spot.y})</span>
-                    <span className="spot-description">{spot.description}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        );
 
       default:
         return (

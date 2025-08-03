@@ -124,29 +124,6 @@ class TestQuestionsAPI:
             assert created_question['question'] == question_data['question']
             assert created_question['question_type'] == question_data['question_type']
     
-    def test_create_error_spotting_question(self, client, test_task, auth_headers_teacher):
-        """Test creating an error spotting question."""
-        question_data = {
-            'question': 'Find the errors in this image:',
-            'question_type': 'error_spotting',
-            'question_data': json.dumps({
-                'image_path': '/test/error_image.jpg',
-                'error_regions': [
-                    {'x': 100, 'y': 150, 'width': 50, 'height': 30},
-                    {'x': 300, 'y': 200, 'width': 40, 'height': 40}
-                ]
-            })
-        }
-        
-        response = client.post(f'/api/tasks/{test_task.id}/questions',
-                             json=question_data,
-                             headers=auth_headers_teacher)
-        
-        if response.status_code != 401:
-            assert response.status_code == 201
-            created_question = json.loads(response.data)
-            assert created_question['question'] == question_data['question']
-            assert created_question['question_type'] == question_data['question_type']
     
     def test_create_question_missing_required_fields(self, client, test_task, auth_headers_teacher):
         """Test creating a question with missing required fields."""

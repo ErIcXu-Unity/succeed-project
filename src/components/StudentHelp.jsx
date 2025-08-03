@@ -30,7 +30,7 @@ function StudentHelp() {
       id: 2,
       category: 'getting-started', 
       question: 'What are the different types of puzzles?',
-      answer: 'Our platform includes multiple choice questions, fill-in-the-blank puzzles, matching tasks, error spotting challenges, and interactive puzzle games. Each type is designed to test different aspects of Chemistry and Statistics knowledge.',
+      answer: 'Our platform includes multiple choice questions, fill-in-the-blank puzzles, matching tasks, and interactive puzzle games. Each type is designed to test different aspects of Chemistry and Statistics knowledge.',
       tags: ['puzzles', 'types', 'multiple choice', 'matching']
     },
     {

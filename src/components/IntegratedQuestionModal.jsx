@@ -60,8 +60,7 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
     { value: 'multiple_choice', label: 'Multiple Choice', icon: 'fas fa-check-square' },
     { value: 'fill_blank', label: 'Fill in Blank', icon: 'fas fa-edit' },
     { value: 'puzzle_game', label: 'Puzzle Game', icon: 'fas fa-puzzle-piece' },
-    { value: 'matching_task', label: 'Matching Task', icon: 'fas fa-exchange-alt' },
-    { value: 'error_spotting', label: 'Error Spotting', icon: 'fas fa-search' }
+    { value: 'matching_task', label: 'Matching Task', icon: 'fas fa-exchange-alt' }
   ];
 
   const difficultyScoreMap = {
@@ -193,31 +192,8 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
         }
         break;
         
-      case 'error_spotting':
-        if (!formData.error_spots || formData.error_spots.length === 0) {
-          setError('At least one error spot must be defined');
-          return false;
-        }
-        if (formData.error_spots.some(spot => !spot || !(spot.description || '').trim())) {
-          setError('All error spots must have descriptions');
-          return false;
-        }
-        // 错误识别必须有图片
-        if (mediaData.mediaType !== 'image' || !mediaData.selectedImage) {
-          setError('Error spotting questions require an image to be uploaded');
-          return false;
-        }
-        break;
     }
 
-    // 错误识别题型需要图片
-    if (formData.question_type === 'error_spotting') {
-      const hasImage = mediaData.mediaType === 'image' && mediaData.selectedImage;
-      if (!hasImage) {
-        setError('Error spotting questions require an image to be uploaded');
-        return false;
-      }
-    }
     
     // 其他题型的媒体内容是完全可选的
 
@@ -285,8 +261,6 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
           questionData.correct_matches = formData.correct_matches;
           break;
           
-        case 'error_spotting':
-          questionData.error_spots = formData.error_spots;
           break;
       }
       
@@ -421,8 +395,6 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
         return <PuzzleGameEditor formData={formData} setFormData={setFormData} />;
       case 'matching_task':
         return <MatchingTaskEditor formData={formData} setFormData={setFormData} />;
-      case 'error_spotting':
-        return <ErrorSpottingEditor formData={formData} setFormData={setFormData} />;
       default:
         return <SingleChoiceEditor formData={formData} setFormData={setFormData} />;
     }
@@ -556,7 +528,7 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
                 <i className="fas fa-photo-video"></i>
                 <h3>Media Content</h3>
                 <span className="card-subtitle">
-                  {formData.question_type === 'error_spotting' ? 'Image required for error spotting' : 'Optional media attachment'}
+                  Optional media attachment
                 </span>
               </div>
 
@@ -565,18 +537,15 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
               <label className="form-label-redesigned">
                 <i className="fas fa-plus-circle"></i>
                 Media Content
-                {formData.question_type === 'error_spotting' && <span className="required">*</span>}
               </label>
               <div className="media-type-grid">
-                {formData.question_type !== 'error_spotting' && (
-                  <div 
-                    className={`media-type-card ${mediaData.mediaType === 'none' ? 'selected' : ''}`}
-                    onClick={() => handleMediaTypeChange('none')}
-                  >
-                    <i className="media-icon fas fa-ban"></i>
-                    <span>None</span>
-                  </div>
-                )}
+                <div 
+                  className={`media-type-card ${mediaData.mediaType === 'none' ? 'selected' : ''}`}
+                  onClick={() => handleMediaTypeChange('none')}
+                >
+                  <i className="media-icon fas fa-ban"></i>
+                  <span>None</span>
+                </div>
                 <div 
                   className={`media-type-card ${mediaData.mediaType === 'image' ? 'selected' : ''}`}
                   onClick={() => handleMediaTypeChange('image')}
@@ -584,24 +553,20 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
                   <i className="media-icon fas fa-image"></i>
                   <span>Image</span>
                 </div>
-                {formData.question_type !== 'error_spotting' && (
-                  <>
-                    <div 
-                      className={`media-type-card ${mediaData.mediaType === 'video' ? 'selected' : ''}`}
-                      onClick={() => handleMediaTypeChange('video')}
-                    >
-                      <i className="media-icon fas fa-video"></i>
-                      <span>Local Video</span>
-                    </div>
-                    <div 
-                      className={`media-type-card ${mediaData.mediaType === 'youtube' ? 'selected' : ''}`}
-                      onClick={() => handleMediaTypeChange('youtube')}
-                    >
-                      <i className="media-icon fab fa-youtube"></i>
-                      <span>YouTube</span>
-                    </div>
-                  </>
-                )}
+                <div 
+                  className={`media-type-card ${mediaData.mediaType === 'video' ? 'selected' : ''}`}
+                  onClick={() => handleMediaTypeChange('video')}
+                >
+                  <i className="media-icon fas fa-video"></i>
+                  <span>Local Video</span>
+                </div>
+                <div 
+                  className={`media-type-card ${mediaData.mediaType === 'youtube' ? 'selected' : ''}`}
+                  onClick={() => handleMediaTypeChange('youtube')}
+                >
+                  <i className="media-icon fab fa-youtube"></i>
+                  <span>YouTube</span>
+                </div>
               </div>
 
               {/* 媒体内容预览区域 */}
@@ -696,10 +661,7 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
                   <div className="no-media-notice">
                     <i className="fas fa-info-circle"></i>
                     <span>
-                      {formData.question_type === 'error_spotting' 
-                        ? 'Error spotting questions require an image to be uploaded' 
-                        : 'No media content added (optional: image, video, or YouTube link)'
-                      }
+                      No media content added (optional: image, video, or YouTube link)
                     </span>
                   </div>
                 )}

@@ -26,7 +26,7 @@ backend/
 ### Core Functionality
 - **🔐 Authentication System**: Secure login/registration for students and teachers
 - **📚 Content Management**: Create and manage educational tasks and questions
-- **🎮 Interactive Questions**: Support for 6 different question types
+- **🎮 Interactive Questions**: Support for 5 different question types
 - **📊 Progress Tracking**: Comprehensive student analytics and achievements
 - **📁 Media Handling**: Upload and serve images, videos, and documents
 - **🏆 Achievement System**: Badges and progress gamification
@@ -37,7 +37,6 @@ backend/
 3. **Fill in Blank** - Text completion exercises
 4. **Puzzle Game** - Fragment assembly challenges
 5. **Matching Task** - Connect related items
-6. **Error Spotting** - Interactive image-based error identification
 
 ## 🛠️ Technology Stack
 

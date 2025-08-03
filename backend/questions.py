@@ -243,21 +243,6 @@ def create_single_question(task_id):
                 
             question_data = {'left_items': left_items, 'right_items': right_items, 'correct_matches': correct_matches}
             
-        elif question_type == 'error_spotting':
-            error_spots = []
-            i = 0
-            while request.form.get(f'error_spots[{i}][x]') is not None:
-                x = int(request.form.get(f'error_spots[{i}][x]'))
-                y = int(request.form.get(f'error_spots[{i}][y]'))
-                desc = request.form.get(f'error_spots[{i}][description]')
-                error_spots.append({'x': x, 'y': y, 'description': desc})
-                i += 1
-            
-            if len(error_spots) == 0:
-                return jsonify({'error': 'At least one error spot required'}), 400
-                
-            question_data = {'error_spots': error_spots}
-            
         else:
             return jsonify({'error': 'Invalid question type'}), 400
         
@@ -267,9 +252,6 @@ def create_single_question(task_id):
         has_youtube = request.form.get('youtube_url', '').strip() != ''
         has_description = description.strip() != ''
         
-        # Error spotting requires an image
-        if question_type == 'error_spotting' and not has_image:
-            return jsonify({'error': 'Error spotting questions require an image'}), 400
         
         # 创建问题对象
         new_question = Question(

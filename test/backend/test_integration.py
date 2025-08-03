@@ -258,19 +258,6 @@ class TestMultiQuestionTypeWorkflow:
                         'correct_matches': {'A': '1', 'B': '2', 'C': '3'}
                     })
                 }
-            },
-            {
-                'type': 'error_spotting',
-                'data': {
-                    'question': 'Find the errors in the image:',
-                    'question_type': 'error_spotting',
-                    'question_data': json.dumps({
-                        'image_path': '/test/error_image.jpg',
-                        'error_regions': [
-                            {'x': 100, 'y': 100, 'width': 50, 'height': 50}
-                        ]
-                    })
-                }
             }
         ]
         

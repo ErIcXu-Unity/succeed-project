@@ -53,7 +53,6 @@ describe('QuestionCreateModal', () => {
     expect(screen.getByText(/fill.*blank/i)).toBeInTheDocument();
     expect(screen.getByText(/puzzle game/i)).toBeInTheDocument();
     expect(screen.getByText(/matching task/i)).toBeInTheDocument();
-    expect(screen.getByText(/error spotting/i)).toBeInTheDocument();
   });
 
   test('shows single choice editor when single choice is selected', () => {

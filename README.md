@@ -5,7 +5,7 @@ A full-stack web application for creating and managing educational escape room g
 ## 🎯 New Features & Updates
 
 ### ✨ Enhanced Question System
-- **6 Question Types**: Single Choice, Multiple Choice, Fill in Blank, Puzzle Game, Matching Task, Error Spotting
+- **5 Question Types**: Single Choice, Multiple Choice, Fill in Blank, Puzzle Game, Matching Task
 - **Rich Media Support**: Images, videos, and YouTube integration for questions
 - **Dynamic Question Editors**: Specialized editors for each question type
 - **Smart Validation**: Type-specific validation with real-time feedback
@@ -28,14 +28,13 @@ A full-stack web application for creating and managing educational escape room g
 
 ### For Teachers
 - **Dashboard Management**: Overview of all escape room games and student progress
-- **Advanced Game Creation**: Create escape rooms with 6 different question types
+- **Advanced Game Creation**: Create escape rooms with 5 different question types
 - **Question Management**: 
   - Single Choice: Traditional A/B/C/D questions
   - Multiple Choice: Questions with multiple correct answers
   - Fill in Blank: Text completion exercises
   - Puzzle Game: Fragment assembly challenges
   - Matching Task: Connect related items
-  - Error Spotting: Find mistakes in images
 - **Media Integration**: Add images, videos, and YouTube content to questions
 - **Student Analytics**: View detailed performance metrics and completion rates
 - **Achievement System**: Monitor student achievements and badges
@@ -92,8 +91,6 @@ Fragment assembly challenges where students arrange pieces to form solutions.
 ### 5. Matching Task
 Connect items from two columns to demonstrate understanding of relationships.
 
-### 6. Error Spotting
-Interactive image-based questions where students identify and click on errors.
 
 ## Project Structure
 

@@ -1081,8 +1081,7 @@
 }
 
 /* Placeholder styles for other question types */
-.matching-task-question,
-.error-spotting-question {
+.matching-task-question {
   margin: 2rem 0;
 }
 
@@ -1138,9 +1137,6 @@
   color: #28a745;
 }
 
-.error-spotting-question .placeholder-icon {
-  color: #ffc107;
-}
 
 /* Enhanced Puzzle Game Results Display for Teacher Review */
 .puzzle-game-answer,
@@ -1471,9 +1467,6 @@
   }
 }
 
-.error-spotting-question .placeholder-icon {
-  color: #ffc107;
-}
 
 /* Mobile responsive */
 @media (max-width: 768px) {

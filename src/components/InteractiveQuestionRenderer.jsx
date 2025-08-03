@@ -1176,26 +1176,6 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
     return <MatchingTaskRenderer key={`matching-task-${question.id}`} />;
   }, [question.id]);
 
-  // Placeholder for Error Spotting questions - to be implemented
-  const renderErrorSpotting = useCallback(() => {
-    return (
-      <div className="error-spotting-question">
-        <div className="placeholder-message">
-          <div className="placeholder-icon">
-            <i className="fas fa-search"></i>
-          </div>
-          <h3>Error Spotting Question</h3>
-          <p>This question type will be available in a future update.</p>
-          <div className="placeholder-details">
-            <small>
-              <i className="fas fa-info-circle"></i>
-              Students will be able to click on errors in images to spot mistakes.
-            </small>
-          </div>
-        </div>
-      </div>
-    );
-  }, []);
 
   // Render based on question type
   switch (questionType) {
@@ -1261,9 +1241,6 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
 
     case 'matching_task':
       return renderMatchingTask();
-
-    case 'error_spotting':
-      return renderErrorSpotting();
 
     default:
       // Fallback for other question types

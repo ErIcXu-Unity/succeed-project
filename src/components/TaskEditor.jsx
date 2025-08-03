@@ -153,7 +153,7 @@ const TaskEditor = () => {
   };
 
   const addQuestion = (questionType = 'single_choice') => {
-    if (questions.length < 5) {
+    if (questions.length < 100) {
       const taskIdForNavigation = currentTaskId || taskId;
       if (taskIdForNavigation && taskIdForNavigation !== 'new') {
         // Navigate to appropriate dedicated page based on question type
@@ -638,17 +638,17 @@ const TaskEditor = () => {
         {/* Questions Section */}
         <section className="questions-section">
           <div className="questions-header">
-            <h2>Questions ({questions.length}/5)</h2>
+            <h2>Questions ({questions.length}/100)</h2>
             <div className="add-question-dropdown">
               <button
                 onClick={() => addQuestion('single_choice')}
                 className="btn btn-primary"
-                disabled={questions.length >= 5}
+                disabled={questions.length >= 100}
               >
                 <i className="fas fa-plus"></i>
                 Add Question
               </button>
-              {questions.length < 5 && (
+              {questions.length < 100 && (
                 <div className="question-type-menu">
                   <button 
                     onClick={() => addQuestion('single_choice')}

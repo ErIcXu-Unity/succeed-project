@@ -127,8 +127,8 @@ def create_single_question(task_id):
     
     # 检查当前任务的问题数量
     current_question_count = Question.query.filter_by(task_id=task_id).count()
-    if current_question_count >= 5:
-        return jsonify({'error': 'Maximum 5 questions allowed per task'}), 400
+    if current_question_count >= 100:
+        return jsonify({'error': 'Maximum 100 questions allowed per task'}), 400
     
     try:
         # 从表单数据获取基本字段
@@ -409,8 +409,8 @@ def create_questions_batch(task_id):
     if not questions_data:
         return jsonify({'error': 'No questions provided'}), 400
     
-    if len(questions_data) > 5:
-        return jsonify({'error': 'Maximum 5 questions allowed per batch'}), 400
+    if len(questions_data) > 100:
+        return jsonify({'error': 'Maximum 100 questions allowed per batch'}), 400
     
     created_questions = []
     errors = []
@@ -523,3 +523,88 @@ def delete_question(question_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': f'Failed to delete question: {str(e)}'}), 500
+
+
+@questions_bp.route('/api/questions/<int:question_id>', methods=['GET'])
+def get_question(question_id):
+    """获取单个问题的详细信息"""
+    try:
+        question = Question.query.get_or_404(question_id)
+        
+        question_data = {
+            'id': question.id,
+            'question': question.question,
+            'question_type': question.question_type or 'single_choice',
+            'question_data': question.question_data,
+            'correct_answer': question.correct_answer,
+            'option_a': question.option_a,
+            'option_b': question.option_b,
+            'option_c': question.option_c,
+            'option_d': question.option_d,
+            'difficulty': question.difficulty,
+            'score': question.score,
+            'description': question.description,
+            'video_type': question.video_type
+        }
+        
+        # 添加图片路径（如果存在）
+        if question.image_path:
+            question_data['image_url'] = f"/uploads/questions/{question.image_path}"
+        
+        # 添加视频信息（如果存在）
+        if question.video_type == 'local' and question.video_path:
+            question_data['video_url'] = f"/uploads/videos/{question.video_path}"
+        elif question.video_type == 'youtube' and question.video_url:
+            question_data['video_url'] = question.video_url
+        
+        return jsonify(question_data), 200
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to get question: {str(e)}'}), 500
+
+
+@questions_bp.route('/api/questions/<int:question_id>', methods=['PUT'])
+def update_question(question_id):
+    """更新单个问题"""
+    try:
+        question = Question.query.get_or_404(question_id)
+        data = request.get_json()
+        
+        # 更新基本字段
+        if 'question' in data:
+            question.question = data['question']
+        if 'question_type' in data:
+            question.question_type = data['question_type']
+        if 'difficulty' in data:
+            question.difficulty = data['difficulty']
+        if 'score' in data:
+            question.score = data['score']
+        if 'description' in data:
+            question.description = data['description']
+        if 'correct_answer' in data:
+            question.correct_answer = data['correct_answer']
+            
+        # 更新选项字段（单选题）
+        if 'option_a' in data:
+            question.option_a = data['option_a']
+        if 'option_b' in data:
+            question.option_b = data['option_b']
+        if 'option_c' in data:
+            question.option_c = data['option_c']
+        if 'option_d' in data:
+            question.option_d = data['option_d']
+            
+        # 更新question_data字段（用于复杂数据类型）
+        if 'question_data' in data:
+            if isinstance(data['question_data'], dict):
+                question.question_data = json.dumps(data['question_data'])
+            else:
+                question.question_data = data['question_data']
+        
+        db.session.commit()
+        
+        return jsonify({'message': 'Question updated successfully'}), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to update question: {str(e)}'}), 500

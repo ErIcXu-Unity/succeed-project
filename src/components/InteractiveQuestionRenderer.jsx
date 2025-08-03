@@ -957,7 +957,6 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
       setDragOverTarget(null);
     };
 
-
     const validateMatches = () => {
       let isValid = true;
       let correctCount = 0;
@@ -1137,7 +1136,6 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
             </div>
           </div>
         </div>
-
 
         {/* Controls */}
         <div className="matching-controls">

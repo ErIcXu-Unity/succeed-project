@@ -11,7 +11,9 @@ const QuestionCreateLayout = ({
   setFormData,
   onSubmit,
   loading = false,
-  error = ''
+  error = '',
+  isEditMode = false,
+  questionId = null
 }) => {
   const { taskId } = useParams();
   const navigate = useNavigate();
@@ -75,13 +77,13 @@ const QuestionCreateLayout = ({
               Back to Task
             </button>
             <span className="breadcrumb-separator">/</span>
-            <span className="breadcrumb-current">Create {questionTypeLabel} Question</span>
+            <span className="breadcrumb-current">{isEditMode ? 'Edit' : 'Create'} {questionTypeLabel} Question</span>
           </div>
           
           <div className="header-info">
             <h1>
               <i className={questionTypeIcon}></i>
-              Create {questionTypeLabel} Question
+{isEditMode ? 'Edit' : 'Create'} {questionTypeLabel} Question
             </h1>
             {taskInfo && (
               <p className="task-context">
@@ -225,7 +227,7 @@ const QuestionCreateLayout = ({
             ) : (
               <>
                 <i className="fas fa-save"></i>
-                Create Question
+{isEditMode ? 'Update' : 'Create'} Question
               </>
             )}
           </button>

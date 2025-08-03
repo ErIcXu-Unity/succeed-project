@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import QuestionCreateLayout from '../components/QuestionCreateLayout';
 import ErrorSpottingEditor from '../components/ErrorSpottingEditor';
 
 const ErrorSpottingQuestionCreate = () => {
   const { taskId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const questionId = searchParams.get('questionId');
   
   const [formData, setFormData] = useState({
     question: '',
@@ -25,6 +27,72 @@ const ErrorSpottingQuestionCreate = () => {
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  // Load existing question data if questionId is provided
+  useEffect(() => {
+    const loadExistingQuestion = async () => {
+      if (questionId) {
+        setLoading(true);
+        setIsEditMode(true);
+        try {
+          const user = JSON.parse(localStorage.getItem('user_data'));
+          const response = await fetch(`http://localhost:5001/api/questions/${questionId}`, {
+            headers: {
+              'Authorization': `Bearer ${user.token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (response.ok) {
+            const question = await response.json();
+            
+            // Parse question_data if it's a JSON string
+            let questionData = {};
+            try {
+              if (typeof question.question_data === 'string') {
+                questionData = JSON.parse(question.question_data);
+              } else {
+                questionData = question.question_data || {};
+              }
+            } catch (parseError) {
+              console.error('Error parsing question_data:', parseError);
+              questionData = {};
+            }
+
+            // Update form data with existing question
+            setFormData({
+              question: question.question || '',
+              question_type: 'error_spotting',
+              difficulty: question.difficulty || 'Easy',
+              score: question.score || 3,
+              description: question.description || '',
+              error_spots: questionData.error_spots || []
+            });
+
+            // Note: For edit mode, we don't load the existing image file
+            // The user will need to re-upload if they want to change it
+            // But we indicate there's an existing image in the UI
+            if (question.image_url) {
+              setMediaData(prev => ({
+                ...prev,
+                existingImageUrl: question.image_url
+              }));
+            }
+          } else {
+            setError('Failed to load question data');
+          }
+        } catch (error) {
+          console.error('Error loading question:', error);
+          setError('Error loading question data');
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadExistingQuestion();
+  }, [questionId]);
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
@@ -55,8 +123,8 @@ const ErrorSpottingQuestionCreate = () => {
       return false;
     }
 
-    // Error spotting must have image
-    if (!mediaData.selectedImage) {
+    // Error spotting must have image (either newly selected or existing in edit mode)
+    if (!mediaData.selectedImage && !mediaData.existingImageUrl) {
       setError('Error spotting questions require an image to be uploaded');
       return false;
     }
@@ -102,14 +170,49 @@ const ErrorSpottingQuestionCreate = () => {
         formDataToSend.append('created_by', user.user_id);
       }
 
-      const response = await fetch(`http://localhost:5001/api/tasks/${taskId}/questions`, {
-        method: 'POST',
-        body: formDataToSend
-      });
+      let response;
+      if (isEditMode && questionId) {
+        // Update existing question
+        if (mediaData.selectedImage) {
+          // If new image is uploaded, use FormData for the update
+          response = await fetch(`http://localhost:5001/api/questions/${questionId}`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${user.token}`,
+            },
+            body: formDataToSend
+          });
+        } else {
+          // If no new image, use JSON update (keep existing image)
+          response = await fetch(`http://localhost:5001/api/questions/${questionId}`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${user.token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              question: formData.question,
+              question_type: formData.question_type,
+              difficulty: formData.difficulty,
+              score: formData.score,
+              description: formData.description,
+              question_data: {
+                error_spots: formData.error_spots
+              }
+            })
+          });
+        }
+      } else {
+        // Create new question
+        response = await fetch(`http://localhost:5001/api/tasks/${taskId}/questions`, {
+          method: 'POST',
+          body: formDataToSend
+        });
+      }
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create question');
+        throw new Error(errorData.error || `Failed to ${isEditMode ? 'update' : 'create'} question`);
       }
 
       // Success - navigate back to task page
@@ -132,6 +235,8 @@ const ErrorSpottingQuestionCreate = () => {
       onSubmit={handleSubmit}
       loading={loading}
       error={error}
+      isEditMode={isEditMode}
+      questionId={questionId}
     >
       {/* Question-specific editor content */}
       <ErrorSpottingEditor formData={formData} setFormData={setFormData} />
@@ -158,13 +263,19 @@ const ErrorSpottingQuestionCreate = () => {
               <small>Error spotting requires an image to mark error locations</small>
             </div>
           </label>
-          {mediaData.selectedImage && (
+          {(mediaData.selectedImage || mediaData.existingImageUrl) && (
             <div className="file-preview">
               <i className="fas fa-check-circle"></i>
-              <span>Selected: {mediaData.selectedImage.name}</span>
+              <span>
+                {mediaData.selectedImage 
+                  ? `Selected: ${mediaData.selectedImage.name}` 
+                  : 'Using existing image'}
+              </span>
               <div className="image-preview-container">
                 <img 
-                  src={URL.createObjectURL(mediaData.selectedImage)} 
+                  src={mediaData.selectedImage 
+                    ? URL.createObjectURL(mediaData.selectedImage) 
+                    : mediaData.existingImageUrl} 
                   alt="Preview" 
                   style={{ 
                     maxWidth: '100%', 
@@ -175,6 +286,11 @@ const ErrorSpottingQuestionCreate = () => {
                   }}
                 />
               </div>
+              {mediaData.existingImageUrl && !mediaData.selectedImage && (
+                <small style={{ color: '#666', marginTop: '0.5rem', display: 'block' }}>
+                  Upload a new image to replace the current one
+                </small>
+              )}
             </div>
           )}
         </div>

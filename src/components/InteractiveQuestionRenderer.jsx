@@ -872,26 +872,309 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
     return <PuzzleGameRenderer key={`puzzle-game-${question.id}`} />;
   }, [question.id]);
 
-  // Placeholder for Matching Task questions - to be implemented
-  const renderMatchingTask = useCallback(() => {
+  // Interactive Matching Task component
+  const MatchingTaskRenderer = memo(function MatchingTaskRenderer() {
+    const [matches, setMatches] = useState({});
+    const [draggedItem, setDraggedItem] = useState(null);
+    const [showValidation, setShowValidation] = useState(false);
+    const [validationResult, setValidationResult] = useState({ isValid: false, message: '' });
+    const [dragOverTarget, setDragOverTarget] = useState(null);
+    const [selectedLeftItem, setSelectedLeftItem] = useState(null);
+
+    // Parse question data
+    let questionData = {};
+    try {
+      if (typeof question.question_data === 'string') {
+        questionData = JSON.parse(question.question_data);
+      } else {
+        questionData = question.question_data || {};
+      }
+    } catch (error) {
+      console.error('Error parsing matching task question_data:', error);
+      questionData = {};
+    }
+
+    const leftItems = questionData.left_items || [];
+    const rightItems = questionData.right_items || [];
+    const correctMatches = questionData.correct_matches || [];
+
+    // Initialize matches from current answer
+    useEffect(() => {
+      if (currentAnswer && typeof currentAnswer === 'object') {
+        setMatches(currentAnswer);
+      }
+    }, [currentAnswer]);
+
+    // Update parent when matches change
+    useEffect(() => {
+      onAnswerChange(matches);
+    }, [matches, onAnswerChange]);
+
+    const handleDragStart = (e, leftIndex) => {
+      setDraggedItem(leftIndex);
+      e.dataTransfer.setData('text/plain', leftIndex.toString());
+      e.dataTransfer.effectAllowed = 'move';
+      e.target.style.opacity = '0.6';
+    };
+
+    const handleDragEnd = (e) => {
+      setDraggedItem(null);
+      setDragOverTarget(null);
+      e.target.style.opacity = '1';
+    };
+
+    const handleDragOver = (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    };
+
+    const handleDragEnter = (e, rightIndex) => {
+      e.preventDefault();
+      if (draggedItem !== null) {
+        setDragOverTarget(rightIndex);
+      }
+    };
+
+    const handleDragLeave = (e, rightIndex) => {
+      e.preventDefault();
+      // Only clear if we're actually leaving this target
+      if (!e.currentTarget.contains(e.relatedTarget)) {
+        setDragOverTarget(null);
+      }
+    };
+
+    const handleDrop = (e, rightIndex) => {
+      e.preventDefault();
+      const leftIndex = parseInt(e.dataTransfer.getData('text/plain'));
+      
+      if (!isNaN(leftIndex)) {
+        setMatches(prev => ({
+          ...prev,
+          [leftIndex]: rightIndex
+        }));
+        setShowValidation(false);
+      }
+      setDragOverTarget(null);
+    };
+
+    const validateMatches = () => {
+      let isValid = true;
+      let correctCount = 0;
+
+      // Check if all left items are matched
+      for (let i = 0; i < leftItems.length; i++) {
+        if (matches[i] === undefined) {
+          isValid = false;
+          break;
+        }
+      }
+
+      if (isValid) {
+        // Check correctness
+        correctMatches.forEach(correctMatch => {
+          if (matches[correctMatch.left] === correctMatch.right) {
+            correctCount++;
+          }
+        });
+        
+        const message = correctCount === correctMatches.length 
+          ? `Perfect! All ${correctCount} matches are correct.`
+          : `${correctCount} out of ${correctMatches.length} matches are correct.`;
+        
+        setValidationResult({
+          isValid: correctCount === correctMatches.length,
+          message
+        });
+      } else {
+        setValidationResult({
+          isValid: false,
+          message: 'Please match all items before checking your answer.'
+        });
+      }
+
+      setShowValidation(true);
+    };
+
+    const clearMatches = () => {
+      setMatches({});
+      setShowValidation(false);
+      setSelectedLeftItem(null);
+    };
+
+    const handleLeftItemClick = (leftIndex) => {
+      if (selectedLeftItem === leftIndex) {
+        // Deselect if clicking the same item
+        setSelectedLeftItem(null);
+      } else {
+        setSelectedLeftItem(leftIndex);
+      }
+    };
+
+    const handleRightItemClick = (rightIndex) => {
+      if (selectedLeftItem !== null) {
+        // Create or update match
+        setMatches(prev => ({
+          ...prev,
+          [selectedLeftItem]: rightIndex
+        }));
+        setSelectedLeftItem(null);
+        setShowValidation(false);
+      }
+    };
+
+    if (leftItems.length === 0 || rightItems.length === 0) {
+      return (
+        <div className="matching-task-error">
+          <i className="fas fa-exclamation-triangle"></i>
+          <p>Invalid matching task configuration. Missing items.</p>
+        </div>
+      );
+    }
+
     return (
       <div className="matching-task-question">
-        <div className="placeholder-message">
-          <div className="placeholder-icon">
+        <div className="matching-task-header">
+          <div className="task-icon">
             <i className="fas fa-exchange-alt"></i>
           </div>
-          <h3>Matching Task Question</h3>
-          <p>This question type will be available in a future update.</p>
-          <div className="placeholder-details">
-            <small>
-              <i className="fas fa-info-circle"></i>
-              Students will be able to match items from left and right columns.
-            </small>
+          <h4>Match the items from left column to right column</h4>
+          <div className="matching-instructions">
+            <i className="fas fa-hand-pointer"></i>
+            <span>
+              {selectedLeftItem !== null 
+                ? 'Click a target to connect' 
+                : 'Click items to select • Drag to connect'
+              }
+            </span>
+          </div>
+          <div className="progress-indicator">
+            {Object.keys(matches).length} of {leftItems.length} matched
           </div>
         </div>
+
+        <div className="matching-container">
+          {/* Left Column */}
+          <div className="left-column">
+            <h5>
+              <i className="fas fa-list"></i>
+              Items to Match
+            </h5>
+            <div className="left-items">
+              {leftItems.map((item, index) => (
+                <div
+                  key={index}
+                  className={`left-item ${matches[index] !== undefined ? 'matched' : ''} ${draggedItem === index ? 'dragging' : ''} ${selectedLeftItem === index ? 'selected' : ''}`}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, index)}
+                  onDragEnd={handleDragEnd}
+                  onClick={() => handleLeftItemClick(index)}
+                  data-item-index={index}
+                >
+                  <div className="item-number">{index + 1}</div>
+                  <div className="item-content">{item}</div>
+                  <div className="drag-handle">
+                    <i className="fas fa-grip-vertical"></i>
+                  </div>
+                  {matches[index] !== undefined && (
+                    <div className="connection-line-simple" data-target={String.fromCharCode(65 + matches[index])}></div>
+                  )}
+                  {selectedLeftItem === index && (
+                    <div className="selection-indicator">
+                      <i className="fas fa-hand-pointer"></i>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Connection Area */}
+          <div className="connection-area">
+            <div className="connection-instructions">
+              <i className="fas fa-exchange-alt"></i>
+              <span>Visual connections</span>
+            </div>
+            {/* Preview line during drag */}
+            {draggedItem !== null && dragOverTarget !== null && (
+              <div 
+                className="drag-preview-line"
+                style={{
+                  '--start-index': draggedItem,
+                  '--end-index': dragOverTarget,
+                  '--total-left': leftItems.length,
+                  '--total-right': rightItems.length
+                }}
+              ></div>
+            )}
+          </div>
+
+          {/* Right Column */}
+          <div className="right-column">
+            <h5>
+              <i className="fas fa-bullseye"></i>
+              Match Targets
+            </h5>
+            <div className="right-items">
+              {rightItems.map((item, index) => (
+                <div
+                  key={index}
+                  className={`right-item ${Object.values(matches).includes(index) ? 'matched' : ''} ${dragOverTarget === index ? 'drag-target' : ''} ${selectedLeftItem !== null ? 'clickable' : ''}`}
+                  onDragOver={handleDragOver}
+                  onDragEnter={(e) => handleDragEnter(e, index)}
+                  onDragLeave={(e) => handleDragLeave(e, index)}
+                  onDrop={(e) => handleDrop(e, index)}
+                  onClick={() => handleRightItemClick(index)}
+                  data-item-index={index}
+                >
+                  <div className="item-letter">{String.fromCharCode(65 + index)}</div>
+                  <div className="item-content">{item}</div>
+                  <div className="drop-zone">
+                    <i className="fas fa-crosshairs"></i>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Controls */}
+        <div className="matching-controls">
+          <button
+            className="validate-btn"
+            onClick={validateMatches}
+            disabled={Object.keys(matches).length === 0}
+          >
+            <i className="fas fa-check"></i>
+            Check Matches
+          </button>
+          <button
+            className="clear-btn"
+            onClick={clearMatches}
+            disabled={Object.keys(matches).length === 0}
+          >
+            <i className="fas fa-undo"></i>
+            Clear All
+          </button>
+        </div>
+
+        {/* Validation Feedback */}
+        {showValidation && (
+          <div className={`validation-feedback ${validationResult.isValid ? 'correct' : 'incorrect'}`}>
+            <div className="feedback-icon">
+              <i className={`fas ${validationResult.isValid ? 'fa-check-circle' : 'fa-times-circle'}`}></i>
+            </div>
+            <div className="feedback-message">
+              {validationResult.message}
+            </div>
+          </div>
+        )}
       </div>
     );
-  }, []);
+  });
+
+  const renderMatchingTask = useCallback(() => {
+    return <MatchingTaskRenderer key={`matching-task-${question.id}`} />;
+  }, [question.id]);
 
   // Placeholder for Error Spotting questions - to be implemented
   const renderErrorSpotting = useCallback(() => {

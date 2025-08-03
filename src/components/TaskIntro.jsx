@@ -17,7 +17,6 @@ const TaskIntro = () => {
   const fetchTaskDetails = async () => {
     try {
       setLoading(true);
-      console.log('Fetching task details for taskId:', taskId);
       const response = await fetch(`http://localhost:5001/api/tasks/${taskId}`);
       
       if (!response.ok) {
@@ -28,7 +27,6 @@ const TaskIntro = () => {
       }
       
       const taskData = await response.json();
-      console.log('Task data received:', taskData);
       setTask(taskData);
     } catch (err) {
       console.error('Error fetching task details:', err);
@@ -105,16 +103,12 @@ const TaskIntro = () => {
           <h2>🎯 Task Description</h2>
           <div className="description-content">
             {task.introduction ? (
-              task.introduction.split('\n').map((line, index) => (
-                <p key={index}>{line}</p>
-              ))
+              <div style={{whiteSpace: 'pre-line', wordWrap: 'break-word'}}>
+                {task.introduction}
+              </div>
             ) : (
               <p>No task description available</p>
             )}
-          </div>
-          {/* Debug info */}
-          <div style={{marginTop: '10px', fontSize: '12px', color: '#666', border: '1px solid #ccc', padding: '10px'}}>
-            Debug: task.introduction = {task.introduction ? `"${task.introduction}"` : 'null/undefined'}
           </div>
         </section>
 

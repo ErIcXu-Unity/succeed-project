@@ -187,6 +187,15 @@
   margin-bottom: 0;
 }
 
+.description-content div {
+  font-size: 1.2rem;
+  line-height: 1.7;
+  color: #4a5568;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-line;
+}
+
 /* 视频区域 */
 .task-video {
   padding: 3rem 2.5rem;

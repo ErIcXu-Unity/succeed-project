@@ -20,7 +20,6 @@ const SearchFilter = ({
       {/* Search Bar */}
       <div className="search-bar">
         <div className="search-input-group">
-          <i className="fas fa-search"></i>
           <input
             type="text"
             placeholder={placeholder}
@@ -34,7 +33,7 @@ const SearchFilter = ({
               onClick={() => onSearchChange('')}
               title="Clear search"
             >
-              <i className="fas fa-times"></i>
+              ✕
             </button>
           )}
         </div>

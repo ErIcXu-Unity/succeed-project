@@ -156,7 +156,7 @@ const TeacherReports = () => {
       {/* 统计卡片 */}
       <div className="summary-cards">
         <div className="stat-card">
-          <div className="stat-icon">
+          <div className="stat-icon students">
             <i className="fas fa-users"></i>
           </div>
           <div className="stat-content">
@@ -166,7 +166,7 @@ const TeacherReports = () => {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon">
+          <div className="stat-icon tasks">
             <i className="fas fa-tasks"></i>
           </div>
           <div className="stat-content">
@@ -176,7 +176,7 @@ const TeacherReports = () => {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon">
+          <div className="stat-icon completion">
             <i className="fas fa-check-circle"></i>
           </div>
           <div className="stat-content">
@@ -186,7 +186,7 @@ const TeacherReports = () => {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon">
+          <div className="stat-icon score">
             <i className="fas fa-trophy"></i>
           </div>
           <div className="stat-content">

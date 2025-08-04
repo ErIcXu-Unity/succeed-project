@@ -23,12 +23,45 @@
 
 /* Section Header */
 .section-header {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+}
+
+.header-info {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
   flex-wrap: wrap;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.header-info h2 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--unsw-charcoal);
+  margin: 0;
+  display: flex;
+  align-items: center;
   gap: 1rem;
+  flex: 0 0 auto;
+}
+
+.task-stats {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.header-info h2 i {
+  color: var(--unsw-yellow-dark);
+  font-size: 2rem;
 }
 
 .section-title {
@@ -37,22 +70,41 @@
   color: var(--unsw-charcoal);
 }
 
-.task-stats {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-}
+
 
 .stat-item {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  text-align: center;
   color: #666;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  padding: 1rem 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+  min-width: 120px;
+  transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.stat-number {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--unsw-yellow-dark);
+  margin-bottom: 0.25rem;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.9rem;
   font-weight: 500;
-  background: white;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: #666;
+  line-height: 1.2;
 }
 
 .stat-item i {
@@ -376,12 +428,34 @@
   }
 
   .section-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
+    padding: 1.5rem;
   }
 
-  .section-title {
+  .header-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+
+  .header-info h2 {
+    font-size: 1.75rem;
+  }
+
+  .header-info h2 i {
+    font-size: 1.5rem;
+  }
+
+  .task-stats {
+    align-self: stretch;
+    justify-content: center;
+  }
+
+  .stat-item {
+    min-width: 100px;
+    padding: 0.75rem 1rem;
+  }
+
+  .stat-number {
     font-size: 1.5rem;
   }
 

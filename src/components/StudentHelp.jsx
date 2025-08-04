@@ -136,21 +136,6 @@ function StudentHelp() {
         <p>Find answers to common questions or get personalized help</p>
       </div>
 
-      {/* Search Bar */}
-      <div className="search-section">
-        <div className="search-bar">
-          <input
-            type="text"
-            placeholder="Search for help topics, keywords..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-            aria-label="Search help topics"
-          />
-          <span className="search-icon">🔍</span>
-        </div>
-      </div>
-
       {/* Quick Actions */}
       <div className="quick-actions">
         <h2>Quick Actions</h2>
@@ -164,6 +149,20 @@ function StudentHelp() {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Search Bar */}
+      <div className="search-section">
+        <div className="search-bar">
+          <input
+            type="text"
+            placeholder="Search for help topics, keywords..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+            aria-label="Search help topics"
+          />
         </div>
       </div>
 

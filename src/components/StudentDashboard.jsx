@@ -156,7 +156,7 @@ function StudentDashboard() {
         <div className="header-info">
           <h2>
             <i className="fas fa-tasks"></i>
-            Available Tasks
+            <span>Available Tasks</span>
           </h2>
           <div className="task-stats">
             <div className="stat-item">

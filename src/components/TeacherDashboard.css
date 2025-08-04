@@ -117,15 +117,22 @@
   margin-bottom: 2rem;
 }
 
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 3rem;
+}
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
-  margin-bottom: 2rem;
-  width: 100%;
+  margin: 2rem 3rem;
 }
 
-.stat-card {
+.teacher-dashboard-container .stat-card,
+.summary-cards .stat-card {
   background: var(--white);
   border-radius: 12px;
   padding: 1.5rem;
@@ -137,17 +144,23 @@
   border-left: 4px solid transparent;
 }
 
-.stat-card:hover {
+.teacher-dashboard-container .stat-card:hover,
+.summary-cards .stat-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-medium);
 }
 
-.stat-card:nth-child(1) { border-left-color: var(--primary-blue); }
-.stat-card:nth-child(2) { border-left-color: var(--success-green); }
-.stat-card:nth-child(3) { border-left-color: var(--warning-orange); }
-.stat-card:nth-child(4) { border-left-color: var(--info-blue); }
+.teacher-dashboard-container .stat-card:nth-child(1),
+.summary-cards .stat-card:nth-child(1) { border-left-color: var(--primary-blue); }
+.teacher-dashboard-container .stat-card:nth-child(2),
+.summary-cards .stat-card:nth-child(2) { border-left-color: var(--success-green); }
+.teacher-dashboard-container .stat-card:nth-child(3),
+.summary-cards .stat-card:nth-child(3) { border-left-color: var(--warning-orange); }
+.teacher-dashboard-container .stat-card:nth-child(4),
+.summary-cards .stat-card:nth-child(4) { border-left-color: var(--info-blue); }
 
-.stat-icon {
+.teacher-dashboard-container .stat-icon,
+.summary-cards .stat-icon {
   width: 60px;
   height: 60px;
   border-radius: 50%;
@@ -158,10 +171,14 @@
   color: var(--white);
 }
 
-.stat-icon.tasks { background: var(--primary-blue); }
-.stat-icon.students { background: var(--success-green); }
-.stat-icon.completion { background: var(--warning-orange); }
-.stat-icon.published { background: var(--info-blue); }
+.teacher-dashboard-container .stat-icon.tasks,
+.summary-cards .stat-icon.tasks { background: var(--primary-blue); }
+.teacher-dashboard-container .stat-icon.students,
+.summary-cards .stat-icon.students { background: var(--success-green); }
+.teacher-dashboard-container .stat-icon.completion,
+.summary-cards .stat-icon.completion { background: var(--warning-orange); }
+.teacher-dashboard-container .stat-icon.published,
+.summary-cards .stat-icon.published { background: var(--info-blue); }
 
 .stat-info h3 {
   font-size: 2rem;

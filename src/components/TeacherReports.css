@@ -81,7 +81,7 @@
   margin: 2rem 3rem;
 }
 
-.stat-card {
+.reports-container .stat-card {
   background: var(--white);
   border-radius: var(--border-radius);
   padding: 1.5rem;
@@ -93,17 +93,17 @@
   border-left: 4px solid transparent;
 }
 
-.stat-card:hover {
+.reports-container .stat-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-medium);
 }
 
-.stat-card:nth-child(1) { border-left-color: var(--primary-blue); }
-.stat-card:nth-child(2) { border-left-color: var(--success-green); }
-.stat-card:nth-child(3) { border-left-color: var(--warning-orange); }
-.stat-card:nth-child(4) { border-left-color: var(--info-blue); }
+.reports-container .stat-card:nth-child(1) { border-left-color: var(--primary-blue); }
+.reports-container .stat-card:nth-child(2) { border-left-color: var(--success-green); }
+.reports-container .stat-card:nth-child(3) { border-left-color: var(--warning-orange); }
+.reports-container .stat-card:nth-child(4) { border-left-color: var(--info-blue); }
 
-.stat-icon {
+.reports-container .stat-icon {
   width: 60px;
   height: 60px;
   border-radius: 50%;
@@ -114,10 +114,11 @@
   color: var(--white);
 }
 
-.stat-icon.tasks { background: var(--primary-blue); }
-.stat-icon.students { background: var(--success-green); }
-.stat-icon.completion { background: var(--warning-orange); }
-.stat-icon.score { background: var(--info-blue); }
+.reports-container .stat-icon.tasks { background: var(--primary-blue); }
+.reports-container .stat-icon.students { background: var(--success-green); }
+.reports-container .stat-icon.completion { background: var(--warning-orange); }
+.reports-container .stat-icon.score { background: var(--info-blue); }
+.reports-container .stat-icon.published { background: var(--info-blue); }
 
 .stat-content h3 {
   font-size: 2rem;
@@ -241,12 +242,12 @@
     font-size: 1.5rem;
   }
   
-  .stat-card {
+  .reports-container .stat-card {
     flex-direction: column;
     text-align: center;
   }
   
-  .stat-icon {
+  .reports-container .stat-icon {
     width: 50px;
     height: 50px;
     font-size: 1.25rem;

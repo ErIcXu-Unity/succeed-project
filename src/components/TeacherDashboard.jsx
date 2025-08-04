@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import SearchFilter from './SearchFilter';
+import { useSearchFilter } from './useSearchFilter';
 import './TeacherDashboard.css';
 
 const TeacherDashboard = () => {
@@ -12,12 +14,126 @@ const TeacherDashboard = () => {
   const [studentCount, setStudentCount] = useState(0);
   const [completionRate, setCompletionRate] = useState(0);
 
-  // 搜索筛选状态
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [questionFilter, setQuestionFilter] = useState('');
-  const [sortBy, setSortBy] = useState('name');
-  const [sortOrder, setSortOrder] = useState('asc');
+  // Get task status
+  const getTaskStatus = (task) => {
+    const now = new Date();
+    const publishAt = task.publish_at ? new Date(task.publish_at) : null;
+
+    if (!publishAt) return 'Published';
+    if (publishAt > now) return 'Scheduled';
+    return 'Published';
+  };
+
+  // Get course type from task name
+  const getCourseType = (taskName) => {
+    const name = taskName.toLowerCase();
+    if (name.includes('chemistry') || name.includes('chem')) return 'Chemistry';
+    if (name.includes('mathematics') || name.includes('math')) return 'Mathematics';
+    if (name.includes('physics')) return 'Physics';
+    if (name.includes('statistics') || name.includes('stat')) return 'Statistics';
+    if (name.includes('biology') || name.includes('bio')) return 'Biology';
+    return 'General';
+  };
+
+  // Get available course types for filter options
+  const getAvailableCourseTypes = () => {
+    const types = new Set();
+    tasks.forEach(task => {
+      types.add(getCourseType(task.name));
+    });
+    return Array.from(types).sort();
+  };
+
+  // Search filter configuration
+  const searchFilterConfig = {
+    searchFields: (task) => [task.name, task.introduction],
+    filterConfig: {
+      courseType: {
+        label: 'Course Type',
+        filterFn: (task, value) => getCourseType(task.name) === value,
+        options: getAvailableCourseTypes().map(type => ({ label: type, value: type })),
+        allOption: 'All Courses'
+      },
+      status: {
+        label: 'Status',
+        filterFn: (task, value) => {
+          const taskStatus = getTaskStatus(task);
+          return taskStatus.toLowerCase() === value.toLowerCase();
+        },
+        options: [
+          { label: 'Published', value: 'published' },
+          { label: 'Scheduled', value: 'scheduled' }
+        ],
+        allOption: 'All Status'
+      },
+      questions: {
+        label: 'Questions',
+        filterFn: (task, value) => {
+          if (value === 'empty') return task.question_count === 0;
+          if (value === 'few') return task.question_count > 0 && task.question_count <= 2;
+          if (value === 'complete') return task.question_count >= 3;
+          return true;
+        },
+        options: [
+          { label: 'No Questions (0)', value: 'empty' },
+          { label: 'Few Questions (1-2)', value: 'few' },
+          { label: 'Complete (3+)', value: 'complete' }
+        ],
+        allOption: 'All Tasks'
+      }
+    },
+    sortConfig: [
+      {
+        label: 'Name',
+        value: 'name',
+        sortFn: (a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+      },
+      {
+        label: 'Question Count',
+        value: 'questions',
+        sortFn: (a, b) => a.question_count - b.question_count
+      },
+      {
+        label: 'Course Type',
+        value: 'course',
+        sortFn: (a, b) => getCourseType(a.name).localeCompare(getCourseType(b.name))
+      },
+      {
+        label: 'Status',
+        value: 'status',
+        sortFn: (a, b) => getTaskStatus(a).localeCompare(getTaskStatus(b))
+      },
+      {
+        label: 'Publish Date',
+        value: 'publish_date',
+        sortFn: (a, b) => {
+          const aDate = a.publish_at ? new Date(a.publish_at) : new Date(0);
+          const bDate = b.publish_at ? new Date(b.publish_at) : new Date(0);
+          return aDate - bDate;
+        }
+      }
+    ],
+    defaultValues: {
+      sortBy: 'name',
+      sortOrder: 'asc'
+    }
+  };
+
+  // Use search filter hook
+  const {
+    searchTerm,
+    setSearchTerm,
+    sortBy,
+    sortOrder,
+    setSortBy,
+    setSortOrder,
+    clearFilters,
+    filteredData: filteredTasks,
+    filterOptions,
+    sortOptions,
+    totalCount,
+    filteredCount
+  } = useSearchFilter(tasks, searchFilterConfig);
 
   useEffect(() => {
     fetchTasks();
@@ -124,26 +240,7 @@ const TeacherDashboard = () => {
     alert(`Grading feature for task ${taskId} - Coming soon!`);
   };
 
-  // 获取任务状态
-  const getTaskStatus = (task) => {
-    const now = new Date();
-    const publishAt = task.publish_at ? new Date(task.publish_at) : null;
 
-    if (!publishAt) return 'Published';
-    if (publishAt > now) return 'Scheduled';
-    return 'Published';
-  };
-
-  // 从任务名称推导课程类型
-  const getCourseType = (taskName) => {
-    const name = taskName.toLowerCase();
-    if (name.includes('chemistry') || name.includes('chem')) return 'Chemistry';
-    if (name.includes('mathematics') || name.includes('math')) return 'Mathematics';
-    if (name.includes('physics')) return 'Physics';
-    if (name.includes('statistics') || name.includes('stat')) return 'Statistics';
-    if (name.includes('biology') || name.includes('bio')) return 'Biology';
-    return 'General';
-  };
 
   // 获取课程类型对应的图片
   const getCourseImage = (courseType) => {
@@ -191,79 +288,9 @@ const TeacherDashboard = () => {
     return cleaned.length > 100 ? cleaned.substring(0, 100) + '...' : cleaned;
   };
 
-  // 筛选和排序逻辑
-  const getFilteredAndSortedTasks = () => {
-    let filteredTasks = tasks.filter(task => {
-      // 关键词搜索
-      const matchesSearch = task.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (task.introduction && task.introduction.toLowerCase().includes(searchTerm.toLowerCase()));
 
-      // 状态筛选
-      const taskStatus = getTaskStatus(task);
-      const matchesStatus = !statusFilter || taskStatus.toLowerCase() === statusFilter.toLowerCase();
 
-      // 问题数量筛选
-      let matchesQuestions = true;
-      if (questionFilter === 'empty') {
-        matchesQuestions = task.question_count === 0;
-      } else if (questionFilter === 'few') {
-        matchesQuestions = task.question_count > 0 && task.question_count <= 2;
-      } else if (questionFilter === 'complete') {
-        matchesQuestions = task.question_count >= 3;
-      }
 
-      return matchesSearch && matchesStatus && matchesQuestions;
-    });
-
-    // 排序
-    filteredTasks.sort((a, b) => {
-      let aValue, bValue;
-
-      switch (sortBy) {
-        case 'name':
-          aValue = a.name.toLowerCase();
-          bValue = b.name.toLowerCase();
-          break;
-        case 'questions':
-          aValue = a.question_count;
-          bValue = b.question_count;
-          break;
-        case 'course':
-          aValue = getCourseType(a.name);
-          bValue = getCourseType(b.name);
-          break;
-        case 'status':
-          aValue = getTaskStatus(a);
-          bValue = getTaskStatus(b);
-          break;
-        case 'publish_date':
-          aValue = a.publish_at ? new Date(a.publish_at) : new Date(0);
-          bValue = b.publish_at ? new Date(b.publish_at) : new Date(0);
-          break;
-        default:
-          aValue = a.name.toLowerCase();
-          bValue = b.name.toLowerCase();
-      }
-
-      if (sortOrder === 'asc') {
-        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-      } else {
-        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
-      }
-    });
-
-    return filteredTasks;
-  };
-
-  const handleClearFilters = () => {
-    setSearchTerm('');
-    setStatusFilter('');
-    setQuestionFilter('');
-    setSortBy('name');
-    setSortOrder('asc');
-  };
-
-  const filteredTasks = getFilteredAndSortedTasks();
 
   if (loading) {
     return (
@@ -295,16 +322,15 @@ const TeacherDashboard = () => {
       {/* Dashboard Content */}
       <div className="dashboard-content">
         {/* Statistics Cards */}
-        <div className="stats-section">
-          <div className="stats-grid">
+        <div className="summary-cards">
             <div className="stat-card">
               <div className="stat-icon tasks">
                 <i className="fas fa-tasks"></i>
               </div>
               <div className="stat-info">
-                <h3>{filteredTasks.length}</h3>
+                <h3>{filteredCount}</h3>
                 <p>Filtered Tasks</p>
-                <span className="stat-detail">of {tasks.length} total</span>
+                <span className="stat-detail">of {totalCount} total</span>
               </div>
             </div>
             <div className="stat-card">
@@ -334,109 +360,28 @@ const TeacherDashboard = () => {
                 <p>Published Tasks</p>
               </div>
             </div>
-          </div>
         </div>
 
         {/* Search and Filter Section */}
-        <div className="search-filter-section">
-          <div className="search-bar">
-            <div className="search-input-group">
-              <i className="fas fa-search"></i>
-              <input
-                type="text"
-                placeholder="Search tasks by name or description..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="search-input"
-              />
-              {searchTerm && (
-                <button
-                  className="clear-search"
-                  onClick={() => setSearchTerm('')}
-                  title="Clear search"
-                >
-                  <i className="fas fa-times"></i>
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="filter-controls">
-            <div className="filter-group">
-              <label htmlFor="statusFilter">Status:</label>
-              <select
-                id="statusFilter"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="filter-select"
-              >
-                <option value="">All Status</option>
-                <option value="published">Published</option>
-                <option value="scheduled">Scheduled</option>
-              </select>
-            </div>
-
-            <div className="filter-group">
-              <label htmlFor="questionFilter">Questions:</label>
-              <select
-                id="questionFilter"
-                value={questionFilter}
-                onChange={(e) => setQuestionFilter(e.target.value)}
-                className="filter-select"
-              >
-                <option value="">All Tasks</option>
-                <option value="empty">No Questions (0)</option>
-                <option value="few">Few Questions (1-2)</option>
-                <option value="complete">Complete (3+)</option>
-              </select>
-            </div>
-
-            <div className="filter-group">
-              <label htmlFor="sortBy">Sort by:</label>
-              <select
-                id="sortBy"
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="filter-select"
-              >
-                <option value="name">Name</option>
-                <option value="questions">Question Count</option>
-                <option value="course">Course Type</option>
-                <option value="status">Status</option>
-                <option value="publish_date">Publish Date</option>
-              </select>
-            </div>
-
-            <div className="filter-group">
-              <label htmlFor="sortOrder">Order:</label>
-              <select
-                id="sortOrder"
-                value={sortOrder}
-                onChange={(e) => setSortOrder(e.target.value)}
-                className="filter-select"
-              >
-                <option value="asc">Ascending</option>
-                <option value="desc">Descending</option>
-              </select>
-            </div>
-
-            <button
-              className="clear-filters-btn"
-              onClick={handleClearFilters}
-              title="Clear all filters"
-            >
-              <i className="fas fa-eraser"></i>
-              Clear
-            </button>
-          </div>
-        </div>
+        <SearchFilter
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          filters={filterOptions}
+          sortOptions={sortOptions}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSortByChange={setSortBy}
+          onSortOrderChange={setSortOrder}
+          onClearFilters={clearFilters}
+          placeholder="Search tasks by name or description..."
+        />
 
         {/* Tasks Section */}
         <div className="tasks-section">
           <div className="section-header">
             <h2>Task Management</h2>
             <div className="section-actions">
-              <span className="task-count">{filteredTasks.length} tasks</span>
+              <span className="task-count">{filteredCount} tasks</span>
             </div>
           </div>
 
@@ -446,7 +391,7 @@ const TeacherDashboard = () => {
               <h3>No tasks found</h3>
               <p>Try adjusting your search criteria or filters.</p>
               <div className="no-results-actions">
-                <button onClick={handleClearFilters} className="btn btn-secondary">
+                <button onClick={clearFilters} className="btn btn-secondary">
                   <i className="fas fa-refresh"></i>
                   Show All Tasks
                 </button>

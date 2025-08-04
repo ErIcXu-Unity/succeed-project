@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const MatchingTaskEditor = ({ formData, setFormData }) => {
+  const [selectedLeftItem, setSelectedLeftItem] = useState(null);
   const handleLeftItemChange = (index, value) => {
     const newItems = [...formData.left_items];
     newItems[index] = value;
@@ -13,11 +14,29 @@ const MatchingTaskEditor = ({ formData, setFormData }) => {
     setFormData(prev => ({ ...prev, right_items: newItems }));
   };
 
-  const handleMatchChange = (leftIndex, rightIndex) => {
-    const newMatches = formData.correct_matches.filter(m => m.left !== leftIndex);
-    if (!isNaN(rightIndex) && rightIndex !== '') {
-      newMatches.push({ left: leftIndex, right: parseInt(rightIndex) });
+  const handleLeftItemClick = (leftIndex) => {
+    if (selectedLeftItem === leftIndex) {
+      // Deselect if clicking the same item
+      setSelectedLeftItem(null);
+    } else {
+      // Select this left item
+      setSelectedLeftItem(leftIndex);
     }
+  };
+
+  const handleRightItemClick = (rightIndex) => {
+    if (selectedLeftItem !== null) {
+      // Create or update the match
+      const newMatches = formData.correct_matches.filter(m => m.left !== selectedLeftItem);
+      newMatches.push({ left: selectedLeftItem, right: rightIndex });
+      setFormData(prev => ({ ...prev, correct_matches: newMatches }));
+      // Clear selection after making a match
+      setSelectedLeftItem(null);
+    }
+  };
+
+  const handleRemoveMatch = (leftIndex) => {
+    const newMatches = formData.correct_matches.filter(m => m.left !== leftIndex);
     setFormData(prev => ({ ...prev, correct_matches: newMatches }));
   };
 
@@ -54,100 +73,180 @@ const MatchingTaskEditor = ({ formData, setFormData }) => {
       </div>
       
       <div className="matching-task-options">
-        <div className="matching-columns">
-          <div className="left-column">
-            <h4>Left Items</h4>
-            {formData.left_items.map((item, index) => (
-              <div key={index} className="match-item">
-                <input
-                  type="text"
-                  value={item}
-                  onChange={(e) => handleLeftItemChange(index, e.target.value)}
-                  placeholder={`Left item ${index + 1}`}
-                  required
-                />
+        <div className="matching-interface">
+          <div className="matching-container">
+            {/* Left Column */}
+            <div className="left-column">
+              <h5>
+                <i className="fas fa-list"></i>
+                Items to Match
+              </h5>
+              <div className="left-items">
+                {formData.left_items.map((item, index) => {
+                  const currentMatch = formData.correct_matches.find(m => m.left === index);
+                  const isMatched = currentMatch !== undefined;
+                  const isSelected = selectedLeftItem === index;
+                  
+                  return (
+                    <div key={index} className={`left-item ${isMatched ? 'matched' : ''} ${isSelected ? 'selected' : ''}`}>
+                      <div className="item-number">{index + 1}</div>
+                      <input
+                        type="text"
+                        className="item-content-input"
+                        value={item}
+                        onChange={(e) => handleLeftItemChange(index, e.target.value)}
+                        placeholder={`Enter item ${index + 1}`}
+                        required
+                      />
+                      <div className="item-actions">
+                        <div 
+                          className="drag-handle clickable"
+                          onClick={() => handleLeftItemClick(index)}
+                          title={isSelected ? "Click to deselect" : "Click to select for matching"}
+                        >
+                          <i className="fas fa-grip-vertical"></i>
+                        </div>
+                        {isMatched && (
+                          <button 
+                            className="btn-remove-match"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveMatch(index);
+                            }}
+                            title="Remove this match"
+                          >
+                            <i className="fas fa-unlink"></i>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            ))}
-          </div>
-          
-          <div className="right-column">
-            <h4>Right Items</h4>
-            {formData.right_items.map((item, index) => (
-              <div key={index} className="match-item">
-                <input
-                  type="text"
-                  value={item}
-                  onChange={(e) => handleRightItemChange(index, e.target.value)}
-                  placeholder={`Right item ${index + 1}`}
-                  required
-                />
+            </div>
+
+            {/* Connection Area */}
+            <div className="connection-area">
+              <div className="connection-instructions">
+                {selectedLeftItem !== null ? (
+                  <>
+                    <i className="fas fa-hand-pointer"></i>
+                    <span>Item {selectedLeftItem + 1} selected</span>
+                    <small>Click a target to match</small>
+                  </>
+                ) : (
+                  <>
+                    <i className="fas fa-mouse-pointer"></i>
+                    <span>Click to match</span>
+                    <small>Select a source item first</small>
+                  </>
+                )}
               </div>
-            ))}
+              
+              <div className="match-progress">
+                <div className="progress-info">
+                  <span className="matches-count">{formData.correct_matches.length}/{formData.left_items.length}</span>
+                  <span className="progress-label">matches defined</span>
+                </div>
+                <div className="progress-bar-mini">
+                  <div 
+                    className="progress-fill-mini" 
+                    style={{ width: `${(formData.correct_matches.length / formData.left_items.length) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column */}
+            <div className="right-column">
+              <h5>
+                <i className="fas fa-bullseye"></i>
+                Match Targets
+              </h5>
+              <div className="right-items">
+                {formData.right_items.map((item, index) => {
+                  const isMatchedWith = formData.correct_matches.find(m => m.right === index);
+                  const canReceiveMatch = selectedLeftItem !== null && !isMatchedWith;
+                  
+                  return (
+                    <div key={index} className={`right-item ${isMatchedWith ? 'matched' : ''} ${canReceiveMatch ? 'can-receive' : ''}`}>
+                      <div className="item-letter">{String.fromCharCode(65 + index)}</div>
+                      <input
+                        type="text"
+                        className="item-content-input"
+                        value={item}
+                        onChange={(e) => handleRightItemChange(index, e.target.value)}
+                        placeholder={`Enter target ${String.fromCharCode(65 + index)}`}
+                        required
+                      />
+                      <div 
+                        className={`drop-zone clickable ${canReceiveMatch ? 'ready' : ''}`}
+                        onClick={() => handleRightItemClick(index)}
+                        title={canReceiveMatch ? "Click to create match" : isMatchedWith ? "Already matched" : "Select a left item first"}
+                      >
+                        <i className="fas fa-crosshairs"></i>
+                        {isMatchedWith && (
+                          <div className="match-indicator">
+                            <span className="matched-with">{isMatchedWith.left + 1}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
         
-        <div className="matching-controls">
-          <button
-            type="button"
-            onClick={addMatchPair}
-            className="add-match-btn"
-          >
-            <i className="fas fa-plus"></i>
-            Add Match Pair
-          </button>
-          {formData.left_items.length > 2 && (
+        <div className="matching-task-footer" style={{
+          display: 'flex',
+          flexDirection: 'row', 
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'nowrap',
+          gap: '2rem'
+        }}>
+          <div className="task-status" style={{ flex: '0 0 auto' }}>
+            <div className="status-info">
+              <i className="fas fa-info-circle"></i>
+              <span>
+                {formData.correct_matches.length === formData.left_items.length ? (
+                  "All matches defined! Ready for students."
+                ) : (
+                  `${formData.left_items.length - formData.correct_matches.length} more match(es) needed`
+                )}
+              </span>
+            </div>
+          </div>
+          
+          <div className="matching-controls" style={{ 
+            flex: '0 0 auto',
+            display: 'flex',
+            flexDirection: 'row',
+            gap: '0.75rem'
+          }}>
             <button
               type="button"
-              onClick={removeMatchPair}
-              className="remove-match-btn"
+              onClick={addMatchPair}
+              className="btn-primary"
             >
-              <i className="fas fa-minus"></i>
-              Remove Match Pair
+              <i className="fas fa-plus"></i>
+              Add Match Pair
             </button>
-          )}
-        </div>
-        
-        <div className="correct-matches">
-          <h4>Correct Matches</h4>
-          <p>Define which left items match with which right items:</p>
-          {formData.left_items.map((leftItem, leftIndex) => {
-            const currentMatch = formData.correct_matches.find(m => m.left === leftIndex);
-            const isMatched = currentMatch !== undefined;
-            
-            return (
-              <div key={leftIndex} className={`match-definition ${isMatched ? 'matched' : 'unmatched'}`}>
-                <span>"{leftItem || `Left ${leftIndex + 1}`}" matches with:</span>
-                <select
-                  value={currentMatch?.right || ''}
-                  onChange={(e) => handleMatchChange(leftIndex, e.target.value)}
-                  className={isMatched ? 'matched-select' : 'unmatched-select'}
-                >
-                  <option value="">Select right item...</option>
-                  {formData.right_items.map((rightItem, rightIndex) => (
-                    <option key={rightIndex} value={rightIndex}>
-                      "{rightItem || `Right ${rightIndex + 1}`}"
-                    </option>
-                  ))}
-                </select>
-                <span className={`match-status ${isMatched ? 'complete' : 'incomplete'}`}>
-                  {isMatched ? '✓ Matched' : '⚠ Not matched'}
-                </span>
-              </div>
-            );
-          })}
-          
-          {/* Debug information */}
-          <div className="match-summary">
-            <small>
-              <strong>Matches defined:</strong> {formData.correct_matches.length} of {formData.left_items.length}
-              {formData.correct_matches.length > 0 && (
-                <span> | <strong>Current matches:</strong> {
-                  formData.correct_matches.map(m => `${m.left + 1}→${String.fromCharCode(65 + m.right)}`).join(', ')
-                }</span>
-              )}
-            </small>
+            {formData.left_items.length > 2 && (
+              <button
+                type="button"
+                onClick={removeMatchPair}
+                className="btn-cancel"
+              >
+                <i className="fas fa-minus"></i>
+                Remove Match Pair
+              </button>
+            )}
           </div>
         </div>
+        
       </div>
     </div>
   );

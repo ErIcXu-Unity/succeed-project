@@ -20,6 +20,7 @@ import TaskEditor from './components/TaskEditor.jsx';
 import Login from './components/Login.jsx';
 import ChangePasswordModal from './components/ChangePasswordModal.jsx';
 import QuestionRendererTest from './components/QuestionRendererTest.jsx';
+import LoadingScreen from './components/LoadingScreen.jsx';
 import FillBlankQuestionCreate from './pages/FillBlankQuestionCreate.jsx';
 import SingleChoiceQuestionCreate from './pages/SingleChoiceQuestionCreate.jsx';
 import MultipleChoiceQuestionCreate from './pages/MultipleChoiceQuestionCreate.jsx';
@@ -60,25 +61,28 @@ function AppWrapper() {
   };
 
   useEffect(() => {
-    // Check if user is already logged in
-    const savedUser = localStorage.getItem('user_data');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch {
-        localStorage.removeItem('user_data');
+    // Simulate loading time and check if user is already logged in
+    const initializeApp = async () => {
+      const savedUser = localStorage.getItem('user_data');
+      if (savedUser) {
+        try {
+          setUser(JSON.parse(savedUser));
+        } catch {
+          localStorage.removeItem('user_data');
+        }
       }
-    }
-    setLoading(false);
+      
+      // Show loading screen for at least 3 seconds to display the cool animation
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      setLoading(false);
+    };
+
+    initializeApp();
   }, []);
 
   // Loading state
   if (loading) {
-    return (
-      <div className="App">
-        <h2>Loading...</h2>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   // Not logged in: show login page
@@ -91,7 +95,7 @@ function AppWrapper() {
     <div className="App">
       <header>
         <img src="/assets/logo.png" alt="UNSW Logo" />
-        <h1>Escape Room Editor</h1>
+        <h1>Escape Room</h1>
         <div className="user-info">
           <span>Welcome, {user.real_name ? user.real_name : user.username} ({user.role === 'tea' ? 'Teacher' : 'Student'})</span>
           <button onClick={openChangePasswordModal} className="settings-btn" title="Change Password">
@@ -154,7 +158,7 @@ function AppWrapper() {
         <a href="https://moodle.telt.unsw.edu.au">Moodle Home</a>
       </footer>
 
-      {/* 密码修改模态框 */}
+      {/* Password change modal */}
       <ChangePasswordModal
         isOpen={isChangePasswordModalOpen}
         onClose={closeChangePasswordModal}

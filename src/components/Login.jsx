@@ -98,7 +98,7 @@ const Login = ({ onLoginSuccess }) => {
     <div className="login-page">
       <header>
         <img src="/assets/logo.png" alt="UNSW Logo" />
-        <h1>Escape Room Editor</h1>
+        <h1>Escape Room</h1>
       </header>
 
       <main>

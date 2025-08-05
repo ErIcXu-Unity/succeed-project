@@ -330,7 +330,7 @@ const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
                     border: '1px solid #f5c6cb'
                   }}>
                     <i className="fas fa-exclamation-triangle"></i>
-                    <p>视频加载失败，请检查文件是否存在</p>
+                    <p>Video loading failed, please check if the file exists</p>
                   </div>
                 </div>
               ) : (

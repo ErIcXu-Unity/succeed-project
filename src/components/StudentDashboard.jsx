@@ -78,25 +78,34 @@ function StudentDashboard() {
   const searchFilterConfig = {
     searchFields: (task) => [task.name, task.introduction],
     filterConfig: {
-      courseType: {
-        label: 'Course Type',
-        filterFn: (task, value) => getCourseType(task.name) === value,
-        options: getAvailableCourseTypes().map(type => ({ label: type, value: type })),
-        allOption: 'All Courses'
-      },
       status: {
         label: 'Status',
         filterFn: (task, value) => {
           const hasProgress = taskProgress[task.id]?.has_progress;
-          if (value === 'completed') return hasProgress;
+          if (value === 'in_progress') return hasProgress;
           if (value === 'not_started') return !hasProgress;
           return true;
         },
         options: [
           { label: 'Not Started', value: 'not_started' },
-          { label: 'In Progress', value: 'completed' }
+          { label: 'In Progress', value: 'in_progress' }
         ],
         allOption: 'All Status'
+      },
+      questions: {
+        label: 'Questions',
+        filterFn: (task, value) => {
+          if (value === 'empty') return task.question_count === 0;
+          if (value === 'few') return task.question_count > 0 && task.question_count <= 2;
+          if (value === 'complete') return task.question_count >= 3;
+          return true;
+        },
+        options: [
+          { label: 'No Questions (0)', value: 'empty' },
+          { label: 'Few Questions (1-2)', value: 'few' },
+          { label: 'Complete (3+)', value: 'complete' }
+        ],
+        allOption: 'All Tasks'
       }
     },
     sortConfig: [

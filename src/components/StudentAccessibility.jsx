@@ -1,8 +1,10 @@
 // src/components/StudentAccessibility.jsx
 import React, { useState, useEffect } from 'react';
+import { useAlert } from './CustomAlert';
 import './StudentAccessibility.css';
 
 function StudentAccessibility() {
+  const alert = useAlert();
   // Current states
   const [highContrast, setHighContrast] = useState(false);
   const [largeFont, setLargeFont] = useState(false);
@@ -85,7 +87,7 @@ function StudentAccessibility() {
   // Enhanced text-to-speech
   const speak = () => {
     const synth = window.speechSynthesis;
-    if (!synth) return alert('Speech Synthesis not supported in your browser');
+    if (!synth) return alert.warning('Speech Synthesis not supported in your browser');
     
     // Get main content to read
     const mainContent = document.querySelector('.student-accessibility-content');

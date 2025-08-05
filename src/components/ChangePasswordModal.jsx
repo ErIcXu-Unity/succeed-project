@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useAlert } from './CustomAlert';
 import './ChangePasswordModal.css';
 
 const ChangePasswordModal = ({ isOpen, onClose, user }) => {
+  const alert = useAlert();
   const [formData, setFormData] = useState({
     currentPassword: '',
     newPassword: '',
@@ -84,7 +86,7 @@ const ChangePasswordModal = ({ isOpen, onClose, user }) => {
       const data = await response.json();
 
       if (response.ok) {
-        alert('Password changed successfully!');
+        alert.success('Password changed successfully!');
         handleClose();
       } else {
         setError(data.error || 'Failed to change password');

@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import VideoUpload from './VideoUpload';
 import QuestionPreview from './QuestionPreview';
+import { useAlert } from './CustomAlert';
 import './TaskEditor.css';
 
 const TaskEditor = () => {
   const { taskId } = useParams();
   const navigate = useNavigate();
+  const alert = useAlert();
   const [task, setTask] = useState(null);
   const [taskName, setTaskName] = useState('');
   const [taskIntroduction, setTaskIntroduction] = useState('');
@@ -174,7 +176,8 @@ const TaskEditor = () => {
   };
 
   const removeQuestion = async (questionId) => {
-    if (window.confirm('Are you sure you want to delete this question?')) {
+    const confirmed = await alert.confirm('Are you sure you want to delete this question?');
+    if (confirmed) {
       try {
         // 如果问题有 ID，说明已经保存到数据库，需要调用删除 API
         if (questionId) {
@@ -192,7 +195,7 @@ const TaskEditor = () => {
         
       } catch (error) {
         console.error('Error deleting question：', error);
-        alert('Failed to delete question, please try again');
+        alert.error('Failed to delete question, please try again');
       }
     }
   };
@@ -335,7 +338,7 @@ const TaskEditor = () => {
       }
 
       // 保存成功提示
-      alert(`✅ ${isCreateMode ? 'Task created successfully!' : 'Task updated successfully!'}`);
+      alert.success(`✅ ${isCreateMode ? 'Task created successfully!' : 'Task updated successfully!'}`);
       
       // 延迟跳转，让用户看到成功信息
       setTimeout(() => {
@@ -471,26 +474,28 @@ const TaskEditor = () => {
             />
           </div>
 
-          <div className="publish-time-section">
-            <div className="publish-time-header">
-              <div className="publish-time-title">
-                <i className="fas fa-calendar-alt"></i>
-                <h3>Publish Schedule</h3>
+          {/* Only show Publish Schedule in edit mode */}
+          {!isCreateMode && (
+            <div className="publish-time-section">
+              <div className="publish-time-header">
+                <div className="publish-time-title">
+                  <i className="fas fa-calendar-alt"></i>
+                  <h3>Publish Schedule</h3>
+                </div>
+                <div className="publish-status">
+                  {publishAt ? (
+                    <span className="status-scheduled">
+                      <i className="fas fa-clock"></i>
+                      Scheduled
+                    </span>
+                  ) : (
+                    <span className="status-immediate">
+                      <i className="fas fa-eye"></i>
+                      Immediate
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="publish-status">
-                {publishAt ? (
-                  <span className="status-scheduled">
-                    <i className="fas fa-clock"></i>
-                    Scheduled
-                  </span>
-                ) : (
-                  <span className="status-immediate">
-                    <i className="fas fa-eye"></i>
-                    Immediate
-                  </span>
-                )}
-              </div>
-            </div>
             
             <div className="publish-time-content">
               <div className="publish-options">
@@ -610,7 +615,10 @@ const TaskEditor = () => {
               )}
             </div>
           </div>
+          )}
 
+          {/* Only show Task Video in edit mode */}
+          {!isCreateMode && (
           <div className="form-group">
             <label>Task Video (Optional)</label>
             <VideoUpload 
@@ -632,9 +640,11 @@ const TaskEditor = () => {
               Upload a video file or provide a YouTube link to help students understand the task better.
             </div>
           </div>
+          )}
         </section>
 
-        {/* Questions Section */}
+        {/* Only show Questions section in edit mode */}
+        {!isCreateMode && (
         <section className="questions-section">
           <div className="questions-header">
             <h2>Questions ({questions.length}/100)</h2>
@@ -715,6 +725,7 @@ const TaskEditor = () => {
             </div>
           )}
         </section>
+        )}
       </div>
     </div>
   );

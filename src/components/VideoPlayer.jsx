@@ -107,10 +107,10 @@ const VideoPlayer = ({ task }) => {
           </video>
           <div className="video-error-fallback" style={{ display: 'none' }}>
             <i className="fas fa-exclamation-triangle"></i>
-            <p>视频加载失败，请检查文件是否存在</p>
+            <p>Video loading failed, please check if the file exists</p>
             <a href={videoUrl} download target="_blank" rel="noopener noreferrer">
               <i className="fas fa-download"></i>
-              下载视频文件
+              Download video file
             </a>
           </div>
         </div>

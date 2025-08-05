@@ -832,14 +832,6 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
         {/* Controls */}
         <div className="puzzle-controls">
           <button
-            className="validate-btn"
-            onClick={validateSolution}
-            disabled={puzzleState.assembledPieces.length === 0}
-          >
-            <i className="fas fa-check"></i>
-            Check Solution
-          </button>
-          <button
             className="clear-btn"
             onClick={clearAssembly}
             disabled={puzzleState.assembledPieces.length === 0}
@@ -848,21 +840,6 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
             Clear All
           </button>
         </div>
-
-        {/* Validation Feedback */}
-        {puzzleState.showValidation && (
-          <div className={`validation-feedback ${puzzleState.isValidated ? 'correct' : 'incorrect'}`}>
-            <div className="feedback-icon">
-              <i className={`fas ${puzzleState.isValidated ? 'fa-check-circle' : 'fa-times-circle'}`}></i>
-            </div>
-            <div className="feedback-message">
-              {puzzleState.isValidated 
-                ? 'Excellent! Your solution is correct.' 
-                : 'Not quite right. Try rearranging the fragments.'
-              }
-            </div>
-          </div>
-        )}
       </div>
     );
   });
@@ -1140,14 +1117,6 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
         {/* Controls */}
         <div className="matching-controls">
           <button
-            className="validate-btn"
-            onClick={validateMatches}
-            disabled={Object.keys(matches).length === 0}
-          >
-            <i className="fas fa-check"></i>
-            Check Matches
-          </button>
-          <button
             className="clear-btn"
             onClick={clearMatches}
             disabled={Object.keys(matches).length === 0}
@@ -1156,18 +1125,6 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
             Clear All
           </button>
         </div>
-
-        {/* Validation Feedback */}
-        {showValidation && (
-          <div className={`validation-feedback ${validationResult.isValid ? 'correct' : 'incorrect'}`}>
-            <div className="feedback-icon">
-              <i className={`fas ${validationResult.isValid ? 'fa-check-circle' : 'fa-times-circle'}`}></i>
-            </div>
-            <div className="feedback-message">
-              {validationResult.message}
-            </div>
-          </div>
-        )}
       </div>
     );
   });

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PasswordInput from './PasswordInput.jsx';
+import { useAlert } from './CustomAlert';
 import './Login.css'; // Reuse the same CSS
 
 const Register = ({ onBackToLogin }) => {
+  const alert = useAlert();
   const [formData, setFormData] = useState({
     realName: '',
     studentId: '',
@@ -87,7 +89,7 @@ const Register = ({ onBackToLogin }) => {
       const data = await response.json();
       
       if (response.ok) {
-        alert('Registration successful! Please login.');
+        alert.success('Registration successful! Please login.');
         onBackToLogin();
       } else {
         setError(data.error || 'Registration failed');

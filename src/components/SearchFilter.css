@@ -101,13 +101,32 @@
   flex-wrap: wrap;
   padding-top: 1rem;
   border-top: 1px solid #f0f0f0;
+  justify-content: space-between;
+}
+
+/* Desktop layout for 4 filters */
+@media (min-width: 1024px) {
+  .filter-controls {
+    flex-wrap: nowrap;
+    gap: 1.2rem;
+  }
+  
+  .filter-group {
+    min-width: 140px;
+    max-width: 200px;
+  }
+  
+  .clear-filters-btn {
+    min-width: 90px;
+  }
 }
 
 .filter-group {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  min-width: 160px;
+  min-width: 180px;
+  flex: 1;
 }
 
 .filter-group label {
@@ -153,18 +172,20 @@
   background: linear-gradient(135deg, #6b7280, #4b5563);
   color: var(--white);
   border: none;
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 1.2rem;
   border-radius: 12px;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
   height: fit-content;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 100px;
 }
 
 .clear-filters-btn:hover {

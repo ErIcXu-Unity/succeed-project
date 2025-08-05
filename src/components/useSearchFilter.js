@@ -74,8 +74,10 @@ export const useSearchFilter = (data = [], config = {}) => {
     Object.keys(filterConfig).forEach(filterKey => {
       const filterValue = filters[filterKey];
       if (filterValue) {
-        const filterFn = filterConfig[filterKey];
-        result = result.filter(item => filterFn(item, filterValue));
+        const filterFn = filterConfig[filterKey].filterFn;
+        if (typeof filterFn === 'function') {
+          result = result.filter(item => filterFn(item, filterValue));
+        }
       }
     });
 

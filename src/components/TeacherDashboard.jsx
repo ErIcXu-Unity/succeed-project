@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import SearchFilter from './SearchFilter';
 import { useSearchFilter } from './useSearchFilter';
+import { useAlert } from './CustomAlert';
 import './TeacherDashboard.css';
 
 const TeacherDashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const alert = useAlert();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
@@ -48,12 +50,6 @@ const TeacherDashboard = () => {
   const searchFilterConfig = {
     searchFields: (task) => [task.name, task.introduction],
     filterConfig: {
-      courseType: {
-        label: 'Course Type',
-        filterFn: (task, value) => getCourseType(task.name) === value,
-        options: getAvailableCourseTypes().map(type => ({ label: type, value: type })),
-        allOption: 'All Courses'
-      },
       status: {
         label: 'Status',
         filterFn: (task, value) => {
@@ -222,14 +218,14 @@ const TeacherDashboard = () => {
         // 删除成功，重新获取任务列表
         await fetchTasks();
         setDeleteConfirm(null);
-        alert('Task deleted successfully!');
+        alert.success('Task deleted successfully!');
       } else {
         const errorData = await response.json();
-        alert(`Failed to delete task: ${errorData.error || 'Unknown error'}`);
+        alert.error(`Failed to delete task: ${errorData.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error deleting task:', error);
-      alert('Error deleting task. Please try again.');
+      alert.error('Error deleting task. Please try again.');
     } finally {
       setDeleting(false);
     }
@@ -237,7 +233,7 @@ const TeacherDashboard = () => {
 
   const handleGradeTask = (taskId) => {
     // 这里可以导航到成绩页面
-    alert(`Grading feature for task ${taskId} - Coming soon!`);
+    alert.info(`Grading feature for task ${taskId} - Coming soon!`);
   };
 
 

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import VideoPlayer from './VideoPlayer';
 import InteractiveQuestionRenderer from './InteractiveQuestionRenderer';
+import { useAlert } from './CustomAlert';
 import './TaskQuiz.css';
 
 // 伪随机数生成器（基于种子）
@@ -148,7 +149,7 @@ const generateStudentSeed = (studentId, taskId) => {
     const session = JSON.parse(savedSession);
     // 如果会话未完成，使用保存的种子
     if (!session.completed) {
-      console.log('🔄 使用保存的会话种子:', session.seed);
+      console.log('🔄 Use a saved session seed:', session.seed);
       return session.seed;
     }
   }
@@ -199,6 +200,7 @@ const restartSession = (studentId, taskId) => {
 const TaskQuiz = () => {
   const { taskId } = useParams();
   const navigate = useNavigate();
+  const alert = useAlert();
   const [task, setTask] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [questionOrder, setQuestionOrder] = useState([]); // 存储题目顺序映射 - 当前未使用
@@ -215,8 +217,8 @@ const TaskQuiz = () => {
   const [taskStartTime, setTaskStartTime] = useState(null); // 任务开始时间
   const [networkStatus, setNetworkStatus] = useState('checking'); // 'online', 'offline', 'checking'
 
-  useEffect(() => {
-    const fetchTaskAndQuestions = async () => {
+  // 将fetchTaskAndQuestions提取到组件顶层，这样可以在其他函数中调用
+  const fetchTaskAndQuestions = useCallback(async () => {
       try {
         const user = JSON.parse(localStorage.getItem('user_data'));
 
@@ -299,10 +301,11 @@ const TaskQuiz = () => {
       } finally {
         setLoading(false);
       }
-    };
-
-    fetchTaskAndQuestions();
   }, [taskId]);
+
+  useEffect(() => {
+    fetchTaskAndQuestions();
+  }, [fetchTaskAndQuestions]);
 
   // 网络状态监控
   useEffect(() => {
@@ -510,7 +513,7 @@ const TaskQuiz = () => {
 
       if (response.ok) {
         if (showSuccessMessage) {
-          alert('Your progress has been saved successfully! You can continue answering questions later.');
+          alert.success('Your progress has been saved successfully! You can continue answering questions later.');
         }
         if (navigateToHome) {
           navigate('/student/home');
@@ -519,7 +522,7 @@ const TaskQuiz = () => {
       } else {
         const errorData = await response.json();
         if (showSuccessMessage) {
-          alert(`Failed to save progress: ${errorData.error || 'Unknown error'}`);
+          alert.error(`Failed to save progress: ${errorData.error || 'Unknown error'}`);
         }
         console.error('Save progress failed:', errorData);
         return false;
@@ -527,7 +530,7 @@ const TaskQuiz = () => {
     } catch (error) {
       console.error('Error saving progress:', error);
       if (showSuccessMessage) {
-        alert('An error occurred while saving your progress. Please try again.');
+        alert.error('An error occurred while saving your progress. Please try again.');
       }
       return false;
     } finally {
@@ -583,7 +586,7 @@ const TaskQuiz = () => {
   // 提交所有答案（带重试机制）
   const submitAllAnswers = async (retryCount = 0) => {
     if (!allQuestionsAnswered()) {
-      alert('Please answer all questions before submitting.');
+      alert.warning('Please answer all questions before submitting.');
       return;
     }
 
@@ -593,8 +596,9 @@ const TaskQuiz = () => {
     if (retryCount === 0) {
       const isConnected = await checkNetworkConnection();
       if (!isConnected) {
-        setSubmitting(false);
-        if (window.confirm('⚠️ 无法连接到服务器。可能的原因：\n\n1. 后端服务器未启动\n2. 网络连接问题\n3. 服务器正在重启\n\n是否重试连接？')) {
+        setSubmitting(false);   
+        const shouldRetry = await alert.confirm('⚠️ Unable to connect to the server. Possible reasons: \n\n1. Backend server not running\n2. Network connection problem\n3. Server is restarting\n\nDo you want to retry?');
+        if (shouldRetry) {
           return submitAllAnswers(1);
         }
         return;
@@ -691,7 +695,7 @@ const TaskQuiz = () => {
         setQuizResults(results);
         setQuizMode('results');
         
-        // 标记当前会话为已完成
+        // Mark the current session as completed
         const user = JSON.parse(localStorage.getItem('user_data'));
         if (user?.user_id) {
           markSessionCompleted(user.user_id, taskId);
@@ -700,22 +704,23 @@ const TaskQuiz = () => {
         const errorText = await response.text();
         console.error('Error response:', errorText);
         
-        // 服务器错误处理
+        // Server error handling
         if (response.status >= 500) {
           if (retryCount < 2) {
-            if (window.confirm(`🔄 服务器内部错误 (${response.status})。是否重试？\n\n重试次数: ${retryCount + 1}/3`)) {
+            const shouldRetry = await alert.confirm(`🔄 Server internal error (${response.status})。Do you want to retry? \n\n Number of retries: ${retryCount + 1}/3`);
+            if (shouldRetry) {
               return submitAllAnswers(retryCount + 1);
             }
           } else {
-            alert('❌ 服务器错误，请稍后再试或联系管理员。');
+            alert.error('❌ Server error, please try again later or contact the administrator.');
           }
         } else {
           // 客户端错误处理
           try {
             const errorData = JSON.parse(errorText);
-            alert(`❌ 提交失败: ${errorData.error || 'Unknown error'}`);
+            alert.error(`❌ Submission failed: ${errorData.error || 'Unknown error'}`);
           } catch (e) {
-            alert(`❌ 提交失败: HTTP ${response.status} - ${errorText || 'Unknown error'}`);
+            alert.error(`❌ Submission failed: HTTP ${response.status} - ${errorText || 'Unknown error'}`);
           }
         }
       }
@@ -725,24 +730,26 @@ const TaskQuiz = () => {
       if (error.name === 'AbortError') {
         // 超时错误
         if (retryCount < 2) {
-          if (window.confirm(`⏱️ 请求超时。是否重试？\n\n重试次数: ${retryCount + 1}/3`)) {
+          const shouldRetry = await alert.confirm(`⏱️ The request timed out. Do you want to retry? \n\n Number of retries: ${retryCount + 1}/3`);
+          if (shouldRetry) {
             return submitAllAnswers(retryCount + 1);
           }
         } else {
-          alert('⏱️ 请求超时，请检查网络连接或稍后再试。');
+          alert.warning('⏱️ The request timed out, please check your network connection or try again later');
         }
       } else if (error.message.includes('Failed to fetch')) {
         // 网络连接错误
         if (retryCount < 2) {
-          if (window.confirm(`🌐 网络连接失败。可能原因：\n• 后端服务器未启动\n• 网络连接中断\n• 防火墙阻挡\n\n是否重试？\n\n重试次数: ${retryCount + 1}/3`)) {
+          const shouldRetry = await alert.confirm(`🌐 Network connection failed. Possible reasons: \n• Backend server not running\n• Network connection interrupted\n• Firewall blocking\n\nDo you want to retry? \n\nNumber of retries: ${retryCount + 1}/3`);
+          if (shouldRetry) {
             return submitAllAnswers(retryCount + 1);
           }
         } else {
-          alert('🌐 多次尝试失败。请检查：\n• 后端服务器是否运行在 localhost:5001\n• 网络连接是否正常\n• 防火墙设置');
+          alert.error('🌐 Multiple attempts failed. Please check: \n• Whether the backend server is running on localhost:5001\n• Whether the network connection is normal\n• Firewall settings');
         }
       } else {
         // 其他错误
-        alert(`❌ 提交答案时发生错误: ${error.message}`);
+        alert.error(`❌ An error occurred while submitting your answer: ${error.message}`);
       }
     } finally {
       setSubmitting(false);
@@ -751,16 +758,24 @@ const TaskQuiz = () => {
 
   // 重试测验 - 重新随机化并清空进度
   const retryQuiz = async () => {
+    // 首先显示确认对话框
+    const shouldRetry = await alert.confirm('🔄 Do you want to retry the quiz? \n\n This will clear your current progress and start a new quiz.');
+    
+    if (!shouldRetry) {
+      return; // 用户取消了重试
+    }
+
     const user = JSON.parse(localStorage.getItem('user_data'));
     
     if (!user?.user_id) {
-      console.warn('⚠️ 用户信息不存在，直接重新加载页面');
-      window.location.reload();
+      console.warn('⚠️ User information does not exist, returning to home page');
+      alert.error('User information is abnormal, please log in again');
+      navigate('/student/home');
       return;
     }
 
     try {
-      console.log('🔄 开始重试测验，正在清除进度数据...');
+      console.log('🔄 Start retrying the quiz, clearing progress data...');
       
       // 先清除后端进度数据
       const controller = new AbortController();
@@ -774,26 +789,44 @@ const TaskQuiz = () => {
       clearTimeout(timeoutId);
 
       if (deleteResponse.ok) {
-        console.log('✅ 后端进度数据已清除');
+        console.log('✅ Backend progress data has been cleared');
       } else {
-        console.warn('⚠️ 后端进度清除可能失败，状态码:', deleteResponse.status);
+        console.warn('⚠️ Backend progress clearing may have failed, status code:', deleteResponse.status);
       }
     } catch (error) {
       if (error.name === 'AbortError') {
-        console.warn('⚠️ 清除进度数据请求超时，继续执行重试操作');
+        console.warn('⚠️ The request to clear progress data timed out, continuing with retry');
       } else if (error.message.includes('Failed to fetch')) {
-        console.warn('⚠️ 网络连接失败，无法清除后端进度数据');
+        console.warn('⚠️ Network connection failed, unable to clear backend progress data');
       } else {
-        console.warn('⚠️ 清除进度数据时发生错误:', error.message);
+        console.warn('⚠️ An error occurred while clearing progress data:', error.message);
       }
     }
     
     // 清除前端会话数据（保持原有逻辑）
     restartSession(user.user_id, taskId);
     
-    // 重新加载页面以应用新的随机化
-    console.log('🔄 重新加载页面应用新的随机化');
-    window.location.reload();
+    // 重置所有状态，重新初始化测验
+    console.log('🔄 Resetting quiz state and reloading data');
+    
+    // 重置组件状态
+    setQuestions([]);
+    setCurrentQuestionIndex(0);
+    setAllAnswers({});
+    setQuizMode('answering');
+    setQuizResults(null);
+    setNetworkStatus('checking');
+    setLoading(true);
+    setError('');
+    
+    // 重新获取数据，这会触发新的随机化
+    try {
+      await fetchTaskAndQuestions();
+      // 不显示成功消息，因为用户已经看到了加载过程
+    } catch (error) {
+      console.error('Error resetting quiz:', error);
+      alert.error('Failed to reset quiz. Please try again.');
+    }
   };
 
   // 返回主页
@@ -1142,8 +1175,21 @@ const TaskQuiz = () => {
               
               // Handle puzzle game correct answers
               if (question.question_type === 'puzzle_game') {
-                const correctSolution = question.puzzle_solution || '';
-                const fragments = question.puzzle_fragments || [];
+                // Parse question_data if it's a string
+                let questionData = {};
+                try {
+                  if (typeof question.question_data === 'string') {
+                    questionData = JSON.parse(question.question_data);
+                  } else {
+                    questionData = question.question_data || {};
+                  }
+                } catch (error) {
+                  console.error('Error parsing question_data:', error);
+                  questionData = {};
+                }
+                
+                const correctSolution = question.puzzle_solution || questionData.puzzle_solution || '';
+                const fragments = question.puzzle_fragments || questionData.puzzle_fragments || [];
                 
                 if (correctSolution && fragments.length > 0) {
                   return (
@@ -1166,10 +1212,22 @@ const TaskQuiz = () => {
                       </div>
                     </div>
                   );
+                } else if (correctSolution) {
+                  return (
+                    <div className="puzzle-game-correct-answer">
+                      <div className="puzzle-correct-label">
+                        <i className="fas fa-puzzle-piece"></i>
+                        Correct Answer:
+                      </div>
+                      <div className="puzzle-correct-solution">
+                        <strong>Solution:</strong> "{correctSolution}"
+                      </div>
+                    </div>
+                  );
                 } else {
                   return (
                     <div className="puzzle-game-correct-answer">
-                      <span className="puzzle-correct-text">"{correctSolution || 'No solution available'}"</span>
+                      <span className="puzzle-correct-text">"No solution available"</span>
                     </div>
                   );
                 }
@@ -1367,7 +1425,7 @@ const TaskQuiz = () => {
           {/* 文字描述 */}
           {currentQuestion.description && (
             <div className="question-description">
-              <h4><i className="fas fa-info-circle"></i> 问题说明</h4>
+              <h4><i className="fas fa-info-circle"></i> Problem statement</h4>
               <p>{currentQuestion.description}</p>
             </div>
           )}
@@ -1375,7 +1433,7 @@ const TaskQuiz = () => {
           {/* 图片展示 */}
           {currentQuestion.image_url && (
             <div className="question-image">
-              <h4><i className="fas fa-image"></i> 图片说明</h4>
+              <h4><i className="fas fa-image"></i> Image description</h4>
               <img 
                 src={currentQuestion.image_url.startsWith('http') ? currentQuestion.image_url : `http://localhost:5001${currentQuestion.image_url}`} 
                 alt="Question illustration" 
@@ -1418,7 +1476,7 @@ const TaskQuiz = () => {
                     }
                   }}
                 >
-                  您的浏览器不支持视频播放
+                  Your browser does not support video playback
                 </video>
               ) : (
                 <div className="youtube-embed">

@@ -1,9 +1,11 @@
 // src/components/StudentLayout.jsx
 import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
+import { useAlert } from './CustomAlert';
 import './StudentLayout.css';
 
 export default function StudentLayout() {
+  const alert = useAlert();
   // Global TTS states
   const [showTTSPanel, setShowTTSPanel] = useState(false);
   const [ttsSettings, setTtsSettings] = useState({
@@ -48,7 +50,7 @@ export default function StudentLayout() {
   const readCurrentPage = () => {
     const synth = window.speechSynthesis;
     if (!synth) {
-      alert('Speech Synthesis not supported in your browser');
+      alert.warning('Speech Synthesis not supported in your browser');
       return;
     }
 
@@ -94,7 +96,7 @@ export default function StudentLayout() {
     utterance.onend = () => setIsPlaying(false);
     utterance.onerror = () => {
       setIsPlaying(false);
-      alert('Speech synthesis failed. Please try again.');
+      alert.error('Speech synthesis failed. Please try again.');
     };
 
     synth.speak(utterance);

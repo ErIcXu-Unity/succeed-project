@@ -240,15 +240,7 @@
   font-weight: 700;
 }
 
-.score-grade {
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 1rem;
-  font-weight: 700;
-  min-width: 40px;
-  text-align: center;
-}
+
 
 .score-details {
   font-size: 0.9rem;

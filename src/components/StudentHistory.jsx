@@ -12,7 +12,6 @@ function StudentHistory() {
   // 搜索筛选状态
   const [searchTerm, setSearchTerm] = useState('');
   const [courseFilter, setCourseFilter] = useState('');
-  const [gradeFilter, setGradeFilter] = useState('');
   const [scoreRangeFilter, setScoreRangeFilter] = useState('');
   const [sortBy, setSortBy] = useState('completed_at');
   const [sortOrder, setSortOrder] = useState('desc');
@@ -75,13 +74,13 @@ function StudentHistory() {
     });
   };
 
-  // 根据得分百分比获取评级
-  const getScoreGrade = (percentage) => {
-    if (percentage >= 90) return { grade: 'A', color: '#28a745' };
-    if (percentage >= 80) return { grade: 'B', color: '#17a2b8' };
-    if (percentage >= 70) return { grade: 'C', color: '#ffc107' };
-    if (percentage >= 60) return { grade: 'D', color: '#fd7e14' };
-    return { grade: 'F', color: '#dc3545' };
+  // 根据得分百分比获取颜色
+  const getScoreColor = (percentage) => {
+    if (percentage >= 90) return '#28a745';
+    if (percentage >= 80) return '#17a2b8';
+    if (percentage >= 70) return '#ffc107';
+    if (percentage >= 60) return '#fd7e14';
+    return '#dc3545';
   };
 
   // 根据课程类型获取图标
@@ -147,10 +146,6 @@ function StudentHistory() {
       const courseType = item.course_type || getCourseType(item.task_name);
       const matchesCourse = !courseFilter || courseType === courseFilter;
       
-      // 成绩筛选
-      const grade = getScoreGrade(item.score_percentage).grade;
-      const matchesGrade = !gradeFilter || grade === gradeFilter;
-      
       // 分数范围筛选
       let matchesScoreRange = true;
       if (scoreRangeFilter === 'excellent') {
@@ -163,7 +158,7 @@ function StudentHistory() {
         matchesScoreRange = item.score_percentage < 60;
       }
       
-      return matchesSearch && matchesCourse && matchesGrade && matchesScoreRange;
+      return matchesSearch && matchesCourse && matchesScoreRange;
     });
 
     // 排序
@@ -209,7 +204,6 @@ function StudentHistory() {
   const handleClearFilters = () => {
     setSearchTerm('');
     setCourseFilter('');
-    setGradeFilter('');
     setScoreRangeFilter('');
     setSortBy('completed_at');
     setSortOrder('desc');
@@ -310,23 +304,6 @@ function StudentHistory() {
               </div>
 
               <div className="filter-group">
-                <label htmlFor="gradeFilter">Grade:</label>
-                <select
-                  id="gradeFilter"
-                  value={gradeFilter}
-                  onChange={(e) => setGradeFilter(e.target.value)}
-                  className="filter-select"
-                >
-                  <option value="">All Grades</option>
-                  <option value="A">A (90-100%)</option>
-                  <option value="B">B (80-89%)</option>
-                  <option value="C">C (70-79%)</option>
-                  <option value="D">D (60-69%)</option>
-                  <option value="F">F (0-59%)</option>
-                </select>
-              </div>
-
-              <div className="filter-group">
                 <label htmlFor="scoreRangeFilter">Performance:</label>
                 <select
                   id="scoreRangeFilter"
@@ -396,7 +373,7 @@ function StudentHistory() {
           ) : (
             <div className="history-grid">
               {filteredHistory.map((item, index) => {
-                const scoreGrade = getScoreGrade(item.score_percentage);
+                const scoreColor = getScoreColor(item.score_percentage);
                 const courseType = item.course_type || getCourseType(item.task_name);
                 
                 return (
@@ -420,11 +397,8 @@ function StudentHistory() {
                       
                       <div className="score-section">
                         <div className="score-display">
-                          <span className="score-number" style={{ color: scoreGrade.color }}>
+                          <span className="score-number" style={{ color: scoreColor }}>
                             {item.score_percentage}%
-                          </span>
-                          <span className="score-grade" style={{ backgroundColor: scoreGrade.color }}>
-                            {scoreGrade.grade}
                           </span>
                         </div>
                         <div className="score-details">

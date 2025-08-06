@@ -87,7 +87,7 @@ const QuestionCreateLayout = ({
             </h1>
             {taskInfo && (
               <p className="task-context">
-                For task: <strong>{taskInfo.title}</strong>
+
               </p>
             )}
           </div>

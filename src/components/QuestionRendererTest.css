@@ -160,9 +160,10 @@
 
 .fill-blank-input-wrapper {
   position: relative;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   margin: 0 4px;
+  width: 100%;
 }
 
 .fill-blank-input {
@@ -170,10 +171,8 @@
   border: 2px solid #3498db;
   border-radius: 4px;
   font-size: 14px;
-  min-width: 120px;
   background: white;
-  width: auto;
-  max-width: 200px;
+  width: 100%;
 }
 
 .fill-blank-input:focus {

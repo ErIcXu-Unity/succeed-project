@@ -274,8 +274,31 @@ const TaskQuiz = () => {
                 
                 setCurrentQuestionIndex(randomizedIndex >= 0 ? randomizedIndex : 0);
 
-                setAllAnswers(progressData.answers || {});
-                console.log('✅ Progress has been restored, using session-level randomization to keep the order consistent');
+                // 需要将原始答案转换为当前随机化格式
+                const convertedAnswers = {};
+                const originalAnswers = progressData.answers || {};
+                
+                Object.keys(originalAnswers).forEach(questionId => {
+                  const originalAnswer = originalAnswers[questionId];
+                  const question = randomizedQuestions.find(q => q.id.toString() === questionId.toString());
+                  
+                  if (question?.question_type === 'multiple_choice' && question._indexMapping && Array.isArray(originalAnswer)) {
+                    // Multiple Choice: 将原始索引转换为当前随机化索引
+                    convertedAnswers[questionId] = originalAnswer.map(originalIndex => {
+                      return question._indexMapping[originalIndex] !== undefined ? question._indexMapping[originalIndex] : originalIndex;
+                    });
+                    console.log('📥 多选题恢复:', originalAnswer, '→', convertedAnswers[questionId]);
+                  } else if (question?._originalKeyMapping) {
+                    // Single Choice: 将原始字母转换为当前随机化字母
+                    convertedAnswers[questionId] = question._originalKeyMapping[originalAnswer] || originalAnswer;
+                    console.log('📥 单选题恢复:', originalAnswer, '→', convertedAnswers[questionId]);
+                  } else {
+                    convertedAnswers[questionId] = originalAnswer;
+                  }
+                });
+                
+                setAllAnswers(convertedAnswers);
+                console.log('✅ 进度已恢复，答案已转换为当前随机化格式');
 
               }
             }
@@ -485,6 +508,8 @@ const TaskQuiz = () => {
           originalAnswers[questionId] = userAnswer.map(randomizedIndex => {
             return reverseIndexMapping[randomizedIndex] !== undefined ? reverseIndexMapping[randomizedIndex] : randomizedIndex;
           });
+          
+          console.log('💾 多选题保存:', userAnswer, '→', originalAnswers[questionId]);
         } else if (question && question._originalKeyMapping) {
           // Single Choice: 使用字母映射转换答案
           const reverseMapping = {};
@@ -494,10 +519,20 @@ const TaskQuiz = () => {
           });
           
           originalAnswers[questionId] = reverseMapping[userAnswer] || userAnswer;
+          
+          console.log('💾 单选题保存:', userAnswer, '→', originalAnswers[questionId]);
         } else {
           originalAnswers[questionId] = userAnswer;
+          console.log('💾 SAVE PROGRESS - No Mapping:', {
+            questionId,
+            questionType: question?.question_type,
+            userAnswer,
+            directlySaved: true
+          });
         }
       });
+      
+      console.log('💾 保存进度:', Object.keys(allAnswers).length, '个答案');
 
       const response = await fetch(`http://localhost:5001/api/tasks/${taskId}/save-progress`, {
         method: 'POST',
@@ -628,11 +663,7 @@ const TaskQuiz = () => {
             return reverseIndexMapping[randomizedIndex] !== undefined ? reverseIndexMapping[randomizedIndex] : randomizedIndex;
           });
           
-          console.log('Multiple Choice answer conversion:', {
-            userAnswer,
-            reverseIndexMapping,
-            convertedAnswer: originalAnswers[questionId]
-          });
+          console.log('🚀 多选题提交:', userAnswer, '→', originalAnswers[questionId]);
         } else if (question && question._originalKeyMapping) {
           // Single Choice: 使用字母映射转换答案
           const reverseMapping = {};
@@ -642,9 +673,17 @@ const TaskQuiz = () => {
           });
           
           originalAnswers[questionId] = reverseMapping[userAnswer] || userAnswer;
+          
+          console.log('🚀 单选题提交:', userAnswer, '→', originalAnswers[questionId]);
         } else {
           // 没有映射的题目直接使用原答案
           originalAnswers[questionId] = userAnswer;
+          console.log('🚀 SUBMIT - No Mapping:', {
+            questionId,
+            questionType: question?.question_type,
+            userAnswer,
+            directlySaved: true
+          });
         }
       });
       
@@ -654,10 +693,7 @@ const TaskQuiz = () => {
         started_at: taskStartTime  // 包含任务开始时间
       };
 
-      console.log('Original user answers (randomized):', allAnswers);
-      console.log('Converted answers (original format):', originalAnswers);
-      console.log('Submitting data:', submitData);
-      console.log('Task ID:', taskId);
+      console.log('🚀 提交:', Object.keys(allAnswers).length, '个答案');
       
       // Debug Fill Blank questions specifically
       Object.keys(allAnswers).forEach(questionId => {

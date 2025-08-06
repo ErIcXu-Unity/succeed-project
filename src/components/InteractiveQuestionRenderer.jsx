@@ -105,7 +105,6 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
               value={fillBlankAnswers[i] || ''}
               onChange={(e) => handleFillBlankChange(i, e.target.value)}
               placeholder={blank.placeholder || `Blank ${i + 1}`}
-              style={{ minWidth: '120px', width: 'auto' }}
             />
             {hasHints && (
               <button
@@ -1143,7 +1142,10 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
             <button
               key={option}
               className={`option-button ${currentAnswer === option ? 'selected' : ''}`}
-              onClick={() => onAnswerChange(option)}
+              onClick={() => {
+                console.log('🔵 单选题选择:', option, '→', question._originalKeyMapping?.[option] || option);
+                onAnswerChange(option);
+              }}
             >
               <span className="option-letter">{option}</span>
               <span className="option-text">{text}</span>
@@ -1171,6 +1173,8 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
                   const newSelected = e.target.checked
                     ? [...selectedOptions, index]
                     : selectedOptions.filter(i => i !== index);
+                  const originalIndex = question._indexMapping ? Object.keys(question._indexMapping).find(k => question._indexMapping[k] === index) : index;
+                  console.log('🟢 多选题选择:', index, '→', originalIndex, e.target.checked ? '选中' : '取消');
                   onAnswerChange(newSelected);
                 }}
               />

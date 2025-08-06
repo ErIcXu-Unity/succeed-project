@@ -3,222 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './StudentHistory.css';
 
-// 详情模态框组件
-function TaskDetailsModal({ isOpen, onClose, taskData, onRetry }) {
-  const [detailData, setDetailData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (isOpen && taskData) {
-      fetchTaskDetails();
-    }
-  }, [isOpen, taskData]);
-
-  const fetchTaskDetails = async () => {
-    if (!taskData) return;
-    
-    setLoading(true);
-    setError('');
-    
-    try {
-      const user = JSON.parse(localStorage.getItem('user_data'));
-      const response = await fetch(`http://localhost:5001/api/tasks/${taskData.task_id}/attempts/${taskData.id}/details`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        setDetailData(data);
-      } else {
-        // 如果没有专门的API，我们可以创建一个模拟的详细数据
-        const mockData = {
-          task_name: taskData.task_name,
-          course_type: taskData.course_type,
-          completed_at: taskData.completed_at,
-          total_score: taskData.score,
-          max_score: taskData.max_score,
-          score_percentage: taskData.score_percentage,
-          question_count: taskData.question_count,
-          time_spent: "15:30", // 模拟数据
-          questions: [
-            {
-              id: 1,
-              question: "What is the chemical formula for water?",
-              user_answer: "H2O",
-              correct_answer: "H2O",
-              is_correct: true,
-              points_earned: taskData.score,
-              max_points: taskData.max_score,
-              time_spent: "2:15"
-            }
-          ]
-        };
-        setDetailData(mockData);
-      }
-    } catch (error) {
-      console.error('Error fetching task details:', error);
-      setError('Unable to load detailed information');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const getScoreGrade = (percentage) => {
-    if (percentage >= 90) return { grade: 'A', color: '#28a745' };
-    if (percentage >= 80) return { grade: 'B', color: '#17a2b8' };
-    if (percentage >= 70) return { grade: 'C', color: '#ffc107' };
-    if (percentage >= 60) return { grade: 'D', color: '#fd7e14' };
-    return { grade: 'F', color: '#dc3545' };
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>📊 Task Details</h2>
-          <button className="modal-close" onClick={onClose}>
-            <i className="fas fa-times"></i>
-          </button>
-        </div>
-
-        <div className="modal-body">
-          {loading ? (
-            <div className="loading-section">
-              <i className="fas fa-spinner fa-spin"></i>
-              <p>Loading detailed information...</p>
-            </div>
-          ) : error ? (
-            <div className="error-section">
-              <i className="fas fa-exclamation-triangle"></i>
-              <p>{error}</p>
-            </div>
-          ) : detailData ? (
-            <>
-              {/* 任务概要 */}
-              <div className="task-summary">
-                <div className="summary-header">
-                  <h3>{detailData.task_name}</h3>
-                  <span className="course-badge">{detailData.course_type}</span>
-                </div>
-                
-                <div className="summary-stats">
-                  <div className="stat-card">
-                    <div className="stat-value" style={{ color: getScoreGrade(detailData.score_percentage).color }}>
-                      {detailData.score_percentage}%
-                    </div>
-                    <div className="stat-label">Total Score</div>
-                    <div className="stat-grade" style={{ backgroundColor: getScoreGrade(detailData.score_percentage).color }}>
-                      {getScoreGrade(detailData.score_percentage).grade}
-                    </div>
-                  </div>
-                  
-                  <div className="stat-card">
-                    <div className="stat-value">{detailData.total_score}/{detailData.max_score}</div>
-                    <div className="stat-label">Points</div>
-                  </div>
-                  
-                  <div className="stat-card">
-                    <div className="stat-value">{detailData.question_count}</div>
-                    <div className="stat-label">Questions</div>
-                  </div>
-                  
-                  <div className="stat-card">
-                    <div className="stat-value">{detailData.time_spent || "15:30"}</div>
-                    <div className="stat-label">Time Used</div>
-                  </div>
-                </div>
-
-                <div className="completion-info">
-                  <i className="fas fa-calendar-check"></i>
-                  <span>Completed At: {formatDate(detailData.completed_at)}</span>
-                </div>
-              </div>
-
-              {/* 答题详情 */}
-              <div className="questions-detail">
-                <h4>📝 Question Details</h4>
-                {detailData.questions && detailData.questions.length > 0 ? (
-                  <div className="questions-list">
-                    {detailData.questions.map((question, index) => (
-                      <div key={question.id} className={`question-card ${question.is_correct ? 'correct' : 'incorrect'}`}>
-                        <div className="question-header">
-                          <span className="question-number">Question {index + 1}</span>
-                          <span className={`question-status ${question.is_correct ? 'correct' : 'incorrect'}`}>
-                            {question.is_correct ? '✓ Correct' : '✗ Incorrect'}
-                          </span>
-                          <span className="question-points">
-                            {question.points_earned}/{question.max_points} points
-                          </span>
-                        </div>
-                        
-                        <div className="question-text">
-                          {question.question}
-                        </div>
-                        
-                        <div className="answer-section">
-                          <div className="user-answer">
-                            <strong>Your Answer:</strong> {question.user_answer}
-                          </div>
-                          {!question.is_correct && (
-                            <div className="correct-answer">
-                              <strong>Correct Answer:</strong> {question.correct_answer}
-                            </div>
-                          )}
-                          {question.time_spent && (
-                            <div className="time-spent">
-                              <i className="fas fa-clock"></i>
-                              Time Used: {question.time_spent}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="no-questions">
-                    <p>No detailed answer records available</p>
-                  </div>
-                )}
-              </div>
-
-              {/* 操作按钮 */}
-              <div className="modal-actions">
-                <button className="btn btn-secondary" onClick={onClose}>
-                  <i className="fas fa-times"></i>
-                  Close
-                </button>
-                <button className="btn btn-primary" onClick={() => onRetry(taskData.task_id)}>
-                  <i className="fas fa-redo"></i>
-                  Retry Task
-                </button>
-              </div>
-            </>
-          ) : null}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function StudentHistory() {
   const [historyData, setHistoryData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [studentName, setStudentName] = useState('');
-  const [selectedTask, setSelectedTask] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // 搜索筛选状态
   const [searchTerm, setSearchTerm] = useState('');
@@ -426,22 +215,7 @@ function StudentHistory() {
     setSortOrder('desc');
   };
 
-  // 打开详情模态框
-  const handleViewDetails = (taskData) => {
-    setSelectedTask(taskData);
-    setIsModalOpen(true);
-  };
 
-  // 关闭详情模态框
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedTask(null);
-  };
-
-  // 重新尝试任务
-  const handleRetryTask = (taskId) => {
-    window.location.href = `/student/tasks/${taskId}/intro`;
-  };
 
   const filteredHistory = getFilteredAndSortedHistory();
   const availableCourseTypes = getAvailableCourseTypes();
@@ -681,13 +455,6 @@ function StudentHistory() {
                           <i className="fas fa-redo"></i>
                           Retry Task
                         </Link>
-                        <button 
-                          className="btn btn-outline"
-                          onClick={() => handleViewDetails(item)}
-                        >
-                          <i className="fas fa-chart-line"></i>
-                          View Details
-                        </button>
                       </div>
                     </div>
                   </div>
@@ -697,14 +464,6 @@ function StudentHistory() {
           )}
         </>
       )}
-
-      {/* 详情模态框 */}
-      <TaskDetailsModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        taskData={selectedTask}
-        onRetry={handleRetryTask}
-      />
     </div>
   );
 }

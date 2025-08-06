@@ -1,0 +1,25 @@
+.validation-container {
+  margin: 15px 0;
+  min-height: 24px;
+}
+
+.validation-message {
+  padding: 6px 12px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.validation-message.valid {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.validation-message.invalid {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.validation-message i {
+  margin-right: 6px;
+}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './PuzzleGameEditor.css'
 
 const PuzzleGameEditor = ({ formData, setFormData }) => {
   const [inputMode, setInputMode] = useState('text'); // 'text', 'math', 'chemistry'
@@ -12,7 +13,10 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
       const suggestions = generateFragmentSuggestions(formData.puzzle_solution, inputMode);
       setAutoFragments(suggestions);
       validatePuzzle();
+    } else {
+      setAutoFragments([]);
     }
+    validatePuzzle();
   }, [formData.puzzle_solution, inputMode]);
 
   // Generate smart fragment suggestions
@@ -20,7 +24,7 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
     if (!solution.trim()) return [];
 
     let suggestions = [];
-    
+
     switch (mode) {
       case 'chemistry':
         suggestions = generateChemistryFragments(solution);
@@ -31,7 +35,7 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
       default:
         suggestions = generateTextFragments(solution);
     }
-    
+
     return suggestions;
   };
 
@@ -39,9 +43,9 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
     // Pattern for chemical equations: "2H2 + O2 -> 2H2O"
     const arrowPattern = /(\s*[->\s=]+\s*)/
     const plusPattern = /(\s*\+\s*)/;
-    
+
     let fragments = [];
-    
+
     // Split by reaction arrow first
     if (arrowPattern.test(solution)) {
       const parts = solution.split(arrowPattern);
@@ -64,7 +68,7 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
       // Simple compound or formula
       fragments = [solution.trim()];
     }
-    
+
     return fragments.filter(f => f.length > 0);
   };
 
@@ -74,10 +78,10 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
     const operatorPattern = /(\s*[+\-*/=<>≤≥∪∩⊆∈∉∼⫫≐]+\s*)/;
     const arrowPattern = /(\s*[->]+\s*)/
     const parenPattern = /([()[\]{}])/;
-    
+
     let fragments = [];
     let remaining = solution;
-    
+
     // First extract special functions and preserve them as single units
     const specialMatches = remaining.match(specialFunctionPattern);
     if (specialMatches) {
@@ -86,21 +90,21 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
         remaining = remaining.replace(match, ` ${placeholder} `);
       });
     }
-    
+
     // Handle parentheses
     const parenMatches = remaining.match(/[()[\]{}]/g);
     if (parenMatches) {
       remaining = remaining.replace(parenPattern, ' $1 ');
     }
-    
+
     // Handle arrows
     if (arrowPattern.test(remaining)) {
       remaining = remaining.replace(arrowPattern, ' $1 ');
     }
-    
+
     // Split by operators while preserving them
     const parts = remaining.split(/(\s*[+\-*/=<>≤≥∪∩⊆∈∉∼⫫≐()[\]{}]+\s*|->)/);;
-    
+
     parts.forEach(part => {
       const trimmed = part.trim();
       if (trimmed) {
@@ -117,11 +121,11 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
         }
       }
     });
-    
+
     // Handle Greek letters and mathematical constants as separate entities if they appear standalone
     const greekPattern = /\b[α-ωΑ-Ω]\b/g;
     const finalFragments = [];
-    
+
     fragments.forEach(fragment => {
       if (greekPattern.test(fragment) && fragment.length === 1) {
         finalFragments.push(fragment);
@@ -137,7 +141,7 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
         finalFragments.push(fragment);
       }
     });
-    
+
     return finalFragments.filter(f => f.length > 0);
   };
 
@@ -149,37 +153,26 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
 
   // Validate puzzle configuration
   const validatePuzzle = () => {
-    const solution = formData.puzzle_solution?.trim();
-    const fragments = formData.puzzle_fragments?.filter(f => f.trim());
-    
+    const solution = (formData.puzzle_solution || '').trim();
+
     if (!solution) {
-      setValidationStatus({ isValid: false, message: 'Solution is required' });
-      return;
-    }
-    
-    if (!fragments || fragments.length === 0) {
-      setValidationStatus({ isValid: false, message: 'At least one fragment is required' });
-      return;
-    }
-    
-    // Check if fragments can form the solution
-    const fragmentsJoined = fragments.join(' ');
-    const solutionNormalized = solution.replace(/\s+/g, ' ');
-    const fragmentsNormalized = fragmentsJoined.replace(/\s+/g, ' ');
-    
-    if (fragmentsNormalized !== solutionNormalized) {
-      setValidationStatus({ 
-        isValid: false, 
-        message: 'Fragments do not match the solution. Check for missing or extra pieces.' 
+      setValidationStatus({
+        isValid: false,
+        message: 'Solution is required',
+        type: 'solution'
       });
       return;
     }
-    
-    setValidationStatus({ isValid: true, message: 'Puzzle configuration is valid' });
+
+    setValidationStatus({
+      isValid: true,
+      message: 'Solution is valid',
+      type: 'valid'
+    });
   };
 
   const handleSolutionChange = (value) => {
-    setFormData(prev => ({ ...prev, puzzle_solution: value }));
+    setFormData(prev => ({ ...prev, puzzle_solution: value || '' }));
   };
 
   const handleFragmentChange = (index, value) => {
@@ -247,14 +240,24 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
 
     return (
       <div className="solution-input-section">
+
         <label>Complete Solution:</label>
         <div className="input-with-tools">
           <input
             type="text"
-            value={formData.puzzle_solution}
-            onChange={(e) => handleSolutionChange(e.target.value)}
+            value={formData.puzzle_solution || ''}
+            onChange={(e) => {
+              const value = e.target.value.replace(/^\s+/g, ''); // 只去除开头空格
+              handleSolutionChange(value);
+            }}
+            onBlur={(e) => {
+              const value = e.target.value.trim();
+              handleSolutionChange(value);
+              validatePuzzle(); // 触发即时验证
+            }}
             placeholder={placeholders[inputMode]}
-            className={`solution-input ${!validationStatus.isValid ? 'invalid' : ''}`}
+            className={`solution-input ${validationStatus.isValid === false ? 'invalid' : ''  // 修正条件判断
+              }`}
             required
           />
           {inputMode === 'chemistry' && (
@@ -318,7 +321,7 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
                   <button type="button" onClick={() => insertSymbol('⁻')}>⁻</button>
                 </div>
               </div>
-              
+
               <div className="helper-section">
                 <small className="helper-label">Subscripts:</small>
                 <div className="helper-buttons">
@@ -332,7 +335,7 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
                   <button type="button" onClick={() => insertSymbol('₋')}>₋</button>
                 </div>
               </div>
-              
+
               <div className="helper-section">
                 <small className="helper-label">Basic:</small>
                 <div className="helper-buttons">
@@ -346,7 +349,7 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
                   <button type="button" onClick={() => insertSymbol('x̄')}>x̄</button>
                 </div>
               </div>
-              
+
               <div className="helper-section">
                 <small className="helper-label">Probability & Statistics:</small>
                 <div className="helper-buttons">
@@ -360,7 +363,7 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
                   <button type="button" onClick={() => insertSymbol('Hₐ')}>Hₐ</button>
                 </div>
               </div>
-              
+
               <div className="helper-section">
                 <small className="helper-label">Sets & Logic:</small>
                 <div className="helper-buttons">
@@ -372,7 +375,7 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
                   <button type="button" onClick={() => insertSymbol('∅')}>∅</button>
                 </div>
               </div>
-              
+
               <div className="helper-section">
                 <small className="helper-label">Calculus:</small>
                 <div className="helper-buttons">
@@ -383,7 +386,7 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
                   <button type="button" onClick={() => insertSymbol('∇')}>∇</button>
                 </div>
               </div>
-              
+
               <div className="helper-section">
                 <small className="helper-label">Greek Letters:</small>
                 <div className="helper-buttons">
@@ -417,16 +420,21 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
 
   const insertSymbol = (symbol) => {
     const input = document.querySelector('.solution-input');
+    if (!input) return; // 增加安全性检查
+
     const start = input.selectionStart;
     const end = input.selectionEnd;
-    const currentValue = formData.puzzle_solution;
+    const currentValue = formData.puzzle_solution || ''; // 处理空值情况
     const newValue = currentValue.substring(0, start) + symbol + currentValue.substring(end);
+
     handleSolutionChange(newValue);
-    
-    // Reset cursor position
+
+    // 重置光标位置前检查input是否存在
     setTimeout(() => {
-      input.focus();
-      input.setSelectionRange(start + symbol.length, start + symbol.length);
+      if (input) {
+        input.focus();
+        input.setSelectionRange(start + symbol.length, start + symbol.length);
+      }
     }, 0);
   };
 
@@ -437,22 +445,26 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
         <h3>Enhanced Puzzle Game Setup</h3>
         <span className="card-subtitle">Create puzzles with math, chemistry, or text fragments</span>
       </div>
-      
+
       <div className="puzzle-editor-content">
         {/* Input Mode Selector */}
         {renderInputModeSelector()}
-        
+
         {/* Solution Input */}
         {renderSolutionInput()}
-        
+
         {/* Validation Status */}
-        {formData.puzzle_solution && (
-          <div className={`validation-status ${validationStatus.isValid ? 'valid' : 'invalid'}`}>
-            <i className={`fas ${validationStatus.isValid ? 'fa-check-circle' : 'fa-exclamation-triangle'}`}></i>
-            <span>{validationStatus.message}</span>
-          </div>
-        )}
-        
+        <div className="validation-container">
+          {validationStatus.message && (
+            <div className={`validation-message ${validationStatus.isValid ? 'valid' : 'invalid'
+              }`}>
+              <i className={`fas ${validationStatus.isValid ? 'fa-check-circle' : 'fa-exclamation-circle'
+                }`} />
+              <span>{validationStatus.message}</span>
+            </div>
+          )}
+        </div>
+
         {/* Auto-generated Suggestions */}
         {autoFragments.length > 0 && (
           <div className="auto-suggestions">
@@ -484,7 +496,7 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
             </small>
           </div>
         )}
-        
+
         {/* Manual Fragment Editor */}
         <div className="manual-fragments-section">
           <div className="section-header">
@@ -500,11 +512,11 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
               </button>
             </div>
           </div>
-          
+
           <small className="help-text">
             Manually edit fragments that students will drag and drop to assemble
           </small>
-          
+
           <div className="fragments-list">
             {formData.puzzle_fragments.map((fragment, index) => (
               <div key={index} className="fragment-editor-item">
@@ -530,7 +542,7 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
               </div>
             ))}
           </div>
-          
+
           <div className="fragment-controls">
             <button
               type="button"
@@ -542,7 +554,7 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
             </button>
           </div>
         </div>
-        
+
         {/* Preview Section */}
         <div className="preview-section">
           <div className="preview-header">
@@ -559,14 +571,14 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
               {previewMode ? 'Hide' : 'Show'} Preview
             </button>
           </div>
-          
+
           {previewMode && (
             <div className="puzzle-preview">
               <div className="preview-solution">
                 <strong>Target Solution:</strong>
                 <div className="solution-display">{formData.puzzle_solution || 'Enter solution above'}</div>
               </div>
-              
+
               <div className="preview-fragments">
                 <strong>Available Fragments:</strong>
                 <div className="fragments-display">
@@ -584,7 +596,7 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
                   )}
                 </div>
               </div>
-              
+
               <div className="preview-difficulty">
                 <strong>Estimated Difficulty:</strong>
                 <div className="difficulty-indicator">

@@ -111,6 +111,108 @@ def submit_task(task_id):
             except (json.JSONDecodeError, TypeError, KeyError) as e:
                 print(f"Error parsing multiple choice question data: {e}")
                 is_correct = False
+        elif question.question_type == 'puzzle_game':
+            # Handle Puzzle Game questions - selected should be an array of fragments
+            try:
+                question_data = json.loads(question.question_data) if isinstance(question.question_data, str) else question.question_data
+                correct_solution = question_data.get('puzzle_solution', '') or question.puzzle_solution or ''
+                
+                print(f"=== PUZZLE GAME SCORING DEBUG ===")
+                print(f"Question ID: {question.id}")
+                print(f"User answer type: {type(selected)}")
+                print(f"User answer: {selected}")
+                print(f"Correct solution: {correct_solution}")
+                
+                if isinstance(selected, list):
+                    # Join the fragments to form the solution
+                    user_solution = ' '.join(selected).strip()
+                    print(f"User solution (joined): '{user_solution}'")
+                    
+                    # Multiple validation approaches for puzzle games
+                    # 1. Exact match
+                    is_correct = user_solution == correct_solution.strip()
+                    print(f"Exact match: {is_correct}")
+                    
+                    # 2. If exact match fails, try without spaces (for math/chemistry)
+                    if not is_correct:
+                        user_no_spaces = user_solution.replace(' ', '')
+                        correct_no_spaces = correct_solution.replace(' ', '')
+                        is_correct = user_no_spaces == correct_no_spaces
+                        print(f"No spaces match: '{user_no_spaces}' == '{correct_no_spaces}' ? {is_correct}")
+                    
+                    # 3. For chemistry reactions, normalize arrow formats
+                    if not is_correct and ('→' in correct_solution or '->' in correct_solution or '=>' in correct_solution):
+                        user_normalized = user_solution.replace('->', '→').replace('=>', '→').replace('=', '→').strip()
+                        correct_normalized = correct_solution.replace('->', '→').replace('=>', '→').replace('=', '→').strip()
+                        is_correct = user_normalized == correct_normalized
+                        print(f"Chemistry normalized: '{user_normalized}' == '{correct_normalized}' ? {is_correct}")
+                    
+                    # 4. Case-insensitive comparison as fallback
+                    if not is_correct:
+                        is_correct = user_solution.lower() == correct_solution.lower()
+                        print(f"Case insensitive: {is_correct}")
+                        
+                else:
+                    print(f"ERROR: Expected list but got {type(selected)}")
+                
+                print(f"Final result: is_correct = {is_correct}")
+                print("=== END PUZZLE GAME DEBUG ===")
+                
+            except (json.JSONDecodeError, TypeError, KeyError) as e:
+                print(f"Error parsing puzzle game question data: {e}")
+                is_correct = False
+                
+        elif question.question_type == 'matching_task':
+            # Handle Matching Task questions - selected should be an object with matches
+            try:
+                question_data = json.loads(question.question_data) if isinstance(question.question_data, str) else question.question_data
+                correct_matches = question_data.get('correct_matches', [])
+                
+                print(f"=== MATCHING TASK SCORING DEBUG ===")
+                print(f"Question ID: {question.id}")
+                print(f"User answer type: {type(selected)}")
+                print(f"User answer: {selected}")
+                print(f"Correct matches: {correct_matches}")
+                
+                if isinstance(selected, dict) and isinstance(correct_matches, list):
+                    # Check if all correct matches are present in user's answer
+                    all_correct = True
+                    for correct_match in correct_matches:
+                        left_idx = correct_match.get('left')
+                        right_idx = correct_match.get('right')
+                        
+                        # Convert indices to strings for comparison (frontend sends string keys)
+                        user_match = selected.get(str(left_idx))
+                        if user_match != right_idx:
+                            print(f"Mismatch: left {left_idx} should match right {right_idx}, but user matched {user_match}")
+                            all_correct = False
+                            break
+                    
+                    # Also check that user didn't make extra incorrect matches
+                    if all_correct and len(selected) == len(correct_matches):
+                        is_correct = True
+                    elif all_correct:
+                        # User made all correct matches but may have extra ones - check if extras are wrong
+                        for user_left, user_right in selected.items():
+                            expected_match = next((cm for cm in correct_matches if cm['left'] == int(user_left)), None)
+                            if expected_match and expected_match['right'] != user_right:
+                                all_correct = False
+                                break
+                        is_correct = all_correct
+                    
+                    print(f"All matches correct: {is_correct}")
+                    
+                else:
+                    print(f"ERROR: Expected dict for user answer and list for correct matches")
+                    print(f"Got user type: {type(selected)}, correct type: {type(correct_matches)}")
+                
+                print(f"Final result: is_correct = {is_correct}")
+                print("=== END MATCHING TASK DEBUG ===")
+                
+            except (json.JSONDecodeError, TypeError, KeyError) as e:
+                print(f"Error parsing matching task question data: {e}")
+                is_correct = False
+                
         elif question.question_type == 'single_choice':
             # Handle Single Choice questions - selected is a string
             if isinstance(selected, str) and selected.upper() == question.correct_answer:

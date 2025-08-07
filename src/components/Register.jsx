@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import PasswordInput from './PasswordInput.jsx';
 import { useAlert } from './CustomAlert';
 import './Login.css'; // Reuse the same CSS
@@ -15,7 +14,6 @@ const Register = ({ onBackToLogin }) => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -41,6 +39,11 @@ const Register = ({ onBackToLogin }) => {
       return false;
     }
     
+    if (!studentId.trim()) {
+      setError('Student ID is required');
+      return false;
+    }
+    
     if (!/^\d{7}$/.test(studentId)) {
       setError('Student ID must be exactly 7 digits');
       return false;
@@ -51,8 +54,18 @@ const Register = ({ onBackToLogin }) => {
       return false;
     }
     
+    if (!password.trim()) {
+      setError('Password is required');
+      return false;
+    }
+    
     if (password.length < 6) {
       setError('Password must be at least 6 characters');
+      return false;
+    }
+    
+    if (!confirmPassword.trim()) {
+      setError('Password confirmation is required');
       return false;
     }
     

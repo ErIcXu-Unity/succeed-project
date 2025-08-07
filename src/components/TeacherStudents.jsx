@@ -15,7 +15,7 @@ const TeacherStudents = () => {
   const fetchStudents = async () => {
     try {
       setLoading(true);
-      const response = await fetch('${config.API_BASE_URL}/api/students/list');
+      const response = await fetch(`${config.API_BASE_URL}/api/students/list`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch students');

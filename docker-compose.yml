@@ -60,6 +60,8 @@ services:
       context: .
       dockerfile: Dockerfile
       target: production
+      args:
+        - REACT_APP_BACKEND_URL=http://localhost:5001
     ports:
       - "3000:80"
     depends_on:

@@ -24,6 +24,9 @@ FROM node:18-alpine as build
 
 WORKDIR /app
 
+# Build argument for backend URL
+ARG REACT_APP_BACKEND_URL=http://localhost:5001
+
 # Copy package files
 COPY package*.json ./
 
@@ -33,7 +36,8 @@ RUN npm ci --only=production
 # Copy source code
 COPY . .
 
-# Build the application
+# Build the application with environment variable
+ENV REACT_APP_BACKEND_URL=$REACT_APP_BACKEND_URL
 RUN npm run build
 
 # Stage 3: Production stage with nginx

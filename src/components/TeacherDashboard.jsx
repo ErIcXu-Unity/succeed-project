@@ -189,7 +189,7 @@ const TeacherDashboard = () => {
 
   const fetchDashboardStats = async () => {
     try {
-      const response = await fetch('${config.API_BASE_URL}/api/students/dashboard-summary');
+      const response = await fetch(`${config.API_BASE_URL}/api/students/dashboard-summary`);
       if (response.ok) {
         const data = await response.json();
         setStudentCount(data.total_students);

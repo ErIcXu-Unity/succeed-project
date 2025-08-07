@@ -608,7 +608,7 @@ const TaskQuiz = () => {
   // 网络连接检查
   const checkNetworkConnection = async () => {
     try {
-      const response = await fetch('${config.API_BASE_URL}/api/tasks', {
+      const response = await fetch(`${config.API_BASE_URL}/api/tasks`, {
         method: 'GET',
         signal: AbortSignal.timeout(5000) // 5 秒超时
       });

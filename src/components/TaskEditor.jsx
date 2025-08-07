@@ -243,7 +243,7 @@ const TaskEditor = () => {
 
       if (isCreateMode) {
         // 新建模式：先创建任务
-        const createResponse = await fetch('${config.API_BASE_URL}/api/tasks', {
+        const createResponse = await fetch(`${config.API_BASE_URL}/api/tasks`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

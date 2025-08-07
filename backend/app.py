@@ -62,6 +62,7 @@ def initialize_database(app):
     
     with app.app_context():
         # Create all database tables
+        
         db.create_all()
         
         # Seed default data from seed_data.py

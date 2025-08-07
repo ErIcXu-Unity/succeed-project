@@ -34,18 +34,18 @@ def seed_default_teachers():
 def seed_default_students():
     """Seed default student accounts for testing"""
     default_students = [
-        {
-            'real_name': 'Test Student',
-            'student_id': 's2000',
-            'username': 'test@student.com',
-            'password_plain': '123456'
-        },
-        {
-            'real_name': 'Demo Student',
-            'student_id': 's2001',
-            'username': 'demo@student.com',
-            'password_plain': '123456'
-        }
+        # {
+        #     'real_name': 'Test Student',
+        #     'student_id': 's2000',
+        #     'username': 'test@student.com',
+        #     'password_plain': '123456'
+        # },
+        # {
+        #     'real_name': 'Demo Student',
+        #     'student_id': 's2001',
+        #     'username': 'demo@student.com',
+        #     'password_plain': '123456'
+        # }
     ]
     
     for s in default_students:
@@ -149,7 +149,7 @@ def seed_default_achievements():
         },
         {
             'name': 'Accuracy Master',
-            'condition': '总体答题准确率达到90%以上',
+            'condition': '总体答题准确率达到 90% 以上',
             'task_id': None  # General achievement
         },
         {

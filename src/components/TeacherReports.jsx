@@ -88,8 +88,8 @@ const TeacherReports = () => {
             datasets: [{
               data: [
                 reportData.summary.completionRate,
-                15.2,
-                Math.max(0, 100 - reportData.summary.completionRate - 15.2)
+                0, // In Progress - currently not tracked
+                Math.max(0, 100 - reportData.summary.completionRate)
               ],
               backgroundColor: ['#4CAF50', '#FF9800', '#F44336']
             }]

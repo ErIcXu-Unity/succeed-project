@@ -286,11 +286,19 @@ def get_dashboard_report():
                 "attempts": submitted_count
             })
 
+        # Active students (students who have submitted at least one task)
+        active_students = completed_students
+        
+        # Total submissions count
+        total_submissions = len(task_results)
+
         return jsonify({
             "total_students": total_students,
             "total_tasks": total_tasks,
             "completion_rate": completion_rate,
             "average_score": average_score,
+            "active_students": active_students,
+            "total_submissions": total_submissions,
             "task_performance": task_performance
         }), 200
 

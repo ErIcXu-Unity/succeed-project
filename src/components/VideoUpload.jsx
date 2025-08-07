@@ -22,7 +22,7 @@ const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
 
     try {
       setLoading(true);
-      const response = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}`);
+      const response = await fetch(`${1}/api/tasks/${taskId}`);
       if (response.ok) {
         const data = await response.json();
         if (data.video_type && (data.video_url || data.video_path)) {

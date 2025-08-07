@@ -2,7 +2,14 @@
 
 A full-stack web application for creating and managing educational escape room games at the University of New South Wales (UNSW). This platform allows teachers to create interactive escape room challenges and students to participate in gamified learning activities.
 
-## New Features & Updates
+## Recent Updates & Improvements
+
+### Latest Bug Fixes & Enhancements
+- **Template Literal Syntax Fixes**: Resolved JavaScript template literal errors that caused API communication failures
+- **Enhanced Dashboard Reports**: Added missing `active_students` and `total_submissions` fields to teacher dashboard
+- **Improved Error Handling**: Fixed "Unexpected token" JSON parsing errors across all components
+- **API Communication**: Corrected template literal syntax in all API calls for reliable data fetching
+- **Completion Status Charts**: Fixed hardcoded values in teacher reports for accurate data visualization
 
 ### Enhanced Question System
 - **5 Question Types**: Single Choice, Multiple Choice, Fill in Blank, Puzzle Game, Matching Task
@@ -13,17 +20,17 @@ A full-stack web application for creating and managing educational escape room g
 
 ### Modern User Interface
 - **Fully Responsive Design**: Optimized for desktop, tablet, and mobile devices
-- **Enhanced Teacher Dashboard**: Improved statistics, better task management
+- **Enhanced Teacher Dashboard**: Improved statistics, better task management with real-time data
 - **Smart Button Layout**: Adaptive button arrangements based on screen size
 - **Keyboard Navigation**: ESC key support for modal dialogs
 - **Touch-Friendly**: Optimized for mobile touch interactions
 
 ### Technical Improvements
-- **Component Architecture**: Modular question type editors
-- **Type Safety**: Enhanced form validation with null safety
-- **API Enhancements**: Support for multiple question types in backend
-- **Database Migration**: Seamless upgrade path for existing data
-- **Docker Support**: Complete containerization for development and production
+- **Component Architecture**: Modular question type editors with improved error handling
+- **API Reliability**: Fixed template literal syntax across all components for stable API communication
+- **Enhanced Reporting**: Comprehensive dashboard analytics with accurate completion tracking
+- **Database Optimization**: Improved query performance for student and task statistics
+- **Docker Support**: Complete containerization for development and production with build-time environment configuration
 
 ## Features
 
@@ -220,10 +227,25 @@ npm start
 - `PUT /api/tasks/{id}` - Update task information
 - `DELETE /api/tasks/{id}` - Remove task and related data
 
+### Student Management & Analytics
+- `GET /api/students/list` - Get list of all students with basic info
+- `GET /api/students/{id}/details` - Get detailed student information
+- `GET /api/students/{id}/history` - Get student's task completion history
+- `GET /api/students/{id}/achievements` - Get student achievements
+- `GET /api/students/{id}/profile` - Get student profile information
+
+### Dashboard & Reporting
+- `GET /api/students/dashboard-report` - Comprehensive dashboard analytics including:
+  - Total students and tasks
+  - Completion rates and average scores
+  - Active student counts and total submissions
+  - Task performance metrics
+- `GET /api/students/dashboard-summary` - Summary statistics for teacher dashboard
+
 ### Student Progress
 - `POST /api/tasks/{id}/submit` - Submit completed task
-- `GET /api/students/{id}/achievements` - Get student achievements
 - `POST /api/tasks/{id}/save-progress` - Save partial progress
+- `GET /api/tasks/{id}/progress` - Get saved progress for a task
 
 ## Contributing
 
@@ -246,16 +268,21 @@ This will add the necessary database columns for enhanced question functionality
 
 ## Test Accounts
 
-After setting up the application, you can use these test accounts:
+After setting up the application, you can use these default accounts:
 
-### Teacher Account
-- Username: `teacher@unsw.edu.au`
-- Password: `123456`
+### Teacher Accounts
+- **Teacher Admin 1**:
+  - Username: `st1000@tea.com`
+  - Teacher ID: `1000`
+  - Password: `123456`
 
-### Student Account
-- Username: `1234567@stu.com`
-- Student ID: `1234567`
-- Password: (check with administrator)
+- **Teacher Admin 2**:
+  - Username: `st1001@tea.com`
+  - Teacher ID: `1001`
+  - Password: `123456`
+
+### Student Accounts
+Students can register through the registration page. Default student accounts have been removed from the seed data to ensure clean deployments.
 
 ## Docker Support
 

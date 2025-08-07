@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './QuestionCreateLayout.css';
+import config from '../config';
 
 const QuestionCreateLayout = ({ 
   questionType, 
@@ -30,7 +31,7 @@ const QuestionCreateLayout = ({
   useEffect(() => {
     const fetchTaskInfo = async () => {
       try {
-        const response = await fetch(`http://localhost:5001/api/tasks/${taskId}`);
+        const response = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}`);
         if (response.ok) {
           const task = await response.json();
           setTaskInfo(task);

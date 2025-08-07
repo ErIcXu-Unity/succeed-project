@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './TeacherStudentDetail.css';
+import config from '../config';
 
 const TeacherStudentDetail = () => {
   const { studentId } = useParams();
@@ -18,12 +19,12 @@ const TeacherStudentDetail = () => {
         setLoading(true);
 
         // 获取学生档案信息（包含统计）
-        const profileRes = await fetch(`http://localhost:5001/api/students/${studentId}/profile`);
+        const profileRes = await fetch(`${config.API_BASE_URL}/api/students/${studentId}/profile`);
         if (!profileRes.ok) throw new Error('Failed to fetch profile');
         const profileData = await profileRes.json();
 
         // 获取任务历史记录
-        const historyRes = await fetch(`http://localhost:5001/api/students/${studentId}/history`);
+        const historyRes = await fetch(`${config.API_BASE_URL}/api/students/${studentId}/history`);
         if (!historyRes.ok) throw new Error('Failed to fetch history');
         const historyData = await historyRes.json();
 

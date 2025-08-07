@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './TeacherStudents.css';
+import config from '../config';
 
 const TeacherStudents = () => {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ const TeacherStudents = () => {
   const fetchStudents = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5001/api/students/list');
+      const response = await fetch('${config.API_BASE_URL}/api/students/list');
       
       if (!response.ok) {
         throw new Error('Failed to fetch students');

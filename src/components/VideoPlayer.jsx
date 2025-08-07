@@ -1,5 +1,6 @@
 import React from 'react';
 import './VideoPlayer.css';
+import config from '../config';
 
 const VideoPlayer = ({ task }) => {
   if (!task || !task.video_type) {
@@ -64,7 +65,7 @@ const VideoPlayer = ({ task }) => {
     // 本地视频播放 - 采用教师端的简洁样式
     const videoUrl = task.video_url?.startsWith('http') 
       ? task.video_url 
-      : `http://localhost:5001${task.video_url}`;
+      : `${config.API_BASE_URL}${task.video_url}`;
       
     return (
       <div className="simple-video-player">

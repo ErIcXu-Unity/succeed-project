@@ -1,0 +1,32 @@
+# Frontend Development Dockerfile
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Add `/app/node_modules/.bin` to $PATH
+ENV PATH /app/node_modules/.bin:$PATH
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --silent
+
+# Copy source code
+COPY . .
+
+# Set environment variables for development
+ENV CHOKIDAR_USEPOLLING=true
+ENV GENERATE_SOURCEMAP=true
+ENV REACT_APP_BACKEND_URL=http://localhost:5001
+
+# Expose port
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3000 || exit 1
+
+# Start the development server
+CMD ["npm", "start"]

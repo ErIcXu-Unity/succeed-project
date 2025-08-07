@@ -1,8 +1,8 @@
-# 🎓 Escape Room Educational Platform - Backend API
+# Escape Room Educational Platform - Backend API
 
 A robust Flask-based backend service for the UNSW Escape Room Educational Platform, providing comprehensive APIs for managing educational content, user authentication, and interactive learning experiences.
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 The backend follows a **modular blueprint architecture** with separated concerns for maintainability and scalability:
 
@@ -21,15 +21,15 @@ backend/
 └── migrate_questions.py # Database migration utilities
 ```
 
-## 🚀 Features
+## Features
 
 ### Core Functionality
-- **🔐 Authentication System**: Secure login/registration for students and teachers
-- **📚 Content Management**: Create and manage educational tasks and questions
-- **🎮 Interactive Questions**: Support for 5 different question types
-- **📊 Progress Tracking**: Comprehensive student analytics and achievements
-- **📁 Media Handling**: Upload and serve images, videos, and documents
-- **🏆 Achievement System**: Badges and progress gamification
+- **Authentication System**: Secure login/registration for students and teachers
+- **Content Management**: Create and manage educational tasks and questions
+- **Interactive Questions**: Support for 5 different question types
+- **Progress Tracking**: Comprehensive student analytics and achievements
+- **Media Handling**: Upload and serve images, videos, and documents
+- **Achievement System**: Badges and progress gamification
 
 ### Question Types Supported
 1. **Single Choice** - Traditional multiple choice (A/B/C/D)
@@ -38,7 +38,7 @@ backend/
 4. **Puzzle Game** - Fragment assembly challenges
 5. **Matching Task** - Connect related items
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 - **Framework**: Flask 2.0+ with Blueprint architecture
 - **Database**: PostgreSQL with SQLAlchemy ORM
@@ -47,7 +47,7 @@ backend/
 - **CORS**: Configured for cross-origin requests
 - **Environment**: python-dotenv for configuration management
 
-## 📦 Installation & Setup
+## Installation & Setup
 
 ### Prerequisites
 - Python 3.8 or higher
@@ -111,17 +111,16 @@ python seed_data.py
 # Start development server
 python app.py
 
-# Server will run on http://localhost:5000
+# Server will run on http://localhost:5001
 ```
 
-## 🔌 API Endpoints
+## API Endpoints
 
 ### Authentication Endpoints
 ```http
 POST   /register                    # Student registration
 POST   /login                       # User login (student/teacher)
-POST   /logout                      # User logout
-GET    /check-auth                  # Check authentication status
+POST   /change-password             # Change user password
 ```
 
 ### Task Management
@@ -131,43 +130,49 @@ POST   /api/tasks                   # Create new task (teachers only)
 GET    /api/tasks/{id}              # Get specific task details
 PUT    /api/tasks/{id}              # Update task (teachers only)
 DELETE /api/tasks/{id}              # Delete task (teachers only)
+POST   /api/tasks/{id}/save-progress # Save partial progress
+GET    /api/tasks/{id}/progress     # Get task progress
+DELETE /api/tasks/{id}/progress     # Delete task progress
+POST   /api/tasks/{id}/video        # Upload task video
+DELETE /api/tasks/{id}/video        # Delete task video
+POST   /api/tasks/{id}/youtube      # Set YouTube video for task
 ```
 
 ### Question Management
 ```http
 GET    /api/tasks/{id}/questions    # Get all questions for a task
-POST   /api/tasks/{id}/questions    # Create new question (all 6 types supported)
+POST   /api/tasks/{id}/questions    # Create new question (all 5 types supported)
+POST   /api/tasks/{id}/questions/batch # Create multiple questions
 GET    /api/questions/{id}          # Get specific question
 PUT    /api/questions/{id}          # Update question (teachers only)
 DELETE /api/questions/{id}          # Delete question (teachers only)
+POST   /api/questions/{id}/check    # Check question answer
 ```
 
 ### Student Progress & Submissions
 ```http
 POST   /api/tasks/{id}/submit       # Submit completed task
-POST   /api/tasks/{id}/save-progress # Save partial progress
+GET    /api/students/{id}/task-progress # Get student task progress
+GET    /api/students/{id}/profile   # Get student profile
 GET    /api/students/{id}/achievements # Get student achievements
-GET    /api/students/{id}/results   # Get student task results
-GET    /api/students/{id}/progress  # Get detailed progress data
+GET    /api/students/{id}/history   # Get student task history
+GET    /api/students/{id}/details   # Get detailed student information
 ```
 
 ### File Upload & Media
 ```http
-POST   /api/upload/image            # Upload question images
-POST   /api/upload/video            # Upload question videos  
-GET    /api/uploads/questions/{path} # Serve uploaded images
-GET    /api/uploads/videos/{path}   # Serve uploaded videos
+GET    /uploads/questions/{path}    # Serve uploaded question images
+GET    /uploads/videos/{path}       # Serve uploaded videos
 ```
 
 ### Analytics & Reporting (Teachers)
 ```http
-GET    /api/teacher/dashboard       # Teacher dashboard statistics
-GET    /api/teacher/students        # List all students with progress
-GET    /api/teacher/task/{id}/results # Task-specific results
-GET    /api/teacher/reports         # Comprehensive reporting data
+GET    /api/students/dashboard-summary # Teacher dashboard summary
+GET    /api/students/list           # List all students with progress
+GET    /api/students/dashboard-report # Comprehensive reporting data
 ```
 
-## 🗄️ Database Schema
+## Database Schema
 
 ### Core Tables
 - **students**: Student accounts and profiles
@@ -191,7 +196,7 @@ Questions support flexible JSON data storage for different types:
 }
 ```
 
-## 🔒 Security Features
+## Security Features
 
 - **Password Hashing**: Werkzeug secure password hashing
 - **Session Management**: Flask-based session handling
@@ -200,7 +205,7 @@ Questions support flexible JSON data storage for different types:
 - **SQL Injection Prevention**: SQLAlchemy ORM parameter binding
 - **Input Validation**: Comprehensive request data validation
 
-## 📊 Monitoring & Logging
+## Monitoring & Logging
 
 ### Development
 ```bash
@@ -216,7 +221,7 @@ python app.py
 - Configure reverse proxy (nginx/Apache)
 - Enable SSL/TLS certificates
 
-## 🧪 Testing
+## Testing
 
 ### Manual Testing
 ```bash
@@ -224,8 +229,8 @@ python app.py
 python -c "from models import db; from app import create_app; app = create_app(); app.app_context().push(); print('Database connection successful!')"
 
 # Test API endpoints
-curl -X GET http://localhost:5000/api/tasks
-curl -X POST http://localhost:5000/register -H "Content-Type: application/json" -d '{"name":"Test Student","student_id":"1234567","password":"test123"}'
+curl -X GET http://localhost:5001/api/tasks
+curl -X POST http://localhost:5001/register -H "Content-Type: application/json" -d '{"name":"Test Student","student_id":"1234567","password":"test123"}'
 ```
 
 ### Sample Data
@@ -238,9 +243,9 @@ This creates:
 - Sample tasks with various question types
 - Test student and teacher accounts
 - Achievement badges
-- Demo questions demonstrating all 6 question types
+- Demo questions demonstrating all 5 question types
 
-## 🚀 Deployment
+## Deployment
 
 ### Environment Variables
 ```env
@@ -258,11 +263,27 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 COPY . .
-EXPOSE 5000
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:create_app()"]
+EXPOSE 5001
+CMD ["gunicorn", "--bind", "0.0.0.0:5001", "app:create_app()"]
 ```
 
-## 🔧 Migration & Maintenance
+## Docker Support
+
+The backend includes full Docker integration:
+
+```bash
+# Build backend image
+docker build -t escape-room-backend ./backend
+
+# Run with Docker Compose (recommended)
+docker compose up backend -d
+
+# Access backend at http://localhost:5001
+```
+
+For complete Docker documentation, see [../README-Docker.md](../README-Docker.md).
+
+## Migration & Maintenance
 
 ### Database Migration
 For existing installations, use the migration script:
@@ -285,4 +306,38 @@ export FLASK_DEBUG=True
 export FLASK_ENV=development
 python app.py
 ```
+
+## Test Accounts
+
+The application includes test accounts for development:
+
+### Teacher Account
+- Username: `teacher@unsw.edu.au`
+- Password: `123456`
+- Access: Full admin capabilities
+
+### Student Account  
+- Username: `1234567@stu.com`
+- Student ID: `1234567`
+- Name: `adsf`
+
+## Configuration
+
+### Database Configuration
+The backend supports both PostgreSQL (production) and SQLite (development):
+
+```env
+# PostgreSQL (recommended)
+DATABASE_URL=postgresql://postgres:123456@localhost:5433/escape_room
+
+# SQLite (development only)
+DATABASE_URL=sqlite:///escape_room.db
+```
+
+### CORS Configuration
+Allowed origins are configured in `app.py`:
+- `http://localhost:3000` (React dev server)
+- `http://localhost:3001` (Alternative dev server) 
+- `http://127.0.0.1:3000`
+- `http://127.0.0.1:3001`
 

@@ -2,27 +2,28 @@
 
 A full-stack web application for creating and managing educational escape room games at the University of New South Wales (UNSW). This platform allows teachers to create interactive escape room challenges and students to participate in gamified learning activities.
 
-## 🎯 New Features & Updates
+## New Features & Updates
 
-### ✨ Enhanced Question System
+### Enhanced Question System
 - **5 Question Types**: Single Choice, Multiple Choice, Fill in Blank, Puzzle Game, Matching Task
 - **Rich Media Support**: Images, videos, and YouTube integration for questions
 - **Dynamic Question Editors**: Specialized editors for each question type
 - **Smart Validation**: Type-specific validation with real-time feedback
 - **Question Preview**: Comprehensive preview system for all question types
 
-### 🎨 Modern User Interface
+### Modern User Interface
 - **Fully Responsive Design**: Optimized for desktop, tablet, and mobile devices
 - **Enhanced Teacher Dashboard**: Improved statistics, better task management
 - **Smart Button Layout**: Adaptive button arrangements based on screen size
 - **Keyboard Navigation**: ESC key support for modal dialogs
 - **Touch-Friendly**: Optimized for mobile touch interactions
 
-### 🏗️ Technical Improvements
+### Technical Improvements
 - **Component Architecture**: Modular question type editors
 - **Type Safety**: Enhanced form validation with null safety
 - **API Enhancements**: Support for multiple question types in backend
 - **Database Migration**: Seamless upgrade path for existing data
+- **Docker Support**: Complete containerization for development and production
 
 ## Features
 
@@ -117,12 +118,37 @@ capstone-project-25t2-9900-h18b-donut/
 
 ## Installation & Setup
 
-### Prerequisites
-- Node.js (v14 or higher)
+### Quick Start with Docker (Recommended)
+
+#### Production Mode
+```bash
+docker compose up -d --build
+```
+Access the application at http://localhost
+
+#### Development Mode
+```bash
+docker compose --profile dev up -d --build
+```
+Access the development server at http://localhost:3000
+
+#### Mixed Development (Backend in Docker, Frontend local)
+```bash
+docker compose up db backend -d
+npm start  # Run frontend locally on port 3000
+```
+
+For complete Docker documentation, see [README-Docker.md](README-Docker.md).
+
+### Manual Installation
+
+#### Prerequisites
+- Node.js (v18 or higher)
 - Python 3.8+
 - PostgreSQL database
+- Docker (optional, recommended)
 
-### Backend Setup
+#### Backend Setup
 1. Navigate to the backend directory:
 ```bash
 cd backend
@@ -141,15 +167,18 @@ pip install -r requirements.txt
 
 4. Create `.env` file with your database configuration:
 ```env
-DATABASE_URL=postgresql://username:password@localhost:5432/escape_room_db
+DATABASE_URL=postgresql://postgres:123456@localhost:5432/escape_room
+FLASK_ENV=development
+FLASK_DEBUG=True
 ```
 
 5. Run the application:
 ```bash
 python app.py
 ```
+Backend runs on http://localhost:5001
 
-### Frontend Setup
+#### Frontend Setup
 1. Install dependencies:
 ```bash
 npm install
@@ -181,7 +210,7 @@ npm start
 ## API Endpoints
 
 ### Question Management
-- `POST /api/tasks/{id}/questions` - Create new question (supports all 6 types)
+- `POST /api/tasks/{id}/questions` - Create new question (supports all 5 types)
 - `GET /api/tasks/{id}/questions` - Retrieve task questions with type information
 - `DELETE /api/questions/{id}` - Remove specific question
 
@@ -215,6 +244,40 @@ python migrate_questions.py
 
 This will add the necessary database columns for enhanced question functionality.
 
+## Test Accounts
+
+After setting up the application, you can use these test accounts:
+
+### Teacher Account
+- Username: `teacher@unsw.edu.au`
+- Password: `123456`
+
+### Student Account
+- Username: `1234567@stu.com`
+- Student ID: `1234567`
+- Password: (check with administrator)
+
+## Docker Support
+
+The application includes comprehensive Docker support for easy deployment:
+
+- **Production deployment**: Nginx-served React build with Flask backend
+- **Development mode**: React dev server with hot reload
+- **Database**: PostgreSQL in Docker container
+- **Health checks**: Built-in health monitoring
+- **Multi-stage builds**: Optimized container sizes
+
+For detailed Docker instructions, see [README-Docker.md](README-Docker.md).
+
+## Project Structure Updates
+
+Recent additions include:
+- `Dockerfile` - Multi-stage frontend build
+- `Dockerfile.dev` - Development-optimized build
+- `docker-compose.yml` - Service orchestration
+- `nginx.conf` - Production web server configuration
+- `src/config.js` - Centralized API configuration
+
 ## License
 
 This project is developed for UNSW educational purposes.
@@ -224,3 +287,4 @@ This project is developed for UNSW educational purposes.
 - UNSW Computer Science & Engineering
 - React.js community for excellent documentation
 - Flask community for robust backend framework
+- Docker community for containerization best practices

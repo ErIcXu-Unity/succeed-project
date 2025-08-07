@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import PasswordInput from './PasswordInput.jsx';
 import { useAlert } from './CustomAlert';
+import config from '../config';
 import './Login.css'; // Reuse the same CSS
 
 const Register = ({ onBackToLogin }) => {
@@ -86,7 +87,7 @@ const Register = ({ onBackToLogin }) => {
     setError('');
     
     try {
-                  const response = await fetch('http://localhost:5001/register', {
+                  const response = await fetch(`${config.API_BASE_URL}/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

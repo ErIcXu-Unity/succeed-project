@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Register from './Register.jsx';
+import config from '../config';
 import './Login.css';
 
 const Login = ({ onLoginSuccess }) => {
@@ -13,7 +13,6 @@ const Login = ({ onLoginSuccess }) => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   const openLoginModal = (role) => {
     setModalTitle(`${role} Login`);
@@ -46,7 +45,7 @@ const Login = ({ onLoginSuccess }) => {
     setError('');
 
     try {
-                  const response = await fetch('http://localhost:5001/login', {
+                  const response = await fetch(`${config.API_BASE_URL}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

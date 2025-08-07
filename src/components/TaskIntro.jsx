@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import VideoPlayer from './VideoPlayer';
 import './TaskIntro.css';
+import config from '../config';
 
 const TaskIntro = () => {
   const { taskId } = useParams();
@@ -17,7 +18,7 @@ const TaskIntro = () => {
   const fetchTaskDetails = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:5001/api/tasks/${taskId}`);
+      const response = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}`);
       
       if (!response.ok) {
         if (response.status === 404) {

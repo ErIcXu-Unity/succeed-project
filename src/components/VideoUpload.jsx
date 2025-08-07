@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './VideoUpload.css';
+import config from '../config';
 
 const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
   const [uploadType, setUploadType] = useState('local');
@@ -21,7 +22,7 @@ const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
 
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:5001/api/tasks/${taskId}`);
+      const response = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}`);
       if (response.ok) {
         const data = await response.json();
         if (data.video_type && (data.video_url || data.video_path)) {
@@ -58,7 +59,7 @@ const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
     formData.append('video', file);
 
     try {
-      const response = await fetch(`http://localhost:5001/api/tasks/${taskId}/video`, {
+      const response = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}/video`, {
         method: 'POST',
         body: formData,
       });
@@ -105,7 +106,7 @@ const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
     setError('');
 
     try {
-      const response = await fetch(`http://localhost:5001/api/tasks/${taskId}/youtube`, {
+      const response = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}/youtube`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -151,7 +152,7 @@ const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5001/api/tasks/${taskId}/video`, {
+      const response = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}/video`, {
         method: 'DELETE',
       });
 
@@ -276,9 +277,9 @@ const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
                       currentVideo.url && currentVideo.url !== 'null' && currentVideo.url !== 'undefined' 
                         ? (currentVideo.url.startsWith('http') 
                             ? currentVideo.url 
-                            : `http://localhost:5001${currentVideo.url}`) 
+                            : `${config.API_BASE_URL}${currentVideo.url}`) 
                         : (currentVideo.path && currentVideo.path !== 'null' && currentVideo.path !== 'undefined' 
-                            ? `http://localhost:5001/uploads/videos/${currentVideo.path}` 
+                            ? `${config.API_BASE_URL}/uploads/videos/${currentVideo.path}` 
                             : '')
                     }
                     controls
@@ -295,27 +296,27 @@ const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
                       currentVideo.url && currentVideo.url !== 'null' && currentVideo.url !== 'undefined' 
                         ? (currentVideo.url.startsWith('http') 
                             ? currentVideo.url 
-                            : `http://localhost:5001${currentVideo.url}`) 
+                            : `${config.API_BASE_URL}${currentVideo.url}`) 
                         : (currentVideo.path && currentVideo.path !== 'null' && currentVideo.path !== 'undefined' 
-                            ? `http://localhost:5001/uploads/videos/${currentVideo.path}` 
+                            ? `${config.API_BASE_URL}/uploads/videos/${currentVideo.path}` 
                             : '')
                     } type="video/mp4" />
                     <source src={
                       currentVideo.url && currentVideo.url !== 'null' && currentVideo.url !== 'undefined' 
                         ? (currentVideo.url.startsWith('http') 
                             ? currentVideo.url 
-                            : `http://localhost:5001${currentVideo.url}`) 
+                            : `${config.API_BASE_URL}${currentVideo.url}`) 
                         : (currentVideo.path && currentVideo.path !== 'null' && currentVideo.path !== 'undefined' 
-                            ? `http://localhost:5001/uploads/videos/${currentVideo.path}` 
+                            ? `${config.API_BASE_URL}/uploads/videos/${currentVideo.path}` 
                             : '')
                     } type="video/mov" />
                     <source src={
                       currentVideo.url && currentVideo.url !== 'null' && currentVideo.url !== 'undefined' 
                         ? (currentVideo.url.startsWith('http') 
                             ? currentVideo.url 
-                            : `http://localhost:5001${currentVideo.url}`) 
+                            : `${config.API_BASE_URL}${currentVideo.url}`) 
                         : (currentVideo.path && currentVideo.path !== 'null' && currentVideo.path !== 'undefined' 
-                            ? `http://localhost:5001/uploads/videos/${currentVideo.path}` 
+                            ? `${config.API_BASE_URL}/uploads/videos/${currentVideo.path}` 
                             : '')
                     } type="video/webm" />
                     您的浏览器不支持视频播放

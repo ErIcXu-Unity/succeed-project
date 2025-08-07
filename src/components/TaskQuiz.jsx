@@ -4,6 +4,7 @@ import VideoPlayer from './VideoPlayer';
 import InteractiveQuestionRenderer from './InteractiveQuestionRenderer';
 import { useAlert } from './CustomAlert';
 import './TaskQuiz.css';
+import config from '../config';
 
 // 伪随机数生成器（基于种子）
 const seedRandom = (seed) => {
@@ -223,14 +224,14 @@ const TaskQuiz = () => {
         const user = JSON.parse(localStorage.getItem('user_data'));
 
         // 获取任务详情
-        const taskResponse = await fetch(`http://localhost:5001/api/tasks/${taskId}`);
+        const taskResponse = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}`);
         if (taskResponse.ok) {
           const taskData = await taskResponse.json();
           setTask(taskData);
         }
 
         // 获取问题列表
-        const questionsResponse = await fetch(`http://localhost:5001/api/tasks/${taskId}/questions`);
+        const questionsResponse = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}/questions`);
         if (questionsResponse.ok) {
           const questionsData = await questionsResponse.json();
           let shuffledIndices = null;
@@ -263,7 +264,7 @@ const TaskQuiz = () => {
             setQuestions(randomizedQuestions);
             
             // 恢复答题进度（会话级随机化支持进度保存）
-            const progressResponse = await fetch(`http://localhost:5001/api/tasks/${taskId}/progress?student_id=${user.user_id}`);
+            const progressResponse = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}/progress?student_id=${user.user_id}`);
             if (progressResponse.ok) {
               const progressData = await progressResponse.json();
               if (progressData.has_progress) {
@@ -405,7 +406,7 @@ const TaskQuiz = () => {
       if (Object.keys(allAnswers).length > 0 && networkStatus === 'online') {
         // 尝试同步保存（在页面卸载前）
         try {
-          navigator.sendBeacon(`http://localhost:5001/api/tasks/${taskId}/save-progress`, 
+          navigator.sendBeacon(`${config.API_BASE_URL}/api/tasks/${taskId}/save-progress`, 
             JSON.stringify({
               student_id: JSON.parse(localStorage.getItem('user_data'))?.user_id,
               current_question_index: questions[currentQuestionIndex]?._originalIndex !== undefined 
@@ -534,7 +535,7 @@ const TaskQuiz = () => {
       
       console.log('💾 保存进度:', Object.keys(allAnswers).length, '个答案');
 
-      const response = await fetch(`http://localhost:5001/api/tasks/${taskId}/save-progress`, {
+      const response = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}/save-progress`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -607,7 +608,7 @@ const TaskQuiz = () => {
   // 网络连接检查
   const checkNetworkConnection = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/tasks', {
+      const response = await fetch('${config.API_BASE_URL}/api/tasks', {
         method: 'GET',
         signal: AbortSignal.timeout(5000) // 5 秒超时
       });
@@ -710,7 +711,7 @@ const TaskQuiz = () => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 秒超时
 
-      const response = await fetch(`http://localhost:5001/api/tasks/${taskId}/submit`, {
+      const response = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -781,7 +782,7 @@ const TaskQuiz = () => {
             return submitAllAnswers(retryCount + 1);
           }
         } else {
-          alert.error('🌐 Multiple attempts failed. Please check: \n• Whether the backend server is running on localhost:5001\n• Whether the network connection is normal\n• Firewall settings');
+          alert.error('🌐 Multiple attempts failed. Please check: \n• Whether the backend server is running\n• Whether the network connection is normal\n• Firewall settings');
         }
       } else {
         // 其他错误
@@ -817,7 +818,7 @@ const TaskQuiz = () => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5秒超时
       
-      const deleteResponse = await fetch(`http://localhost:5001/api/tasks/${taskId}/progress?student_id=${user.user_id}`, {
+      const deleteResponse = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}/progress?student_id=${user.user_id}`, {
         method: 'DELETE',
         signal: controller.signal
       });
@@ -1471,7 +1472,7 @@ const TaskQuiz = () => {
             <div className="question-image">
               <h4><i className="fas fa-image"></i> Image description</h4>
               <img 
-                src={currentQuestion.image_url.startsWith('http') ? currentQuestion.image_url : `http://localhost:5001${currentQuestion.image_url}`} 
+                src={currentQuestion.image_url.startsWith('http') ? currentQuestion.image_url : `${config.API_BASE_URL}${currentQuestion.image_url}`} 
                 alt="Question illustration" 
                 onError={(e) => {
                   console.error('Image load error:', e.target.src);
@@ -1497,7 +1498,7 @@ const TaskQuiz = () => {
               </h4>
               {currentQuestion.video_type === 'local' ? (
                 <video
-                  src={currentQuestion.video_url.startsWith('http') ? currentQuestion.video_url : `http://localhost:5001${currentQuestion.video_url}`}
+                  src={currentQuestion.video_url.startsWith('http') ? currentQuestion.video_url : `${config.API_BASE_URL}${currentQuestion.video_url}`}
                   controls
                   style={{ width: '100%', maxWidth: '600px', height: 'auto', borderRadius: '8px' }}
                   onError={(e) => {

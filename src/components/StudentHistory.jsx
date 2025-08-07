@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './StudentHistory.css';
+import config from '../config';
 
 function StudentHistory() {
   const [historyData, setHistoryData] = useState([]);
@@ -33,7 +34,7 @@ function StudentHistory() {
 
       console.log('Fetching history for user:', user.user_id);
 
-      const response = await fetch(`http://localhost:5001/api/students/${user.user_id}/history`);
+      const response = await fetch(`${config.API_BASE_URL}/api/students/${user.user_id}/history`);
       console.log('History response status:', response.status);
       
       if (response.ok) {

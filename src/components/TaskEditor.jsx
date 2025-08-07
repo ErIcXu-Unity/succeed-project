@@ -4,6 +4,7 @@ import VideoUpload from './VideoUpload';
 import QuestionPreview from './QuestionPreview';
 import { useAlert } from './CustomAlert';
 import './TaskEditor.css';
+import config from '../config';
 
 const TaskEditor = () => {
   const { taskId } = useParams();
@@ -88,7 +89,7 @@ const TaskEditor = () => {
     }
 
     try {
-              const response = await fetch(`http://localhost:5001/api/tasks/${taskId}`);
+              const response = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}`);
       console.log('fetchTaskDetails - Response:', response.status);
 
       if (response.ok) {
@@ -124,7 +125,7 @@ const TaskEditor = () => {
   // 获取现有问题列表
   const fetchExistingQuestions = async () => {
     try {
-      const response = await fetch(`http://localhost:5001/api/tasks/${taskId}/questions`);
+      const response = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}/questions`);
       if (response.ok) {
         const questionsData = await response.json();
         console.log('Existing questions loaded:', questionsData);
@@ -181,7 +182,7 @@ const TaskEditor = () => {
       try {
         // 如果问题有 ID，说明已经保存到数据库，需要调用删除 API
         if (questionId) {
-          const response = await fetch(`http://localhost:5001/api/questions/${questionId}`, {
+          const response = await fetch(`${config.API_BASE_URL}/api/questions/${questionId}`, {
             method: 'DELETE'
           });
           
@@ -213,7 +214,7 @@ const TaskEditor = () => {
         // 实际上，这种情况很复杂，需要保存文件数据
       } else if (videoInfo.type === 'youtube') {
         // YouTube 链接可以直接保存
-        const response = await fetch(`http://localhost:5001/api/tasks/${taskId}/youtube`, {
+        const response = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}/youtube`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -242,7 +243,7 @@ const TaskEditor = () => {
 
       if (isCreateMode) {
         // 新建模式：先创建任务
-        const createResponse = await fetch('http://localhost:5001/api/tasks', {
+        const createResponse = await fetch('${config.API_BASE_URL}/api/tasks', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -297,7 +298,7 @@ const TaskEditor = () => {
           }
         }
 
-        const updateResponse = await fetch(`http://localhost:5001/api/tasks/${taskId}`, {
+        const updateResponse = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -320,7 +321,7 @@ const TaskEditor = () => {
       const newQuestions = questions.filter(q => !q.id);
       if (newQuestions.length > 0 && taskIdToUse) {
         const user = JSON.parse(localStorage.getItem('user_data'));
-        const questionsResponse = await fetch(`http://localhost:5001/api/tasks/${taskIdToUse}/questions/batch`, {
+        const questionsResponse = await fetch(`${config.API_BASE_URL}/api/tasks/${taskIdToUse}/questions/batch`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

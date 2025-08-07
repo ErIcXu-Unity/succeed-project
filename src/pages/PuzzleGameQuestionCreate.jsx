@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import QuestionCreateLayout from '../components/QuestionCreateLayout';
 import PuzzleGameEditor from '../components/PuzzleGameEditor';
+import config from '../config';
 
 const PuzzleGameQuestionCreate = () => {
   const { taskId } = useParams();
@@ -33,7 +34,7 @@ const PuzzleGameQuestionCreate = () => {
         setIsEditMode(true);
         try {
           const user = JSON.parse(localStorage.getItem('user_data'));
-          const response = await fetch(`http://localhost:5001/api/questions/${questionId}`, {
+          const response = await fetch(`${config.API_BASE_URL}/api/questions/${questionId}`, {
             headers: {
               'Authorization': `Bearer ${user.token}`,
               'Content-Type': 'application/json',
@@ -136,7 +137,7 @@ const PuzzleGameQuestionCreate = () => {
       let response;
       if (isEditMode && questionId) {
         // Update existing question
-        response = await fetch(`http://localhost:5001/api/questions/${questionId}`, {
+        response = await fetch(`${config.API_BASE_URL}/api/questions/${questionId}`, {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${user.token}`,
@@ -156,7 +157,7 @@ const PuzzleGameQuestionCreate = () => {
         });
       } else {
         // Create new question
-        response = await fetch(`http://localhost:5001/api/tasks/${taskId}/questions`, {
+        response = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}/questions`, {
           method: 'POST',
           body: formDataToSend
         });

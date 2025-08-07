@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './QuestionCreateModal.css';
+import config from '../config';
 // 导入所有问题类型编辑器
 import SingleChoiceEditor from './SingleChoiceEditor';
 import MultipleChoiceEditor from './MultipleChoiceEditor';
@@ -297,7 +298,7 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
           break;
       }
 
-      const response = await fetch(`http://localhost:5001/api/tasks/${taskId}/questions`, {
+      const response = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}/questions`, {
         method: 'POST',
         body: formDataToSend
       });

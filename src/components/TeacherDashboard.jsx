@@ -4,6 +4,7 @@ import SearchFilter from './SearchFilter';
 import { useSearchFilter } from './useSearchFilter';
 import { useAlert } from './CustomAlert';
 import './TeacherDashboard.css';
+import config from '../config';
 
 const TeacherDashboard = () => {
   const navigate = useNavigate();
@@ -171,7 +172,7 @@ const TeacherDashboard = () => {
       const role = user?.role === 'tea' ? 'tea' : 'stu';
       // Add timestamp to prevent caching issues with task status updates
       const timestamp = new Date().getTime();
-      const response = await fetch(`http://localhost:5001/api/tasks?role=${role}&_t=${timestamp}`);
+      const response = await fetch(`${config.API_BASE_URL}/api/tasks?role=${role}&_t=${timestamp}`);
 
       if (response.ok) {
         const data = await response.json();
@@ -188,7 +189,7 @@ const TeacherDashboard = () => {
 
   const fetchDashboardStats = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/students/dashboard-summary');
+      const response = await fetch('${config.API_BASE_URL}/api/students/dashboard-summary');
       if (response.ok) {
         const data = await response.json();
         setStudentCount(data.total_students);
@@ -210,7 +211,7 @@ const TeacherDashboard = () => {
   const handleDeleteTask = async (taskId) => {
     setDeleting(true);
     try {
-      const response = await fetch(`http://localhost:5001/api/tasks/${taskId}`, {
+      const response = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}`, {
         method: 'DELETE'
       });
 

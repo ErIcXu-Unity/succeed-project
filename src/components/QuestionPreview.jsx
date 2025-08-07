@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import config from '../config';
 
 const QuestionPreview = ({ question, onEdit }) => {
   const navigate = useNavigate();
@@ -58,7 +59,7 @@ const QuestionPreview = ({ question, onEdit }) => {
         <div className="question-media">
           <h5>Image</h5>
           <img 
-            src={question.image_url.startsWith('http') ? question.image_url : `http://localhost:5001${question.image_url}`} 
+            src={question.image_url.startsWith('http') ? question.image_url : `${config.API_BASE_URL}${question.image_url}`} 
             alt="Question image" 
             style={{ maxWidth: '200px', maxHeight: '150px', borderRadius: '8px' }}
           />

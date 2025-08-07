@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './TeacherReports.css';
 import Chart from 'chart.js/auto';
+import config from '../config';
 
 const TeacherReports = () => {
   // 状态管理
@@ -39,7 +40,7 @@ const TeacherReports = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:5001/api/students/dashboard-report');
+      const response = await fetch('${config.API_BASE_URL}/api/students/dashboard-report');
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
 

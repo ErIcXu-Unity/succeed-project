@@ -29,4 +29,4 @@ ENV FLASK_ENV=production
 EXPOSE 5001
 
 # Run the application
-CMD ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=5001"]
+CMD ["python", "app.py"]

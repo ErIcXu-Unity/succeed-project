@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import SearchFilter from './SearchFilter';
 import { useSearchFilter } from './useSearchFilter';
 import './StudentDashboard.css';
+import config from '../config';
 
 function StudentDashboard() {
   const [tasks, setTasks] = useState([]);
@@ -22,7 +23,7 @@ function StudentDashboard() {
       const role = user?.role === 'tea' ? 'tea' : 'stu';
       // Add timestamp to prevent caching issues with task status updates
       const timestamp = new Date().getTime();
-      const response = await fetch(`http://localhost:5001/api/tasks?role=${role}&_t=${timestamp}`);
+      const response = await fetch(`${config.API_BASE_URL}/api/tasks?role=${role}&_t=${timestamp}`);
       
       if (response.ok) {
         const data = await response.json();
@@ -41,7 +42,7 @@ function StudentDashboard() {
     try {
       const user = JSON.parse(localStorage.getItem('user_data'));
       if (user?.user_id) {
-        const response = await fetch(`http://localhost:5001/api/students/${user.user_id}/task-progress`);
+        const response = await fetch(`${config.API_BASE_URL}/api/students/${user.user_id}/task-progress`);
         if (response.ok) {
           const data = await response.json();
           setTaskProgress(data);

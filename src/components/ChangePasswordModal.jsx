@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAlert } from './CustomAlert';
 import './ChangePasswordModal.css';
+import config from '../config';
 
 const ChangePasswordModal = ({ isOpen, onClose, user }) => {
   const alert = useAlert();
@@ -71,7 +72,7 @@ const ChangePasswordModal = ({ isOpen, onClose, user }) => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:5001/change-password', {
+      const response = await fetch('${config.API_BASE_URL}/change-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

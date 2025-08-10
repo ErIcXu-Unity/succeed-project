@@ -5,14 +5,17 @@ import os
 import json
 import uuid
 from datetime import datetime, timezone
-from flask import Blueprint, request, jsonify, send_from_directory, current_app
+from flask import Blueprint, request, jsonify, send_from_directory, current_app, abort
+from werkzeug.exceptions import HTTPException
 from models import db, Task, Question
 
 questions_bp = Blueprint('questions', __name__)
 
 @questions_bp.route('/api/tasks/<int:task_id>/questions', methods=['GET'])
 def get_questions(task_id):
-    task = Task.query.get_or_404(task_id)
+    task = db.session.get(Task, task_id)
+    if not task:
+        abort(404)
     result = []
     for q in task.questions:
         question_data = {
@@ -106,7 +109,9 @@ def check_answer(question_id):
     if not selected_answer:
         return jsonify({'error': 'answer required'}), 400
     
-    question = Question.query.get_or_404(question_id)
+    question = db.session.get(Question, question_id)
+    if not question:
+        abort(404)
     
     is_correct = selected_answer.upper() == question.correct_answer
     
@@ -123,7 +128,9 @@ def check_answer(question_id):
 def create_single_question(task_id):
     """创建单个问题（支持多种问题类型）"""
     # 验证任务存在
-    task = Task.query.get_or_404(task_id)
+    task = db.session.get(Task, task_id)
+    if not task:
+        abort(404)
     
     # 检查当前任务的问题数量
     current_question_count = Question.query.filter_by(task_id=task_id).count()
@@ -383,7 +390,9 @@ def create_single_question(task_id):
 def create_questions_batch(task_id):
     """批量创建问题"""
     # 验证任务存在
-    task = Task.query.get_or_404(task_id)
+    task = db.session.get(Task, task_id)
+    if not task:
+        abort(404)
     
     data = request.get_json()
     questions_data = data.get('questions', [])
@@ -477,7 +486,9 @@ def create_questions_batch(task_id):
 def delete_question(question_id):
     """删除单个问题"""
     try:
-        question = Question.query.get_or_404(question_id)
+        question = db.session.get(Question, question_id)
+        if not question:
+            abort(404)
         
         # 删除相关的文件
         if question.image_path:
@@ -502,6 +513,8 @@ def delete_question(question_id):
         
         return jsonify({'message': 'Question deleted successfully'}), 200
         
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions (like abort(404))
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': f'Failed to delete question: {str(e)}'}), 500
@@ -511,7 +524,9 @@ def delete_question(question_id):
 def get_question(question_id):
     """获取单个问题的详细信息"""
     try:
-        question = Question.query.get_or_404(question_id)
+        question = db.session.get(Question, question_id)
+        if not question:
+            abort(404)
         
         question_data = {
             'id': question.id,
@@ -541,6 +556,8 @@ def get_question(question_id):
         
         return jsonify(question_data), 200
         
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions (like abort(404))
     except Exception as e:
         return jsonify({'error': f'Failed to get question: {str(e)}'}), 500
 
@@ -549,7 +566,9 @@ def get_question(question_id):
 def update_question(question_id):
     """更新单个问题"""
     try:
-        question = Question.query.get_or_404(question_id)
+        question = db.session.get(Question, question_id)
+        if not question:
+            abort(404)
         data = request.get_json()
         
         # 更新基本字段
@@ -587,6 +606,8 @@ def update_question(question_id):
         
         return jsonify({'message': 'Question updated successfully'}), 200
         
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions (like abort(404))
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': f'Failed to update question: {str(e)}'}), 500

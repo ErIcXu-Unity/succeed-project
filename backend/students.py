@@ -132,7 +132,7 @@ def get_student_history(student_id):
     history_data = []
     for result in task_results:
         # 获取任务信息
-        task = Task.query.get(result.task_id)
+        task = db.session.get(Task, result.task_id)
         if task:
             # 获取任务的所有问题来计算总分
             task_questions = Question.query.filter_by(task_id=result.task_id).all()

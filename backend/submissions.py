@@ -24,7 +24,7 @@ def submit_task(task_id):
         return jsonify({'error': 'student not found'}), 404
 
     # Get task info for redundant fields
-    task = Task.query.get(task_id)
+    task = db.session.get(Task, task_id)
     if not task:
         return jsonify({'error': 'task not found'}), 404
 
@@ -41,7 +41,7 @@ def submit_task(task_id):
     # grade each question
     for q_id_str, selected in answers.items():
         q_id      = int(q_id_str)
-        question  = Question.query.get(q_id)
+        question  = db.session.get(Question, q_id)
         if not question:
             continue
         questions_count += 1

@@ -4,7 +4,7 @@ Task Management Routes for the Escape Room Application
 import os
 import json
 from datetime import datetime, timezone
-from flask import Blueprint, request, jsonify, current_app, send_from_directory
+from flask import Blueprint, request, jsonify, current_app, send_from_directory, abort
 from models import db, Task, Question, StudentTaskProcess, StudentTaskResult, Achievement, StudentAchievement, Student
 
 tasks_bp = Blueprint('tasks', __name__, url_prefix='/api/tasks')
@@ -98,7 +98,9 @@ def create_task():
 @tasks_bp.route('/<int:task_id>', methods=['GET'])
 def get_task_detail(task_id):
     """获取任务详情"""
-    task = Task.query.get_or_404(task_id)
+    task = db.session.get(Task, task_id)
+    if not task:
+        abort(404)
     result = {
         'id': task.id,
         'name': task.name,
@@ -123,7 +125,9 @@ def get_task_detail(task_id):
 @tasks_bp.route('/<int:task_id>', methods=['PUT'])
 def update_task(task_id):
     """更新任务信息"""
-    task = Task.query.get_or_404(task_id)
+    task = db.session.get(Task, task_id)
+    if not task:
+        abort(404)
     data = request.get_json()
     
     if 'name' in data:
@@ -186,7 +190,9 @@ def update_task(task_id):
 def delete_task(task_id):
     """删除任务及其相关数据"""
     # 验证任务存在
-    task = Task.query.get_or_404(task_id)
+    task = db.session.get(Task, task_id)
+    if not task:
+        abort(404)
     
     try:
         # 开始事务 - 级联删除相关数据
@@ -240,7 +246,7 @@ def save_task_progress(task_id):
     if not student:
         return jsonify({'error': 'student not found'}), 404
     
-    task = Task.query.get(task_id)
+    task = db.session.get(Task, task_id)
     if not task:
         return jsonify({'error': 'task not found'}), 404
     
@@ -333,7 +339,9 @@ def delete_task_progress(task_id):
 @tasks_bp.route('/<int:task_id>/video', methods=['POST'])
 def upload_task_video(task_id):
     """上传任务视频文件"""
-    task = Task.query.get_or_404(task_id)
+    task = db.session.get(Task, task_id)
+    if not task:
+        abort(404)
     
     if 'video' not in request.files:
         return jsonify({'error': 'No video file provided'}), 400
@@ -383,7 +391,9 @@ def upload_task_video(task_id):
 @tasks_bp.route('/<int:task_id>/youtube', methods=['POST'])
 def save_youtube_url(task_id):
     """保存 YouTube 视频链接"""
-    task = Task.query.get_or_404(task_id)
+    task = db.session.get(Task, task_id)
+    if not task:
+        abort(404)
     data = request.get_json()
     
     youtube_url = data.get('youtube_url')
@@ -413,7 +423,9 @@ def save_youtube_url(task_id):
 @tasks_bp.route('/<int:task_id>/video', methods=['DELETE'])
 def delete_task_video(task_id):
     """删除任务的视频"""
-    task = Task.query.get_or_404(task_id)
+    task = db.session.get(Task, task_id)
+    if not task:
+        abort(404)
     
     try:
         # 如果是本地视频，删除文件

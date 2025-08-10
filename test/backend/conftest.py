@@ -7,14 +7,14 @@ import tempfile
 import pytest
 from werkzeug.security import generate_password_hash
 
-# 添加项目根目录到Python路径
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
+# Ensure project root is on sys.path so that `backend` package can be imported
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+backend_dir = os.path.join(project_root, 'backend')
+sys.path.insert(0, project_root)
+sys.path.insert(0, backend_dir)
 
-from app import create_app
-from models import db, Student, Teacher, Task, Question
 
-
-@pytest.fixture
+@pytest.fixture(scope='function')
 def app():
     """Create and configure a new app instance for each test."""
     # Create a temporary file to isolate the database for each test
@@ -28,6 +28,11 @@ def app():
         test_db_uri = f"sqlite:///{db_path}"
         os.environ['DATABASE_URL'] = test_db_uri
         
+        # Import and create app after setting environment
+        # Use the same import path as the backend uses internally
+        from app import create_app
+        from models import db
+        
         app = create_app()
         app.config.update({
             "TESTING": True,
@@ -35,9 +40,11 @@ def app():
             "SECRET_KEY": "test-secret-key"
         })
 
+        # Create database tables in app context
         with app.app_context():
             db.create_all()
-            yield app
+            
+        yield app
             
     finally:
         # Clean up - restore original environment
@@ -52,6 +59,13 @@ def app():
             os.unlink(db_path)
         except (OSError, FileNotFoundError):
             pass  # File might already be closed/deleted
+
+
+@pytest.fixture(autouse=True)
+def app_context(app):
+    """Automatically push an application context for each test."""
+    with app.app_context():
+        yield
 
 
 @pytest.fixture
@@ -69,66 +83,70 @@ def runner(app):
 @pytest.fixture
 def test_student(app):
     """Create a test student."""
-    with app.app_context():
-        student = Student(
-            real_name="Test Student",
-            student_id="1234567",
-            username="1234567@stu.com",
-            password=generate_password_hash("testpass123")
-        )
-        db.session.add(student)
-        db.session.commit()
-        yield student
+    from models import db, Student
+    
+    student = Student(
+        real_name="Test Student",
+        student_id="1234567",
+        username="1234567@stu.com",
+        password=generate_password_hash("testpass123")
+    )
+    db.session.add(student)
+    db.session.commit()
+    yield student
 
 
 @pytest.fixture
 def test_teacher(app):
     """Create a test teacher."""
-    with app.app_context():
-        teacher = Teacher(
-            real_name="Test Teacher",
-            teacher_id="T001234",
-            username="teacher@test.com",
-            password=generate_password_hash("teacherpass123")
-        )
-        db.session.add(teacher)
-        db.session.commit()
-        yield teacher
+    from models import db, Teacher
+    
+    teacher = Teacher(
+        real_name="Test Teacher",
+        teacher_id="T001234",
+        username="teacher@test.com",
+        password=generate_password_hash("teacherpass123")
+    )
+    db.session.add(teacher)
+    db.session.commit()
+    yield teacher
 
 
 @pytest.fixture
 def test_task(app, test_teacher):
     """Create a test task."""
-    with app.app_context():
-        task = Task(
-            name="Test Task",
-            introduction="This is a test task for unit testing",
-            image_path="/test/image.jpg"
-        )
-        db.session.add(task)
-        db.session.commit()
-        yield task
+    from models import db, Task
+    
+    task = Task(
+        name="Test Task",
+        introduction="This is a test task for unit testing",
+        image_path="/test/image.jpg"
+    )
+    db.session.add(task)
+    db.session.commit()
+    yield task
 
 
 @pytest.fixture
 def test_question(app, test_task):
     """Create a test question."""
-    with app.app_context():
-        question = Question(
-            task_id=test_task.id,
-            question="What is 2 + 2?",
-            question_type="single_choice",
-            option_a="3",
-            option_b="4",
-            option_c="5",
-            option_d="6",
-            correct_answer="B",
-            difficulty="easy",
-            score=10
-        )
-        db.session.add(question)
-        db.session.commit()
-        yield question
+    from models import db, Question
+    
+    question = Question(
+        task_id=test_task.id,
+        question="What is 2 + 2?",
+        question_type="single_choice",
+        option_a="3",
+        option_b="4",
+        option_c="5",
+        option_d="6",
+        correct_answer="B",
+        difficulty="easy",
+        score=3
+    )
+    db.session.add(question)
+    db.session.commit()
+    yield question
 
 
 @pytest.fixture
@@ -151,4 +169,4 @@ def auth_headers_teacher(client, test_teacher):
         'password': 'teacherpass123'
     })
     # In a real implementation, you would extract the session or token
-    return {'Content-Type': 'application/json'} 
+    return {'Content-Type': 'application/json'}

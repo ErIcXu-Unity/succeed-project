@@ -6,8 +6,11 @@ import json
 import sys
 import os
 
-# 添加项目根目录到Python路径
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
+# Ensure project root is on sys.path so that `backend` package can be imported
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+backend_dir = os.path.join(project_root, 'backend')
+sys.path.insert(0, project_root)
+sys.path.insert(0, backend_dir)
 
 from models import db, Question
 
@@ -24,105 +27,143 @@ class TestQuestionsAPI:
             'option_b': 'Melbourne',
             'option_c': 'Canberra',
             'option_d': 'Perth',
-            'answer': 'C'
+            'correct_answer': 'C',
+            'difficulty': 'Easy',
+            'score': '5'
         }
         
-        response = client.post(f'/api/tasks/{test_task.id}/questions',
-                             json=question_data,
-                             headers=auth_headers_teacher)
+        response = client.post(
+            f'/api/tasks/{test_task.id}/questions',
+            data=question_data,
+            content_type='multipart/form-data',
+            headers=auth_headers_teacher
+        )
         
         if response.status_code != 401:  # If authentication is not required for testing
             assert response.status_code == 201
-            created_question = json.loads(response.data)
+            response_data = json.loads(response.data)
+            assert 'message' in response_data
+            assert 'question' in response_data
+            created_question = response_data['question']
             assert created_question['question'] == question_data['question']
-            assert created_question['question_type'] == question_data['question_type']
-            assert created_question['option_a'] == question_data['option_a']
-            assert created_question['answer'] == question_data['answer']
+            assert created_question['options']['A'] == question_data['option_a']
+            assert created_question['correct_answer'] == question_data['correct_answer']
     
     def test_create_multiple_choice_question(self, client, test_task, auth_headers_teacher):
         """Test creating a multiple choice question."""
-        question_data = {
+        form_data = {
             'question': 'Which of the following are programming languages?',
             'question_type': 'multiple_choice',
-            'question_data': json.dumps({
-                'options': ['Python', 'JavaScript', 'HTML', 'CSS'],
-                'correct_answers': [0, 1]  # Python and JavaScript
-            })
+            'options[0]': 'Python',
+            'options[1]': 'JavaScript',
+            'options[2]': 'HTML',
+            'options[3]': 'CSS',
+            'correct_answers[0]': '0',
+            'correct_answers[1]': '1',
+            'difficulty': 'Medium',
+            'score': '5'
         }
         
-        response = client.post(f'/api/tasks/{test_task.id}/questions',
-                             json=question_data,
-                             headers=auth_headers_teacher)
+        response = client.post(
+            f'/api/tasks/{test_task.id}/questions',
+            data=form_data,
+            content_type='multipart/form-data',
+            headers=auth_headers_teacher
+        )
         
         if response.status_code != 401:
             assert response.status_code == 201
-            created_question = json.loads(response.data)
-            assert created_question['question'] == question_data['question']
-            assert created_question['question_type'] == question_data['question_type']
+            response_data = json.loads(response.data)
+            assert 'message' in response_data
+            assert 'question' in response_data
+            created_question = response_data['question']
+            assert created_question['question'] == form_data['question']
     
     def test_create_fill_blank_question(self, client, test_task, auth_headers_teacher):
         """Test creating a fill in the blank question."""
-        question_data = {
+        form_data = {
             'question': 'The capital of France is ____.',
             'question_type': 'fill_blank',
-            'question_data': json.dumps({
-                'correct_answer': 'Paris',
-                'case_sensitive': False
-            })
+            'blank_answers[0]': 'Paris',
+            'difficulty': 'Easy',
+            'score': '3'
         }
         
-        response = client.post(f'/api/tasks/{test_task.id}/questions',
-                             json=question_data,
-                             headers=auth_headers_teacher)
+        response = client.post(
+            f'/api/tasks/{test_task.id}/questions',
+            data=form_data,
+            content_type='multipart/form-data',
+            headers=auth_headers_teacher
+        )
         
         if response.status_code != 401:
             assert response.status_code == 201
-            created_question = json.loads(response.data)
-            assert created_question['question'] == question_data['question']
-            assert created_question['question_type'] == question_data['question_type']
+            response_data = json.loads(response.data)
+            assert 'message' in response_data
+            assert 'question' in response_data
+            created_question = response_data['question']
+            assert created_question['question'] == form_data['question']
     
     def test_create_puzzle_game_question(self, client, test_task, auth_headers_teacher):
         """Test creating a puzzle game question."""
-        question_data = {
+        form_data = {
             'question': 'Arrange the following steps in order:',
             'question_type': 'puzzle_game',
-            'question_data': json.dumps({
-                'fragments': ['Start', 'Process', 'End'],
-                'correct_order': [0, 1, 2]
-            })
+            'puzzle_solution': 'Start Process End',
+            'puzzle_fragments[0]': 'Start',
+            'puzzle_fragments[1]': 'Process',
+            'puzzle_fragments[2]': 'End',
+            'difficulty': 'Medium',
+            'score': '5'
         }
         
-        response = client.post(f'/api/tasks/{test_task.id}/questions',
-                             json=question_data,
-                             headers=auth_headers_teacher)
+        response = client.post(
+            f'/api/tasks/{test_task.id}/questions',
+            data=form_data,
+            content_type='multipart/form-data',
+            headers=auth_headers_teacher
+        )
         
         if response.status_code != 401:
             assert response.status_code == 201
-            created_question = json.loads(response.data)
-            assert created_question['question'] == question_data['question']
-            assert created_question['question_type'] == question_data['question_type']
+            response_data = json.loads(response.data)
+            assert 'message' in response_data
+            assert 'question' in response_data
+            created_question = response_data['question']
+            assert created_question['question'] == form_data['question']
     
     def test_create_matching_task_question(self, client, test_task, auth_headers_teacher):
         """Test creating a matching task question."""
-        question_data = {
+        form_data = {
             'question': 'Match the countries with their capitals:',
             'question_type': 'matching_task',
-            'question_data': json.dumps({
-                'left_items': ['France', 'Germany', 'Italy'],
-                'right_items': ['Berlin', 'Rome', 'Paris'],
-                'correct_matches': {'France': 'Paris', 'Germany': 'Berlin', 'Italy': 'Rome'}
-            })
+            'left_items[0]': 'France',
+            'left_items[1]': 'Germany',
+            'left_items[2]': 'Italy',
+            'right_items[0]': 'Berlin',
+            'right_items[1]': 'Rome',
+            'right_items[2]': 'Paris',
+            'correct_matches[0][left]': '0', 'correct_matches[0][right]': '2',
+            'correct_matches[1][left]': '1', 'correct_matches[1][right]': '0',
+            'correct_matches[2][left]': '2', 'correct_matches[2][right]': '1',
+            'difficulty': 'Easy',
+            'score': '5'
         }
         
-        response = client.post(f'/api/tasks/{test_task.id}/questions',
-                             json=question_data,
-                             headers=auth_headers_teacher)
+        response = client.post(
+            f'/api/tasks/{test_task.id}/questions',
+            data=form_data,
+            content_type='multipart/form-data',
+            headers=auth_headers_teacher
+        )
         
         if response.status_code != 401:
             assert response.status_code == 201
-            created_question = json.loads(response.data)
-            assert created_question['question'] == question_data['question']
-            assert created_question['question_type'] == question_data['question_type']
+            response_data = json.loads(response.data)
+            assert 'message' in response_data
+            assert 'question' in response_data
+            created_question = response_data['question']
+            assert created_question['question'] == form_data['question']
     
     
     def test_create_question_missing_required_fields(self, client, test_task, auth_headers_teacher):
@@ -132,9 +173,12 @@ class TestQuestionsAPI:
             # Missing question text
         }
         
-        response = client.post(f'/api/tasks/{test_task.id}/questions',
-                             json=incomplete_data,
-                             headers=auth_headers_teacher)
+        response = client.post(
+            f'/api/tasks/{test_task.id}/questions',
+            data=incomplete_data,
+            content_type='multipart/form-data',
+            headers=auth_headers_teacher
+        )
         
         if response.status_code != 401:
             assert response.status_code == 400
@@ -151,9 +195,12 @@ class TestQuestionsAPI:
             'answer': 'A'
         }
         
-        response = client.post('/api/tasks/99999/questions',
-                             json=question_data,
-                             headers=auth_headers_teacher)
+        response = client.post(
+            '/api/tasks/99999/questions',
+            data=question_data,
+            content_type='multipart/form-data',
+            headers=auth_headers_teacher
+        )
         
         if response.status_code != 401:
             assert response.status_code == 404
@@ -181,12 +228,14 @@ class TestQuestionsAPI:
             'option_b': '6',
             'option_c': '7',
             'option_d': '8',
-            'answer': 'B'
+            'correct_answer': 'B'
         }
         
-        response = client.put(f'/api/questions/{test_question.id}',
-                            json=updated_data,
-                            headers=auth_headers_teacher)
+        response = client.put(
+            f'/api/questions/{test_question.id}',
+            json=updated_data,
+            headers=auth_headers_teacher
+        )
         
         if response.status_code != 401:
             assert response.status_code == 200

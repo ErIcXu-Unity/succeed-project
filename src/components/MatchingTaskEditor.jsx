@@ -137,8 +137,7 @@ const MatchingTaskEditor = ({ formData, setFormData }) => {
                 ) : (
                   <>
                     <i className="fas fa-mouse-pointer"></i>
-                    <span>Click to match</span>
-                    <small>Select a source item first</small>
+                    <span>Click to match, Select a source item first</span>
                   </>
                 )}
               </div>

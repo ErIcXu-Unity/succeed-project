@@ -11,7 +11,7 @@ const TeacherStudents = () => {
   const [classFilter, setClassFilter] = useState('');
   const [error, setError] = useState(null);
 
-  // 获取学生列表
+  // Get student list
   const fetchStudents = async () => {
     try {
       setLoading(true);
@@ -34,7 +34,7 @@ const TeacherStudents = () => {
     fetchStudents();
   }, []);
 
-  // 导出CSV
+  // Export CSV
   const exportCSV = () => {
     let csv = "Student ID,Name,Class\n";
     filteredStudents.forEach(({ student_id, name, class: cls }) => {
@@ -49,12 +49,12 @@ const TeacherStudents = () => {
     a.click();
   };
 
-  // 查看学生详情
+  // View student details
   const viewStudent = (studentId) => {
     navigate(`/teacher/students/${studentId}`);
   };
 
-  // 过滤学生数据
+  // Filter student data
   const filteredStudents = students.filter(student => {
     const nameMatch = student.name.toLowerCase().includes(search.toLowerCase());
     const classMatch = !classFilter || student.class === classFilter;

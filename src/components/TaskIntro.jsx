@@ -91,7 +91,7 @@ const TaskIntro = () => {
   return (
     <div className="task-intro-container">
       <div className="task-intro-content">
-        {/* 任务标题 */}
+        {/* Task title */}
         <header className="task-header">
           <h1 className="task-title">{task.name}</h1>
           <div className="task-meta">
@@ -99,7 +99,7 @@ const TaskIntro = () => {
           </div>
         </header>
 
-        {/* 任务介绍 */}
+        {/* Task description */}
         <section className="task-description">
           <h2>🎯 Task Description</h2>
           <div className="description-wrapper">
@@ -119,7 +119,7 @@ const TaskIntro = () => {
           </div>
         </section>
 
-        {/* 视频播放区域 */}
+        {/* Video playback area */}
         {task.video_type && task.video_url && (
           <section className="task-video">
             <h2>🎬 Task Video</h2>
@@ -129,7 +129,7 @@ const TaskIntro = () => {
           </section>
         )}
 
-        {/* 开始测验按钮 */}
+        {/* Start quiz button */}
         <section className="task-actions">
           <div className="action-buttons">
             <button 
@@ -157,7 +157,7 @@ const TaskIntro = () => {
           </div>
         </section>
 
-        {/* 提示信息 */}
+        {/* Tips information */}
         <section className="task-tips">
           <h3>💡 Quiz Tips</h3>
           <ul className="tips-list">

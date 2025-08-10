@@ -176,22 +176,22 @@ Put on your detective hat and let your statistical reasoning guide you through t
         default_achievements = [
             {
                 'name': 'Perfect Score',
-                'condition': '单个任务全部答对',
+                'condition': 'Answer all questions correctly for a single task',
                 'task_id': None  # General achievement, not tied to specific task
             },
             {
                 'name': 'Accuracy Master',
-                'condition': '总体答题准确率达到 90% 以上',
+                'condition': 'Overall accuracy rate reaches 90% or more',
                 'task_id': None  # General achievement
             },
             {
                 'name': 'Fast Solver',
-                'condition': '快速完成任务（添加时间限制）',
+                'condition': 'Complete tasks quickly (with time limit)',
                 'task_id': None  # General achievement
             },
             {
                 'name': 'Quiz Warrior',
-                'condition': '完成所有四个任务',
+                'condition': 'Complete all four tasks',
                 'task_id': None  # General achievement
             }
         ]

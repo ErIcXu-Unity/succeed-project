@@ -11,7 +11,7 @@ function StudentDashboard() {
   const [taskProgress, setTaskProgress] = useState({});
   const [loading, setLoading] = useState(true);
 
-  // 从API获取真实任务数据
+  // Fetch real task data from API
   useEffect(() => {
     fetchTasks();
     fetchTaskProgress();
@@ -55,7 +55,7 @@ function StudentDashboard() {
     }
   };
 
-  // 从任务名称推导课程类型
+  // Derive course type from task name
   const getCourseType = (taskName) => {
     const name = taskName.toLowerCase();
     if (name.includes('chemistry') || name.includes('chem')) return 'Chemistry';
@@ -66,7 +66,7 @@ function StudentDashboard() {
     return 'General';
   };
 
-  // 获取可用的课程类型
+  // Get available course types
   const getAvailableCourseTypes = () => {
     const types = new Set();
     tasks.forEach(task => {
@@ -75,7 +75,7 @@ function StudentDashboard() {
     return Array.from(types).sort();
   };
 
-  // 配置搜索筛选
+  // Configure search filter
   const searchFilterConfig = {
     searchFields: (task) => [task.name, task.introduction],
     filterConfig: {
@@ -132,7 +132,7 @@ function StudentDashboard() {
     }
   };
 
-  // 使用通用搜索筛选Hook
+  // Use generic search filter hook
   const {
     searchTerm,
     setSearchTerm,

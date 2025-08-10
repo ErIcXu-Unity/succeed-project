@@ -7,7 +7,7 @@ import os
 from datetime import datetime, timezone
 from werkzeug.security import generate_password_hash, check_password_hash
 
-# 添加项目根目录到Python路径
+# Add project root directory to Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
 
 from models import db, Student, Teacher, Task, Question, Achievement, StudentTaskResult, StudentTaskProcess

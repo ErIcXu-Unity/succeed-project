@@ -1,0 +1,14 @@
+{
+  "teacher": {
+    "username": "st1000@tea.com",
+    "password": "123456",
+    "role": "tea"
+  },
+  "student": {
+    "username": "9000001@stu.com",
+    "password": "123456",
+    "role": "stu"
+  }
+}
+
+

@@ -55,13 +55,15 @@ const MultipleChoiceEditor = ({ formData, setFormData }) => {
               className="option-input-vertical"
               value={option}
               onChange={(e) => handleOptionChange(index, e.target.value)}
-              placeholder={`Enter option ${String.fromCharCode(65 + index)} content...`}
+              placeholder={`Option ${index + 1}`}
               required
+              data-cy={`mc-option-${index}`}
             />
             <button
               type="button"
               className={`correct-toggle-vertical ${formData.correct_answers.includes(index) ? 'active' : ''}`}
               onClick={() => toggleCorrectAnswer(index)}
+              data-cy={`mc-correct-${index}`}
             >
               {formData.correct_answers.includes(index) ? (
                 <>

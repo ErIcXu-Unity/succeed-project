@@ -215,6 +215,7 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
           type="button"
           className={`mode-btn ${inputMode === 'math' ? 'active' : ''}`}
           onClick={() => setInputMode('math')}
+          data-cy="puzzle-mode-math"
         >
           <i className="fas fa-square-root-alt"></i>
           Math
@@ -223,6 +224,7 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
           type="button"
           className={`mode-btn ${inputMode === 'chemistry' ? 'active' : ''}`}
           onClick={() => setInputMode('chemistry')}
+          data-cy="puzzle-mode-chemistry"
         >
           <i className="fas fa-flask"></i>
           Chemistry
@@ -247,24 +249,26 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
             type="text"
             value={formData.puzzle_solution || ''}
             onChange={(e) => {
-              const value = e.target.value.replace(/^\s+/g, ''); // 只去除开头空格
+              const value = e.target.value.replace(/^\s+/g, ''); // Only remove leading spaces
               handleSolutionChange(value);
             }}
             onBlur={(e) => {
               const value = e.target.value.trim();
               handleSolutionChange(value);
-              validatePuzzle(); // 触发即时验证
+              validatePuzzle(); // Trigger immediate validation
             }}
             placeholder={placeholders[inputMode]}
-            className={`solution-input ${validationStatus.isValid === false ? 'invalid' : ''  // 修正条件判断
+            className={`solution-input ${validationStatus.isValid === false ? 'invalid' : ''  // Fix condition check
               }`}
             required
+            name="puzzle_solution"
+            data-cy="puzzle-solution"
           />
           {inputMode === 'chemistry' && (
             <div className="chemistry-helpers">
               <div className="helper-section">
                 <small className="helper-label">Subscripts:</small>
-                <div className="helper-buttons">
+                <div className="helper-buttons" data-cy="chem-helpers">
                   <button type="button" onClick={() => insertSymbol('₁')}>₁</button>
                   <button type="button" onClick={() => insertSymbol('₂')}>₂</button>
                   <button type="button" onClick={() => insertSymbol('₃')}>₃</button>
@@ -275,16 +279,16 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
               </div>
               <div className="helper-section">
                 <small className="helper-label">Arrows & Reactions:</small>
-                <div className="helper-buttons">
+                <div className="helper-buttons" data-cy="arrow-helpers">
                   <button type="button" onClick={() => insertSymbol('->')}>-&gt;</button>
                   <button type="button" onClick={() => insertSymbol('⇌')}>⇌</button>
                   <button type="button" onClick={() => insertSymbol('⇄')}>⇄</button>
-                  <button type="button" onClick={() => insertSymbol('→')}>→</button>
+                  <button type="button" onClick={() => insertSymbol('→')} data-cy="arrow-btn">→</button>
                 </div>
               </div>
               <div className="helper-section">
                 <small className="helper-label">States & Conditions:</small>
-                <div className="helper-buttons">
+                <div className="helper-buttons" data-cy="greek-helpers">
                   <button type="button" onClick={() => insertSymbol('(s)')}>(s)</button>
                   <button type="button" onClick={() => insertSymbol('(l)')}>(l)</button>
                   <button type="button" onClick={() => insertSymbol('(g)')}>(g)</button>
@@ -313,7 +317,7 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
                 <div className="helper-buttons">
                   <button type="button" onClick={() => insertSymbol('⁰')}>⁰</button>
                   <button type="button" onClick={() => insertSymbol('¹')}>¹</button>
-                  <button type="button" onClick={() => insertSymbol('²')}>²</button>
+                  <button type="button" onClick={() => insertSymbol('²')} data-cy="superscript-2">²</button>
                   <button type="button" onClick={() => insertSymbol('³')}>³</button>
                   <button type="button" onClick={() => insertSymbol('⁴')}>⁴</button>
                   <button type="button" onClick={() => insertSymbol('⁵')}>⁵</button>
@@ -420,16 +424,16 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
 
   const insertSymbol = (symbol) => {
     const input = document.querySelector('.solution-input');
-    if (!input) return; // 增加安全性检查
+    if (!input) return; // Add security check
 
     const start = input.selectionStart;
     const end = input.selectionEnd;
-    const currentValue = formData.puzzle_solution || ''; // 处理空值情况
+    const currentValue = formData.puzzle_solution || ''; // Handle empty value
     const newValue = currentValue.substring(0, start) + symbol + currentValue.substring(end);
 
     handleSolutionChange(newValue);
 
-    // 重置光标位置前检查input是否存在
+      // Check if input exists before resetting cursor position
     setTimeout(() => {
       if (input) {
         input.focus();
@@ -478,6 +482,7 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
                   type="button"
                   onClick={useAutoFragments}
                   className="use-suggestions-btn"
+                  data-cy="use-auto-fragments"
                 >
                   <i className="fas fa-wand-magic-sparkles"></i>
                   Use These Fragments
@@ -527,6 +532,8 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
                   onChange={(e) => handleFragmentChange(index, e.target.value)}
                   placeholder={`Fragment ${index + 1} ${inputMode === 'chemistry' ? '(e.g., H₂O, +, ->)' : inputMode === 'math' ? '(e.g., 2x, +, =)' : '(e.g., word, phrase)'}`}
                   className="fragment-input"
+                  name={`fragment_${index}`}
+                  data-cy="puzzle-fragment"
                 />
                 <button
                   type="button"
@@ -548,6 +555,7 @@ const PuzzleGameEditor = ({ formData, setFormData }) => {
               type="button"
               onClick={addFragment}
               className="add-fragment-btn"
+              data-cy="add-fragment-btn"
             >
               <i className="fas fa-plus"></i>
               Add Fragment

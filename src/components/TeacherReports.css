@@ -33,7 +33,7 @@
   padding: 0;
 }
 
-/* Header - 与Dashboard统一 */
+/* Header - Same as Dashboard */
 .reports-header {
   background: linear-gradient(135deg, var(--unsw-yellow) 0%, var(--unsw-yellow-dark) 100%);
   padding: 1.5rem 3rem;
@@ -73,7 +73,7 @@
   gap: 1rem;
 }
 
-/* 统计卡片 - 与Dashboard统一 */
+/* Statistics card - Same as Dashboard */
 .summary-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -132,7 +132,7 @@
   font-weight: 600;
 }
 
-/* 图表区域 */
+/* Chart area */
 .chart-content {
   background: var(--white);
   border-radius: var(--border-radius);
@@ -162,7 +162,7 @@
   width: 100%;
 }
 
-/* 标签页 - 与Dashboard统一 */
+/* Tab - Same as Dashboard */
 .report-tabs {
   display: flex;
   gap: 1rem;
@@ -206,7 +206,7 @@
   width: 100%;
 }
 
-/* 响应式设计 */
+/* Responsive design */
 @media (max-width: 768px) {
   .dashboard-header {
     padding: 1rem;

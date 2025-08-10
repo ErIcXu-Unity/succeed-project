@@ -6,7 +6,7 @@ import { useAlert } from './CustomAlert';
 import './TaskQuiz.css';
 import config from '../config';
 
-// 伪随机数生成器（基于种子）
+// Pseudo-random number generator (seed-based)
 const seedRandom = (seed) => {
   let value = seed;
   return () => {
@@ -15,7 +15,7 @@ const seedRandom = (seed) => {
   };
 };
 
-// 洗牌函数（基于种子的 Fisher-Yates 算法）
+// Shuffle function (seed-based Fisher-Yates algorithm)
 const shuffleArray = (array, seed) => {
   const shuffled = [...array];
   const rng = seedRandom(seed);
@@ -28,18 +28,18 @@ const shuffleArray = (array, seed) => {
   return shuffled;
 };
 
-// 随机化题目选项顺序，同时保持正确答案映射
+// Randomize question option order while maintaining correct answer mapping
 const randomizeQuestionOptions = (question, seed) => {
-  // 如果不是选择题类型，直接返回原题目
+  // If not a choice question type, return original question directly
   if (question.question_type !== 'single_choice' && question.question_type !== 'multiple_choice') {
     return question;
   }
 
   const newQuestion = { ...question };
 
-  // Multiple Choice和Single Choice使用不同的随机化策略
+  // Multiple Choice and Single Choice use different randomization strategies
   if (question.question_type === 'multiple_choice') {
-    // Multiple Choice: 基于数组索引的随机化
+    // Multiple Choice: array index-based randomization
     let questionData = {};
     try {
       if (typeof question.question_data === 'string') {
@@ -56,28 +56,28 @@ const randomizeQuestionOptions = (question, seed) => {
     const originalCorrectAnswers = questionData.correct_answers || [];
 
     if (originalOptions.length === 0) {
-      return question; // 没有选项，返回原题目
+      return question; // No options, return original question
     }
 
-    // 创建索引数组进行随机化
+    // Create index array for randomization
     const optionIndices = originalOptions.map((_, index) => index);
     const shuffledIndices = shuffleArray(optionIndices, seed + question.id);
 
-    // 重新排列选项
+    // Rearrange options
     const shuffledOptions = shuffledIndices.map(index => originalOptions[index]);
 
-    // 创建索引映射：原始索引 -> 新索引
+    // Create index mapping: original index -> new index
     const indexMapping = {};
     shuffledIndices.forEach((originalIndex, newIndex) => {
       indexMapping[originalIndex] = newIndex;
     });
 
-    // 更新正确答案的索引
+    // Update correct answer indices
     const newCorrectAnswers = originalCorrectAnswers.map(originalIndex => {
       return indexMapping[originalIndex] !== undefined ? indexMapping[originalIndex] : originalIndex;
     });
 
-    // 更新题目数据
+    // Update question data
     const newQuestionData = {
       ...questionData,
       options: shuffledOptions,
@@ -85,7 +85,7 @@ const randomizeQuestionOptions = (question, seed) => {
     };
 
     newQuestion.question_data = JSON.stringify(newQuestionData);
-    newQuestion._indexMapping = indexMapping; // 保存索引映射用于答案转换
+    newQuestion._indexMapping = indexMapping; // Save index mapping for answer conversion
     
     console.log('Multiple Choice randomization:', {
       originalOptions,
@@ -96,7 +96,7 @@ const randomizeQuestionOptions = (question, seed) => {
     });
 
   } else if (question.question_type === 'single_choice') {
-    // Single Choice: 保持原有的字母映射逻辑
+    // Single Choice: maintain original letter mapping logic
     let options = [];
     if (question.options && typeof question.options === 'object') {
       options = Object.entries(question.options);
@@ -140,45 +140,45 @@ const randomizeQuestionOptions = (question, seed) => {
   return newQuestion;
 };
 
-// 生成会话级随机化种子（支持进度保存）
+// Generate session-level randomization seed (supports progress saving)
 const generateStudentSeed = (studentId, taskId) => {
   const sessionKey = `quiz_session_${studentId}_${taskId}`;
   
-  // 检查是否有已保存的会话种子
+  // Check if there's a saved session seed
   const savedSession = localStorage.getItem(sessionKey);
   if (savedSession) {
     const session = JSON.parse(savedSession);
-    // 如果会话未完成，使用保存的种子
+    // If session is incomplete, use saved seed
     if (!session.completed) {
       console.log('🔄 Use a saved session seed:', session.seed);
       return session.seed;
     }
   }
   
-  // 生成新的会话种子
+  // Generate new session seed
   const timestamp = Date.now();
   const combined = `${studentId}_${taskId}_${timestamp}`;
   let hash = 0;
   for (let i = 0; i < combined.length; i++) {
     const char = combined.charCodeAt(i);
     hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // 转换为32位整数
+    hash = hash & hash; // Convert to 32-bit integer
   }
   const newSeed = Math.abs(hash);
   
-  // 保存新的会话信息
+  // Save new session information
   const newSession = {
     seed: newSeed,
     completed: false,
     startTime: new Date().toISOString()
   };
   localStorage.setItem(sessionKey, JSON.stringify(newSession));
-  console.log('🆕 生成新的会话种子:', newSeed);
+  console.log('🆕 Generated new session seed:', newSeed);
   
   return newSeed;
 };
 
-// 标记会话完成
+// Mark session as completed
 const markSessionCompleted = (studentId, taskId) => {
   const sessionKey = `quiz_session_${studentId}_${taskId}`;
   const savedSession = localStorage.getItem(sessionKey);
@@ -187,11 +187,11 @@ const markSessionCompleted = (studentId, taskId) => {
     session.completed = true;
     session.endTime = new Date().toISOString();
     localStorage.setItem(sessionKey, JSON.stringify(session));
-    console.log('✅ 会话标记为已完成');
+    console.log('✅ Session marked as completed');
   }
 };
 
-// 重新开始会话（用于重做测验）
+// Restart session (for retaking quiz)
 const restartSession = (studentId, taskId) => {
   const sessionKey = `quiz_session_${studentId}_${taskId}`;
   localStorage.removeItem(sessionKey);
@@ -204,44 +204,44 @@ const TaskQuiz = () => {
   const alert = useAlert();
   const [task, setTask] = useState(null);
   const [questions, setQuestions] = useState([]);
-  const [questionOrder, setQuestionOrder] = useState([]); // 存储题目顺序映射 - 当前未使用
+  const [questionOrder, setQuestionOrder] = useState([]); // Store question order mapping - currently unused
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [allAnswers, setAllAnswers] = useState({}); // 存储所有题目的答案选择
-  const [quizMode, setQuizMode] = useState('answering'); // 'answering' 或 'results'
-  const [quizResults, setQuizResults] = useState(null); // 存储批量提交的结果
+  const [allAnswers, setAllAnswers] = useState({}); // Store all question answer selections
+  const [quizMode, setQuizMode] = useState('answering'); // 'answering' or 'results'
+  const [quizResults, setQuizResults] = useState(null); // Store batch submission results
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [autoSaving, setAutoSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
   const [error, setError] = useState('');
-  const [taskStartTime, setTaskStartTime] = useState(null); // 任务开始时间
+  const [taskStartTime, setTaskStartTime] = useState(null); // Task start time
   const [networkStatus, setNetworkStatus] = useState('checking'); // 'online', 'offline', 'checking'
 
-  // 将fetchTaskAndQuestions提取到组件顶层，这样可以在其他函数中调用
+  // Extract fetchTaskAndQuestions to component top level so it can be called from other functions
   const fetchTaskAndQuestions = useCallback(async () => {
       try {
         const user = JSON.parse(localStorage.getItem('user_data'));
 
-        // 获取任务详情
+        // Get task details
         const taskResponse = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}`);
         if (taskResponse.ok) {
           const taskData = await taskResponse.json();
           setTask(taskData);
         }
 
-        // 获取问题列表
+        // Get questions list
         const questionsResponse = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}/questions`);
         if (questionsResponse.ok) {
           const questionsData = await questionsResponse.json();
           let shuffledIndices = null;
           
-          // 如果有用户信息，进行随机化处理
+          // If user info exists, perform randomization
           if (user?.user_id && questionsData.length > 0) {
-            // 生成学生特定的种子
+            // Generate student-specific seed
             const seed = generateStudentSeed(user.user_id, taskId);
             
-            // 1. 创建题目顺序映射（原始索引 -> 随机化索引）
+            // 1. Create question order mapping (original index -> randomized index)
             const questionIndices = questionsData.map((_, index) => ({
               originalIndex: index,
               questionId: questionsData[index].id
@@ -249,33 +249,33 @@ const TaskQuiz = () => {
             shuffledIndices = shuffleArray(questionIndices, seed);
             setQuestionOrder(shuffledIndices);
             
-            // 2. 按照随机顺序重新排列题目，并随机化每个题目的选项
+            // 2. Rearrange questions in random order and randomize each question's options
             const randomizedQuestions = shuffledIndices.map((orderInfo, newIndex) => {
               const originalQuestion = questionsData[orderInfo.originalIndex];
-              // 随机化选项顺序（使用题目ID作为额外的种子变化）
+              // Randomize option order (use question ID as additional seed variation)
               const randomizedQuestion = randomizeQuestionOptions(originalQuestion, seed);
               return {
                 ...randomizedQuestion,
-                _originalIndex: orderInfo.originalIndex, // 保存原始索引用于答案提交
-                _displayIndex: newIndex // 显示索引
+                _originalIndex: orderInfo.originalIndex, // Save original index for answer submission
+                _displayIndex: newIndex // Display index
               };
             });
             
             setQuestions(randomizedQuestions);
             
-            // 恢复答题进度（会话级随机化支持进度保存）
+            // Restore quiz progress (session-level randomization supports progress saving)
             const progressResponse = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}/progress?student_id=${user.user_id}`);
             if (progressResponse.ok) {
               const progressData = await progressResponse.json();
               if (progressData.has_progress) {
-                // 需要将原始题目索引转换为随机化后的索引
+                // Need to convert original question index to randomized index
                 const originalIndex = progressData.current_question_index || 0;
                 const originalQuestionId = questionsData[originalIndex]?.id;
                 const randomizedIndex = shuffledIndices?.findIndex(mapping => mapping.questionId === originalQuestionId) || 0;
                 
                 setCurrentQuestionIndex(randomizedIndex >= 0 ? randomizedIndex : 0);
 
-                // 需要将原始答案转换为当前随机化格式
+                // Need to convert original answers to current randomized format
                 const convertedAnswers = {};
                 const originalAnswers = progressData.answers || {};
                 
@@ -284,27 +284,27 @@ const TaskQuiz = () => {
                   const question = randomizedQuestions.find(q => q.id.toString() === questionId.toString());
                   
                   if (question?.question_type === 'multiple_choice' && question._indexMapping && Array.isArray(originalAnswer)) {
-                    // Multiple Choice: 将原始索引转换为当前随机化索引
+                    // Multiple Choice: convert original indices to current randomized indices
                     convertedAnswers[questionId] = originalAnswer.map(originalIndex => {
                       return question._indexMapping[originalIndex] !== undefined ? question._indexMapping[originalIndex] : originalIndex;
                     });
-                    console.log('📥 多选题恢复:', originalAnswer, '→', convertedAnswers[questionId]);
+                    console.log('📥 Multiple choice restore:', originalAnswer, '→', convertedAnswers[questionId]);
                   } else if (question?._originalKeyMapping) {
-                    // Single Choice: 将原始字母转换为当前随机化字母
+                    // Single Choice: convert original letters to current randomized letters
                     convertedAnswers[questionId] = question._originalKeyMapping[originalAnswer] || originalAnswer;
-                    console.log('📥 单选题恢复:', originalAnswer, '→', convertedAnswers[questionId]);
+                    console.log('📥 Single choice restore:', originalAnswer, '→', convertedAnswers[questionId]);
                   } else {
                     convertedAnswers[questionId] = originalAnswer;
                   }
                 });
                 
                 setAllAnswers(convertedAnswers);
-                console.log('✅ 进度已恢复，答案已转换为当前随机化格式');
+                console.log('✅ Progress restored, answers converted to current randomized format');
 
               }
             }
           } else {
-            // 没有用户信息或题目为空，使用原始顺序
+            // No user info or empty questions, use original order
             shuffledIndices = questionsData.map((_, index) => ({
               originalIndex: index,
               questionId: questionsData[index]?.id
@@ -313,7 +313,7 @@ const TaskQuiz = () => {
             setQuestionOrder(shuffledIndices);
           }
 
-          // 设置任务开始时间（在所有情况下都设置）
+          // Set task start time (set in all cases)
           const startTime = new Date().toISOString();
           setTaskStartTime(startTime);
         } else {
@@ -331,23 +331,23 @@ const TaskQuiz = () => {
     fetchTaskAndQuestions();
   }, [fetchTaskAndQuestions]);
 
-  // 网络状态监控
+  // Network status monitoring
   useEffect(() => {
     const checkNetwork = async () => {
       const isConnected = await checkNetworkConnection();
       setNetworkStatus(isConnected ? 'online' : 'offline');
     };
 
-    // 初始检查
+    // Initial check
     checkNetwork();
 
-    // 每 30 秒检查一次网络状态
+    // Check network status every 30 seconds
     const interval = setInterval(checkNetwork, 30000);
 
-    // 监听在线/离线事件
+    // Listen for online/offline events
     const handleOnline = () => {
       setNetworkStatus('online');
-      checkNetwork(); // 重新验证服务器连接
+      checkNetwork(); // Re-verify server connection
     };
     const handleOffline = () => setNetworkStatus('offline');
 
@@ -361,11 +361,11 @@ const TaskQuiz = () => {
     };
   }, []);
 
-  // 自动保存监控 - 当答案改变时触发延迟保存
+  // Auto-save monitoring - trigger delayed save when answers change
   useEffect(() => {
     if (Object.keys(allAnswers).length === 0) return;
 
-    // 设置延迟自动保存 (3秒延迟，避免频繁保存)
+    // Set delayed auto-save (3 second delay to avoid frequent saves)
     const timeoutId = setTimeout(() => {
       autoSave();
     }, 3000);
@@ -373,22 +373,22 @@ const TaskQuiz = () => {
     return () => clearTimeout(timeoutId);
   }, [allAnswers, networkStatus]);
 
-  // 定期自动保存 - 每60秒保存一次（防止意外丢失）
+  // Regular auto-save - save every 60 seconds (prevent accidental loss)
   useEffect(() => {
     const intervalId = setInterval(() => {
       if (Object.keys(allAnswers).length > 0 && !document.hidden) {
         autoSave();
       }
-    }, 60000); // 60秒
+    }, 60000); // 60 seconds
 
     return () => clearInterval(intervalId);
   }, [allAnswers, networkStatus]);
 
-  // 页面可见性变化监听 - 当页面重新可见时自动保存
+  // Page visibility change listener - auto-save when page becomes visible again
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden && Object.keys(allAnswers).length > 0) {
-        // 页面重新可见时自动保存
+        // Auto-save when page becomes visible again
         autoSave();
       }
     };
@@ -400,11 +400,11 @@ const TaskQuiz = () => {
     };
   }, [allAnswers, networkStatus]);
 
-  // 页面卸载前自动保存
+  // Auto-save before page unload
   useEffect(() => {
     const handleBeforeUnload = async (event) => {
       if (Object.keys(allAnswers).length > 0 && networkStatus === 'online') {
-        // 尝试同步保存（在页面卸载前）
+        // Try synchronous save (before page unload)
         try {
           navigator.sendBeacon(`${config.API_BASE_URL}/api/tasks/${taskId}/save-progress`, 
             JSON.stringify({
@@ -419,7 +419,7 @@ const TaskQuiz = () => {
           console.error('Failed to save on page unload:', error);
         }
         
-        // 显示确认对话框
+        // Show confirmation dialog
         event.preventDefault();
         return (event.returnValue = 'You have unsaved progress. Are you sure you want to leave?');
       }
@@ -432,7 +432,7 @@ const TaskQuiz = () => {
     };
   }, [allAnswers, networkStatus, currentQuestionIndex, questions, taskId]);
 
-  // 选择答案 - 支持不同问题类型
+  // Select answer - supports different question types
   const handleAnswerSelect = (answer) => {
     const currentQuestion = questions[currentQuestionIndex];
     setAllAnswers(prev => ({
@@ -441,30 +441,30 @@ const TaskQuiz = () => {
     }));
   };
 
-  // 渲染问题文本，将 {{placeholder}} 转换为样式化的空白占位符
+  // Render question text, convert {{placeholder}} to styled blank placeholders
   const renderQuestionText = (question) => {
     const questionText = question.question || '';
     
-    // 如果不是填空题或没有占位符，直接返回原文本
+    // If not fill-in-blank question or no placeholders, return original text directly
     if (question.question_type !== 'fill_blank' || !questionText.includes('{{')) {
       return questionText;
     }
 
-    // 分割文本并替换占位符
+    // Split text and replace placeholders
     const parts = questionText.split(/\{\{[^}]+\}\}/);
     const placeholders = questionText.match(/\{\{[^}]+\}\}/g) || [];
     
     const elements = [];
     
     for (let i = 0; i < parts.length; i++) {
-      // 添加文本部分
+      // Add text parts
       if (parts[i]) {
         elements.push(
           <span key={`text-${i}`}>{parts[i]}</span>
         );
       }
       
-      // 添加占位符（样式化的空白）
+      // Add placeholders (styled blanks)
       if (i < placeholders.length) {
         const placeholderText = placeholders[i].replace(/[{}]/g, '').trim();
         elements.push(
@@ -480,26 +480,26 @@ const TaskQuiz = () => {
     return <span className="question-with-placeholders">{elements}</span>;
   };
 
-  // 保存答题进度 - 会话级随机化支持进度保存
+  // Save quiz progress - session-level randomization supports progress saving
   const saveProgress = async (showSuccessMessage = true, navigateToHome = true) => {
     setSaving(true);
     try {
       const user = JSON.parse(localStorage.getItem('user_data'));
       const currentQuestion = questions[currentQuestionIndex];
       
-      // 保存原始题目索引，而不是随机化后的索引
+      // Save original question index, not randomized index
       const originalQuestionIndex = currentQuestion?._originalIndex !== undefined 
         ? currentQuestion._originalIndex 
         : currentQuestionIndex;
       
-      // 转换随机化后的答案为原始答案（与提交逻辑相同）
+      // Convert randomized answers to original answers (same as submission logic)
       const originalAnswers = {};
       Object.keys(allAnswers).forEach(questionId => {
         const userAnswer = allAnswers[questionId];
         const question = questions.find(q => q.id.toString() === questionId.toString());
         
         if (question.question_type === 'multiple_choice' && question._indexMapping && Array.isArray(userAnswer)) {
-          // Multiple Choice: 使用索引映射转换答案
+          // Multiple Choice: use index mapping to convert answers
           const reverseIndexMapping = {};
           Object.keys(question._indexMapping).forEach(originalIndex => {
             const newIndex = question._indexMapping[originalIndex];
@@ -510,9 +510,9 @@ const TaskQuiz = () => {
             return reverseIndexMapping[randomizedIndex] !== undefined ? reverseIndexMapping[randomizedIndex] : randomizedIndex;
           });
           
-          console.log('💾 多选题保存:', userAnswer, '→', originalAnswers[questionId]);
+          console.log('💾 Multiple choice save:', userAnswer, '→', originalAnswers[questionId]);
         } else if (question && question._originalKeyMapping) {
-          // Single Choice: 使用字母映射转换答案
+          // Single Choice: use letter mapping to convert answers
           const reverseMapping = {};
           Object.keys(question._originalKeyMapping).forEach(originalKey => {
             const newKey = question._originalKeyMapping[originalKey];
@@ -521,7 +521,7 @@ const TaskQuiz = () => {
           
           originalAnswers[questionId] = reverseMapping[userAnswer] || userAnswer;
           
-          console.log('💾 单选题保存:', userAnswer, '→', originalAnswers[questionId]);
+          console.log('💾 Single choice save:', userAnswer, '→', originalAnswers[questionId]);
         } else {
           originalAnswers[questionId] = userAnswer;
           console.log('💾 SAVE PROGRESS - No Mapping:', {
@@ -533,7 +533,7 @@ const TaskQuiz = () => {
         }
       });
       
-      console.log('💾 保存进度:', Object.keys(allAnswers).length, '个答案');
+      console.log('💾 Save progress:', Object.keys(allAnswers).length, 'answers');
 
       const response = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}/save-progress`, {
         method: 'POST',
@@ -543,7 +543,7 @@ const TaskQuiz = () => {
         body: JSON.stringify({
           student_id: user?.user_id,
           current_question_index: originalQuestionIndex,
-          answers: originalAnswers // 使用转换后的原始答案
+          answers: originalAnswers // Use converted original answers
         })
       });
 
@@ -574,13 +574,13 @@ const TaskQuiz = () => {
     }
   };
 
-  // 自动保存功能
+  // Auto-save function
   const autoSave = async () => {
-    // 只有在有答案的情况下才进行自动保存
+    // Only auto-save when there are answers
     if (Object.keys(allAnswers).length > 0 && networkStatus === 'online' && !saving && !autoSaving) {
       setAutoSaving(true);
       try {
-        const success = await saveProgress(false, false); // 不显示成功消息，不跳转到主页
+        const success = await saveProgress(false, false); // Don't show success message, don't navigate to home
         if (success) {
           setLastSaved(new Date());
           console.log('✅ Auto-save successful');
@@ -593,24 +593,24 @@ const TaskQuiz = () => {
     }
   };
 
-  // 导航到指定题目（不带自动保存，因为调用方会处理）
+  // Navigate to specified question (no auto-save as caller handles it)
   const goToQuestion = (index) => {
     if (index >= 0 && index < questions.length) {
       setCurrentQuestionIndex(index);
     }
   };
 
-  // 检查是否所有题目都已选择
+  // Check if all questions have been answered
   const allQuestionsAnswered = () => {
     return questions.every(q => allAnswers[q.id]);
   };
 
-  // 网络连接检查
+  // Network connection check
   const checkNetworkConnection = async () => {
     try {
       const response = await fetch(`${config.API_BASE_URL}/api/tasks`, {
         method: 'GET',
-        signal: AbortSignal.timeout(5000) // 5 秒超时
+        signal: AbortSignal.timeout(5000) // 5 second timeout
       });
       return response.ok;
     } catch (error) {
@@ -619,7 +619,7 @@ const TaskQuiz = () => {
     }
   };
 
-  // 提交所有答案（带重试机制）
+  // Submit all answers (with retry mechanism)
   const submitAllAnswers = async (retryCount = 0) => {
     if (!allQuestionsAnswered()) {
       alert.warning('Please answer all questions before submitting.');
@@ -652,21 +652,21 @@ const TaskQuiz = () => {
         const question = questions.find(q => q.id.toString() === questionId.toString());
         
         if (question.question_type === 'multiple_choice' && question._indexMapping && Array.isArray(userAnswer)) {
-          // Multiple Choice: 使用索引映射转换答案
+          // Multiple Choice: use index mapping to convert answers
           const reverseIndexMapping = {};
           Object.keys(question._indexMapping).forEach(originalIndex => {
             const newIndex = question._indexMapping[originalIndex];
             reverseIndexMapping[newIndex] = parseInt(originalIndex);
           });
           
-          // 将随机化后的索引转换回原始索引
+          // Convert randomized index back to original index
           originalAnswers[questionId] = userAnswer.map(randomizedIndex => {
             return reverseIndexMapping[randomizedIndex] !== undefined ? reverseIndexMapping[randomizedIndex] : randomizedIndex;
           });
           
-          console.log('🚀 多选题提交:', userAnswer, '→', originalAnswers[questionId]);
+          console.log('🚀 Multiple choice submission:', userAnswer, '→', originalAnswers[questionId]);
         } else if (question && question._originalKeyMapping) {
-          // Single Choice: 使用字母映射转换答案
+          // Single Choice: use letter mapping to convert answers
           const reverseMapping = {};
           Object.keys(question._originalKeyMapping).forEach(originalKey => {
             const newKey = question._originalKeyMapping[originalKey];
@@ -675,9 +675,9 @@ const TaskQuiz = () => {
           
           originalAnswers[questionId] = reverseMapping[userAnswer] || userAnswer;
           
-          console.log('🚀 单选题提交:', userAnswer, '→', originalAnswers[questionId]);
+          console.log('🚀 Single choice submission:', userAnswer, '→', originalAnswers[questionId]);
         } else {
-          // 没有映射的题目直接使用原答案
+          // Questions without mapping use original answers directly
           originalAnswers[questionId] = userAnswer;
           console.log('🚀 SUBMIT - No Mapping:', {
             questionId,
@@ -689,12 +689,12 @@ const TaskQuiz = () => {
       });
       
       const submitData = {
-        answers: originalAnswers, // 使用转换后的原始答案
+        answers: originalAnswers, // Use converted original answers
         student_id: user?.user_id,
-        started_at: taskStartTime  // 包含任务开始时间
+        started_at: taskStartTime  // Include task start time
       };
 
-      console.log('🚀 提交:', Object.keys(allAnswers).length, '个答案');
+      console.log('🚀 Submission:', Object.keys(allAnswers).length, 'answers');
       
       // Debug Fill Blank questions specifically
       Object.keys(allAnswers).forEach(questionId => {
@@ -752,7 +752,7 @@ const TaskQuiz = () => {
             alert.error('❌ Server error, please try again later or contact the administrator.');
           }
         } else {
-          // 客户端错误处理
+          // Client error handling
           try {
             const errorData = JSON.parse(errorText);
             alert.error(`❌ Submission failed: ${errorData.error || 'Unknown error'}`);
@@ -765,7 +765,7 @@ const TaskQuiz = () => {
       console.error('Error submitting answers:', error);
       
       if (error.name === 'AbortError') {
-        // 超时错误
+        // Timeout error
         if (retryCount < 2) {
           const shouldRetry = await alert.confirm(`⏱️ The request timed out. Do you want to retry? \n\n Number of retries: ${retryCount + 1}/3`);
           if (shouldRetry) {
@@ -775,7 +775,7 @@ const TaskQuiz = () => {
           alert.warning('⏱️ The request timed out, please check your network connection or try again later');
         }
       } else if (error.message.includes('Failed to fetch')) {
-        // 网络连接错误
+        // Network connection error
         if (retryCount < 2) {
           const shouldRetry = await alert.confirm(`🌐 Network connection failed. Possible reasons: \n• Backend server not running\n• Network connection interrupted\n• Firewall blocking\n\nDo you want to retry? \n\nNumber of retries: ${retryCount + 1}/3`);
           if (shouldRetry) {
@@ -785,7 +785,7 @@ const TaskQuiz = () => {
           alert.error('🌐 Multiple attempts failed. Please check: \n• Whether the backend server is running\n• Whether the network connection is normal\n• Firewall settings');
         }
       } else {
-        // 其他错误
+        // Other errors
         alert.error(`❌ An error occurred while submitting your answer: ${error.message}`);
       }
     } finally {
@@ -793,13 +793,13 @@ const TaskQuiz = () => {
     }
   };
 
-  // 重试测验 - 重新随机化并清空进度
+  // Retry quiz - re-randomize and clear progress
   const retryQuiz = async () => {
-    // 首先显示确认对话框
+    // First display confirmation dialog
     const shouldRetry = await alert.confirm('🔄 Do you want to retry the quiz? \n\n This will clear your current progress and start a new quiz.');
     
     if (!shouldRetry) {
-      return; // 用户取消了重试
+      return; // User cancelled retry
     }
 
     const user = JSON.parse(localStorage.getItem('user_data'));
@@ -814,9 +814,9 @@ const TaskQuiz = () => {
     try {
       console.log('🔄 Start retrying the quiz, clearing progress data...');
       
-      // 先清除后端进度数据
+      // First clear backend progress data
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5秒超时
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
       
       const deleteResponse = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}/progress?student_id=${user.user_id}`, {
         method: 'DELETE',
@@ -840,13 +840,13 @@ const TaskQuiz = () => {
       }
     }
     
-    // 清除前端会话数据（保持原有逻辑）
+    // Clear frontend session data (keep original logic)
     restartSession(user.user_id, taskId);
     
-    // 重置所有状态，重新初始化测验
+    // Reset all states, re-initialize quiz
     console.log('🔄 Resetting quiz state and reloading data');
     
-    // 重置组件状态
+    // Reset component state
     setQuestions([]);
     setCurrentQuestionIndex(0);
     setAllAnswers({});
@@ -856,17 +856,17 @@ const TaskQuiz = () => {
     setLoading(true);
     setError('');
     
-    // 重新获取数据，这会触发新的随机化
+    // Re-fetch data, this will trigger new randomization
     try {
       await fetchTaskAndQuestions();
-      // 不显示成功消息，因为用户已经看到了加载过程
+      // Don't show success message, because user has already seen the loading process
     } catch (error) {
       console.error('Error resetting quiz:', error);
       alert.error('Failed to reset quiz. Please try again.');
     }
   };
 
-  // 返回主页
+  // Return to home page
   const goHome = () => {
     navigate('/student/home');
   };
@@ -897,7 +897,7 @@ const TaskQuiz = () => {
     );
   }
 
-  // 结果显示模式
+  // Result display mode
   if (quizMode === 'results') {
     return (
       <div className="quiz-container">
@@ -929,10 +929,10 @@ const TaskQuiz = () => {
           <h3>Question Details</h3>
           {questions.map((question, index) => {
             const userAnswer = allAnswers[question.id];
-            // 使用随机化后题目的正确答案，而不是后端返回的
+            // Use randomized question correct answer, not backend returned
             const correctAnswer = question.correct_answer;
             
-            // 判断答案是否正确 - 支持不同问题类型
+            // Check answer correctness - support different question types
             let isCorrect = false;
             if (question.question_type === 'fill_blank' || 
                 question.question_type === 'puzzle_game' || 
@@ -946,7 +946,7 @@ const TaskQuiz = () => {
               isCorrect = userAnswer === correctAnswer;
             }
             
-            // 安全获取选项文本 - 支持不同问题类型
+              // Safe get option text - support different question types
             const getUserAnswerText = () => {
               if (!userAnswer && userAnswer !== 0) return 'Not answered';
               
@@ -1375,7 +1375,7 @@ const TaskQuiz = () => {
     );
   }
 
-  // 答题模式
+  // Answer mode
   const currentQuestion = questions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
   const answeredCount = Object.keys(allAnswers).length;
@@ -1437,7 +1437,7 @@ const TaskQuiz = () => {
 
       <VideoPlayer task={task} />
 
-      {/* 题目导航 */}
+      {/* Question navigation */}
       <div className="question-navigation">
         {questions.map((_, index) => (
           <button
@@ -1459,7 +1459,7 @@ const TaskQuiz = () => {
         <div className="question-content">
           <h2>{renderQuestionText(currentQuestion)}</h2>
           
-          {/* 文字描述 */}
+          {/* Text description */}
           {currentQuestion.description && (
             <div className="question-description">
               <h4><i className="fas fa-info-circle"></i> Problem statement</h4>
@@ -1467,7 +1467,7 @@ const TaskQuiz = () => {
             </div>
           )}
           
-          {/* 图片展示 */}
+          {/* Image display */}
           {currentQuestion.image_url && (
             <div className="question-image">
               <h4><i className="fas fa-image"></i> Image description</h4>
@@ -1481,7 +1481,7 @@ const TaskQuiz = () => {
                   if (parent) {
                     const errorDiv = document.createElement('div');
                     errorDiv.className = 'media-error';
-                    errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 图片加载失败';
+                    errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Image loading failed';
                     parent.appendChild(errorDiv);
                   }
                 }}
@@ -1489,12 +1489,12 @@ const TaskQuiz = () => {
             </div>
           )}
           
-          {/* 视频展示 */}
+          {/* Video display */}
           {currentQuestion.video_type && currentQuestion.video_url && (
             <div className="question-video">
               <h4>
                 <i className={`${currentQuestion.video_type === 'youtube' ? 'fab fa-youtube' : 'fas fa-video'}`}></i> 
-                视频说明
+                Video description
               </h4>
               {currentQuestion.video_type === 'local' ? (
                 <video
@@ -1508,7 +1508,7 @@ const TaskQuiz = () => {
                     if (parent) {
                       const errorDiv = document.createElement('div');
                       errorDiv.className = 'media-error';
-                      errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 视频加载失败';
+                      errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Video loading failed';
                       parent.appendChild(errorDiv);
                     }
                   }}

@@ -26,7 +26,7 @@ function StudentAchievements() {
 
       console.log('Fetching profile for user:', user.user_id);
 
-      // 获取学生档案信息
+      // Get student profile information
               const profileResponse = await fetch(`${config.API_BASE_URL}/api/students/${user.user_id}/profile`);
       console.log('Profile response status:', profileResponse.status);
       
@@ -42,7 +42,7 @@ function StudentAchievements() {
 
       console.log('Fetching achievements for user:', user.user_id);
 
-      // 获取学生成就信息  
+      // Get student achievement information
               const achievementsResponse = await fetch(`${config.API_BASE_URL}/api/students/${user.user_id}/achievements`);
       console.log('Achievements response status:', achievementsResponse.status);
       
@@ -64,7 +64,7 @@ function StudentAchievements() {
     }
   };
 
-  // 成就图标映射
+  // Achievement icon mapping
   const getAchievementIcon = (name) => {
     switch (name) {
       case 'Perfect Score':

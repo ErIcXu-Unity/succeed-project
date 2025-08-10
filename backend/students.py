@@ -8,7 +8,7 @@ students_bp = Blueprint('students', __name__, url_prefix='/api/students')
 
 @students_bp.route('/<student_id>/task-progress', methods=['GET'])
 def get_student_task_progress(student_id):
-    """获取学生所有任务的进度状态"""
+    """Get the progress status of all tasks for a student"""
     try:
         processes = StudentTaskProcess.query.filter_by(student_id=student_id).all()
         
@@ -28,16 +28,15 @@ def get_student_task_progress(student_id):
 
 @students_bp.route('/<student_id>/profile', methods=['GET'])
 def get_student_profile(student_id):
-    """获取学生完整档案信息"""
-    # 获取学生基本信息
+    # Get student basic information
     student = Student.query.filter_by(student_id=student_id).first()
     if not student:
         return jsonify({'error': 'student not found'}), 404
     
-    # 获取学生所有任务结果
+    # Get all task results for the student
     task_results = StudentTaskResult.query.filter_by(student_id=student_id).all()
     
-    # 计算统计数据
+    # Calculate statistics
     total_tasks_completed = len(task_results)
     total_questions = 0
     total_correct = 0
@@ -47,20 +46,20 @@ def get_student_profile(student_id):
     for result in task_results:
         total_score += result.total_score
         
-        # 获取任务的所有问题来计算准确率
+        # Get all questions for the task to calculate accuracy
         task_questions = Question.query.filter_by(task_id=result.task_id).all()
         task_total_score = sum(q.score for q in task_questions)
         total_possible_score += task_total_score
         
         if task_total_score > 0:
-            # 计算这个任务的正确题目数
+            # Calculate the number of correct questions for this task
             task_correct_ratio = result.total_score / task_total_score
             task_question_count = len(task_questions)
             
             total_questions += task_question_count
             total_correct += int(task_correct_ratio * task_question_count)
     
-    # 计算准确率和平均分
+    # Calculate accuracy and average score
     accuracy_rate = round((total_correct / total_questions * 100), 1) if total_questions > 0 else 0.0
     average_score = round((total_score / total_possible_score * 100), 1) if total_possible_score > 0 else 0.0
     
@@ -80,20 +79,19 @@ def get_student_profile(student_id):
 
 @students_bp.route('/<student_id>/achievements', methods=['GET'])
 def get_student_achievements(student_id):
-    """获取学生成就列表"""
-    # 验证学生存在
+    # Verify student exists
     student = Student.query.filter_by(student_id=student_id).first()
     if not student:
         return jsonify({'error': 'student not found'}), 404
     
-    # 获取所有成就
+    # Get all achievements
     all_achievements = Achievement.query.all()
     
-    # 获取学生已解锁的成就
+    # Get student's unlocked achievements
     unlocked_achievements = StudentAchievement.query.filter_by(student_id=student_id).all()
     unlocked_ids = [ua.achievement_id for ua in unlocked_achievements]
     
-    # 构建成就列表
+    # Build achievement list
     achievements_data = []
     for achievement in all_achievements:
         achievement_info = {
@@ -104,7 +102,7 @@ def get_student_achievements(student_id):
             'unlocked_at': None
         }
         
-        # 如果已解锁，添加解锁时间
+        # If unlocked, add unlock time
         if achievement.id in unlocked_ids:
             unlocked_record = next(ua for ua in unlocked_achievements if ua.achievement_id == achievement.id)
             achievement_info['unlocked_at'] = unlocked_record.unlocked_at.isoformat()
@@ -119,29 +117,28 @@ def get_student_achievements(student_id):
 
 @students_bp.route('/<student_id>/history', methods=['GET'])
 def get_student_history(student_id):
-    """获取学生任务历史记录"""
-    # 验证学生存在
+    # Verify student exists
     student = Student.query.filter_by(student_id=student_id).first()
     if not student:
         return jsonify({'error': 'student not found'}), 404
     
-    # 获取学生所有任务结果，按完成时间倒序排列
+    # Get all task results for the student, sorted by completion time
     task_results = StudentTaskResult.query.filter_by(student_id=student_id).order_by(StudentTaskResult.completed_at.desc()).all()
     
-    # 构建历史记录列表
+    # Build history list
     history_data = []
     for result in task_results:
-        # 获取任务信息
+            # Get task information
         task = Task.query.get(result.task_id)
         if task:
-            # 获取任务的所有问题来计算总分
+            # Get all questions for the task to calculate total score
             task_questions = Question.query.filter_by(task_id=result.task_id).all()
             total_possible_score = sum(q.score for q in task_questions)
             
-            # 计算百分比得分
+            # Calculate percentage score
             score_percentage = round((result.total_score / total_possible_score * 100), 1) if total_possible_score > 0 else 0
             
-            # 确定课程类型（基于任务名称）
+            # Determine course type (based on task name)
             course_type = "General"
             if "Chemistry" in task.name or "Lab" in task.name:
                 course_type = "Chemistry"
@@ -174,13 +171,12 @@ def get_student_history(student_id):
 
 @students_bp.route('/dashboard-summary', methods=['GET'])
 def get_dashboard_summary():
-    """获取仪表盘所需的学生总数和完成率"""
     try:
-        # 1. 学生总数（直接从students表计数）
+        # 1. Total number of students (count directly from students table)
         total_students = db.session.query(db.func.count(Student.id)).scalar()
-        print(f"学生表记录数: {total_students}")
+        print(f"Student table count: {total_students}")
 
-        # 2. 完成率（已完成至少一个任务的学生比例）
+        # 2. Completion rate (proportion of students who have completed at least one task)
         completed_students = db.session.query(db.func.count(db.distinct(StudentTaskResult.student_id))).scalar()
         completion_rate = round((completed_students / total_students * 100), 2) if total_students > 0 else 0
         
@@ -190,10 +186,10 @@ def get_dashboard_summary():
         }), 200
         
     except Exception as e:
-        return jsonify({"error": f"统计失败: {str(e)}"}), 500
+        return jsonify({"error": f"Statistics failed: {str(e)}"}), 500
 
 
-# 获取所有学生列表
+# Get all students list
 @students_bp.route('/list', methods=['GET'])
 def get_students_list():
     try:
@@ -203,19 +199,19 @@ def get_students_list():
             result.append({
                 "student_id": s.student_id,
                 "name": s.real_name,
-                "class": "Class A"  # 暂时硬编码，后续可关联班级表
+                "class": "Class A"  # Hardcoded for now, can be associated with class table later
             })
         return jsonify(result), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-# 获取学生详情
+# Get student details
 @students_bp.route('/<student_id>/details', methods=['GET'])
 def get_student_details(student_id):
     try:
         student = Student.query.filter_by(student_id=student_id).first_or_404()
         
-        # 获取学生任务完成情况
+        # Get student task completion status
         task_results = StudentTaskResult.query.filter_by(student_id=student_id).all()
         
         return jsonify({
@@ -239,19 +235,18 @@ def get_student_details(student_id):
     
 @students_bp.route('/dashboard-report', methods=['GET'])
 def get_dashboard_report():
-    """获取仪表盘总览数据：学生数、任务数、完成率、平均得分、每个任务完成情况"""
     try:
-        # 总学生数
+        # Total number of students
         total_students = db.session.query(db.func.count(Student.id)).scalar()
 
-        # 总任务数
+        # Total number of tasks
         total_tasks = db.session.query(db.func.count(Task.id)).scalar()
 
-        # 完成率
+        # Completion rate
         completed_students = db.session.query(db.func.count(db.distinct(StudentTaskResult.student_id))).scalar()
         completion_rate = round((completed_students / total_students * 100), 1) if total_students > 0 else 0.0
 
-        # 平均得分
+        # Average score
         task_results = StudentTaskResult.query.all()
         total_score = 0
         total_possible = 0
@@ -263,7 +258,7 @@ def get_dashboard_report():
                 total_possible += max_score
         average_score = round((total_score / total_possible * 100), 1) if total_possible > 0 else 0.0
 
-        # 每个任务的完成情况
+        # Completion status for each task
         all_tasks = Task.query.all()
         task_performance = []
 
@@ -303,4 +298,4 @@ def get_dashboard_report():
         }), 200
 
     except Exception as e:
-        return jsonify({"error": f"统计失败: {str(e)}"}), 500
+        return jsonify({"error": f"Statistics failed: {str(e)}"}), 500

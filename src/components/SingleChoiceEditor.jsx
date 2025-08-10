@@ -40,11 +40,13 @@ const SingleChoiceEditor = ({ formData, setFormData }) => {
               onChange={handleInputChange}
               placeholder={`Enter option ${option} content...`}
               required
+              data-cy={`sc-option-${option}`}
             />
             <button
               type="button"
               className={`correct-toggle-vertical ${formData.correct_answer === option ? 'active' : ''}`}
               onClick={() => setCorrectAnswer(option)}
+              data-cy={`sc-correct-${option}`}
             >
               {formData.correct_answer === option ? (
                 <>

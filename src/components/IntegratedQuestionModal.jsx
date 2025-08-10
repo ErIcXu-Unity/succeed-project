@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './QuestionCreateModal.css';
 import config from '../config';
-// 导入所有问题类型编辑器
+// Import all question type editors
 import SingleChoiceEditor from './SingleChoiceEditor';
 import MultipleChoiceEditor from './MultipleChoiceEditor';
 import FillBlankEditor from './FillBlankEditor';
@@ -10,7 +10,7 @@ import MatchingTaskEditor from './MatchingTaskEditor';
 import ErrorSpottingEditor from './ErrorSpottingEditor';
 
 const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
-  // 基础表单数据
+  // Basic form data
   const [formData, setFormData] = useState({
     question: '',
     question_type: 'single_choice',
@@ -18,30 +18,30 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
     score: 3,
     description: '',
     
-    // 单选题数据
+    // Single choice question data
     option_a: '',
     option_b: '',
     option_c: '',
     option_d: '',
     correct_answer: 'A',
     
-    // 多选题数据
+    // Multiple choice question data
     options: ['', ''],
     correct_answers: [],
     
-    // 填空题数据
+    // Fill blank question data
     blank_answers: [''],
     
-    // 拼图游戏数据
+    // Puzzle game data
     puzzle_solution: '',
     puzzle_fragments: [''],
     
-    // 匹配题数据
+    // Matching task data
     left_items: ['', ''],
     right_items: ['', ''],
     correct_matches: [],
     
-    // 错误识别数据
+    // Error spotting data
     error_spots: []
   });
   
@@ -55,7 +55,7 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // 问题类型选项
+  // Question type options
   const questionTypes = [
     { value: 'single_choice', label: 'Single Choice', icon: 'fas fa-dot-circle' },
     { value: 'multiple_choice', label: 'Multiple Choice', icon: 'fas fa-check-square' },
@@ -94,7 +94,7 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
     setMediaData(prev => ({
       ...prev,
       mediaType: type,
-      // 清除其他媒体类型的数据
+      // Clear data for other media types
       selectedImage: type === 'image' ? prev.selectedImage : null,
       selectedVideo: type === 'video' ? prev.selectedVideo : null,
       youtubeUrl: type === 'youtube' ? prev.youtubeUrl : ''
@@ -105,7 +105,7 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
     const file = e.target.files[0];
     if (file) {
       if (fileType === 'image') {
-        // 验证图片格式
+        // Validate image format
         const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
         if (!allowedTypes.includes(file.type)) {
           setError('Please select a valid image format (PNG, JPG, JPEG, GIF, WebP)');
@@ -113,13 +113,13 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
         }
         setMediaData(prev => ({ ...prev, selectedImage: file }));
       } else if (fileType === 'video') {
-        // 验证视频格式
+        // Validate video format
         const allowedTypes = ['video/mp4', 'video/avi', 'video/mov', 'video/wmv', 'video/webm'];
         if (!allowedTypes.includes(file.type)) {
           setError('Please select a valid video format (MP4, AVI, MOV, WMV, WebM)');
           return;
         }
-        // 验证文件大小 (50MB)
+          // Validate file size (50MB)
         if (file.size > 50 * 1024 * 1024) {
           setError('Video file too large, maximum 50MB supported');
           return;
@@ -135,13 +135,13 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
   };
 
   const validateForm = () => {
-    // 验证基本字段
+    // Validate basic fields
     if (!(formData.question || '').trim()) {
       setError('Question content cannot be empty');
       return false;
     }
 
-    // 根据问题类型验证特定字段
+    // Validate specific fields based on question type
     switch (formData.question_type) {
       case 'single_choice':
         if (!(formData.option_a || '').trim() || !(formData.option_b || '').trim() || 
@@ -196,9 +196,9 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
     }
 
     
-    // 其他题型的媒体内容是完全可选的
+    // Media content for other question types is optional
 
-    // 验证 YouTube 链接格式
+    // Validate YouTube link format
     if (mediaData.mediaType === 'youtube' && mediaData.youtubeUrl.trim()) {
       const youtubeUrl = mediaData.youtubeUrl.trim();
       if (!youtubeUrl.includes('youtube.com/watch') && !youtubeUrl.includes('youtu.be/')) {
@@ -221,17 +221,17 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
     setError('');
 
     try {
-      // 创建 FormData 对象支持文件上传
+      // Create FormData object to support file upload
       const formDataToSend = new FormData();
       
-      // 添加基本字段
+      // Add basic fields
       formDataToSend.append('question', formData.question);
       formDataToSend.append('question_type', formData.question_type);
       formDataToSend.append('difficulty', formData.difficulty);
       formDataToSend.append('score', formData.score);
       formDataToSend.append('description', formData.description);
       
-      // 根据问题类型添加特定数据
+      // Add specific data based on question type
       const questionData = {};
       switch (formData.question_type) {
         case 'single_choice':
@@ -265,18 +265,18 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
           break;
       }
       
-      // 如果有问题数据，将其转为 JSON 字符串
+      // If there are question data, convert it to JSON string
       if (Object.keys(questionData).length > 0) {
         formDataToSend.append('question_data', JSON.stringify(questionData));
       }
       
-      // 添加当前用户 ID
+      // Add current user ID
       const user = JSON.parse(localStorage.getItem('user_data'));
       if (user && user.user_id) {
         formDataToSend.append('created_by', user.user_id);
       }
       
-      // 根据媒体类型添加相应的数据
+      // Add corresponding data based on media type
       switch (mediaData.mediaType) {
         case 'image':
           if (mediaData.selectedImage) {
@@ -294,7 +294,7 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
           }
           break;
         default:
-          // 无媒体内容或其他情况
+          // No media content or other cases
           break;
       }
 
@@ -310,7 +310,7 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
 
       const result = await response.json();
       
-      // 通知父组件并关闭弹窗
+      // Notify parent component and close modal
       onSubmit(result);
       handleClose();
       
@@ -322,7 +322,7 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
   };
 
   const handleClose = () => {
-    // 重置表单
+    // Reset form
     setFormData({
       question: '',
       question_type: 'single_choice',
@@ -330,30 +330,30 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
       score: 3,
       description: '',
       
-      // 单选题数据
+        // Single choice question data
       option_a: '',
       option_b: '',
       option_c: '',
       option_d: '',
       correct_answer: 'A',
       
-      // 多选题数据
+      // Multiple choice question data
       options: ['', ''],
       correct_answers: [],
       
-      // 填空题数据
+      // Fill blank question data
       blank_answers: [''],
       
-      // 拼图游戏数据
+      // Puzzle game data
       puzzle_solution: '',
       puzzle_fragments: [''],
       
-      // 匹配题数据
+      // Matching task data
       left_items: ['', ''],
       right_items: ['', ''],
       correct_matches: [],
       
-      // 错误识别数据
+      // Error spotting data
       error_spots: []
     });
     setMediaData({
@@ -366,7 +366,7 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
     onClose();
   };
 
-  // ESC 键监听
+  // ESC key listener
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === 'Escape' && isOpen) {
@@ -381,9 +381,9 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen]); // 现在 handleClose 在作用域内，不需要添加到依赖数组
+  }, [isOpen]); // Now handleClose is in scope, no need to add to dependency array
 
-  // 渲染问题类型特定的编辑器
+  // Render question type specific editor
   const renderQuestionEditor = () => {
     switch (formData.question_type) {
       case 'single_choice':
@@ -434,7 +434,7 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
                 <h3>Question Information</h3>
               </div>
               
-              {/* 问题类型选择 */}
+              {/* Question type selection */}
               <div className="form-group-redesigned">
                 <label className="form-label-redesigned">
                   <i className="fas fa-list"></i>
@@ -533,7 +533,7 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
                 </span>
               </div>
 
-            {/* 媒体类型选择 */}
+            {/* Media type selection */}
             <div className="form-group-redesigned">
               <label className="form-label-redesigned">
                 <i className="fas fa-plus-circle"></i>
@@ -570,7 +570,7 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
                 </div>
               </div>
 
-              {/* 媒体内容预览区域 */}
+              {/* Media content preview area */}
               <div className="media-preview-section">
                 <h4 style={{ color: '#495057', fontSize: '0.9rem', marginBottom: '1rem', fontWeight: 600 }}>
                   <i className="fas fa-eye"></i> Media Content Preview
@@ -578,7 +578,7 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
                 
 
 
-                {/* 显示已选择的图片 */}
+                {/* Display selected image */}
                 {mediaData.selectedImage && (
                   <div className="media-preview-item">
                     <div className="media-preview-header">
@@ -605,7 +605,7 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
                   </div>
                 )}
 
-                {/* 显示已选择的视频 */}
+                {/* Display selected video */}
                 {mediaData.selectedVideo && (
                   <div className="media-preview-item">
                     <div className="media-preview-header">
@@ -631,7 +631,7 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
                   </div>
                 )}
 
-                {/* 显示 YouTube 链接 */}
+                {/* Display YouTube link */}
                 {mediaData.youtubeUrl && (
                   <div className="media-preview-item">
                     <div className="media-preview-header">
@@ -657,7 +657,7 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
                   </div>
                 )}
 
-                {/* 如果没有任何媒体内容 */}
+                {/* If there is no media content */}
                 {!mediaData.selectedImage && !mediaData.selectedVideo && !mediaData.youtubeUrl && (
                   <div className="no-media-notice">
                     <i className="fas fa-info-circle"></i>
@@ -670,7 +670,7 @@ const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
             </div>
             </div>
 
-            {/* 根据选择的媒体类型显示相应的输入控件 */}
+            {/* Display corresponding input controls based on selected media type */}
             {mediaData.mediaType === 'image' && (
               <div className="media-upload-section">
                 <div className="upload-area">

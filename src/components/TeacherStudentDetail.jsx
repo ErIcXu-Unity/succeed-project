@@ -18,12 +18,12 @@ const TeacherStudentDetail = () => {
       try {
         setLoading(true);
 
-        // 获取学生档案信息（包含统计）
+        // Get student profile information (including statistics)
         const profileRes = await fetch(`${config.API_BASE_URL}/api/students/${studentId}/profile`);
         if (!profileRes.ok) throw new Error('Failed to fetch profile');
         const profileData = await profileRes.json();
 
-        // 获取任务历史记录
+          // Get task history records
         const historyRes = await fetch(`${config.API_BASE_URL}/api/students/${studentId}/history`);
         if (!historyRes.ok) throw new Error('Failed to fetch history');
         const historyData = await historyRes.json();

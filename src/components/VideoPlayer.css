@@ -1,4 +1,4 @@
-/* 简洁的视频播放器样式 - 采用教师端预览风格 */
+/* Simple video player style - Teacher preview style */
 .simple-video-player {
   margin: 1.5rem 0;
   background: white;
@@ -8,7 +8,7 @@
   border: 1px solid #e1e5e9;
 }
 
-/* 视频信息头部 */
+/* Video information header */
 .video-info-header {
   display: flex;
   align-items: center;
@@ -29,7 +29,7 @@
   font-size: 1.1rem;
 }
 
-/* YouTube 视频容器 */
+/* YouTube video container */
 .youtube-video-container {
   position: relative;
   width: 100%;
@@ -42,7 +42,7 @@
   display: block;
 }
 
-/* 本地视频容器 */
+/* Local video container */
 .local-video-container {
   position: relative;
   width: 100%;
@@ -54,7 +54,7 @@
   display: block;
 }
 
-/* 无视频提示 */
+/* No video notice */
 .no-video-notice {
   text-align: center;
   padding: 3rem 2rem;
@@ -74,7 +74,7 @@
   color: #6c757d;
 }
 
-/* 错误提示样式 */
+/* Error notice style */
 .video-error-simple {
   text-align: center;
   padding: 2rem;
@@ -95,7 +95,7 @@
   font-size: 1rem;
 }
 
-/* 视频加载失败回退样式 */
+/* Video loading failed fallback style */
 .video-error-fallback {
   text-align: center;
   padding: 2rem;
@@ -143,7 +143,7 @@
   color: #007bff;
 }
 
-/* 响应式设计 */
+/* Responsive design */
 @media (max-width: 768px) {
   .simple-video-player {
     margin: 1rem 0;
@@ -191,14 +191,14 @@
   }
 }
 
-/* 悬停效果 */
+/* Hover effect */
 .simple-video-player:hover {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
   transform: translateY(-1px);
   transition: all 0.3s ease;
 }
 
-/* 深色模式支持 */
+/* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .simple-video-player {
     background: #1f2937;
@@ -224,7 +224,7 @@
   }
 }
 
-/* 平滑动画 */
+/* Smooth animation */
 .simple-video-player * {
   transition: all 0.2s ease;
 } 

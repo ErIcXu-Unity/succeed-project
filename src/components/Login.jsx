@@ -133,7 +133,16 @@ const Login = ({ onLoginSuccess }) => {
             <span className="close-btn" onClick={closeLoginModal}>&times;</span>
             <h2>{modalTitle}</h2>
             
-            {error && <div style={{ color: 'red', marginBottom: '1rem' }}>{error}</div>}
+            {error && (
+              <div
+                data-cy="login-error"
+                role="alert"
+                aria-live="assertive"
+                style={{ color: 'red', marginBottom: '1rem' }}
+              >
+                {error}
+              </div>
+            )}
             
             <input
               type="text"
@@ -141,6 +150,7 @@ const Login = ({ onLoginSuccess }) => {
               placeholder="Username (email)"
               value={loginData.username}
               onChange={handleInputChange}
+              data-cy="login-username"
             />
             <input
               type="password"
@@ -148,8 +158,9 @@ const Login = ({ onLoginSuccess }) => {
               placeholder="Password"
               value={loginData.password}
               onChange={handleInputChange}
+              data-cy="login-password"
             />
-            <button onClick={submitLogin} disabled={loading}>
+            <button onClick={submitLogin} disabled={loading} data-cy="login-submit">
               {loading ? 'Logging in...' : 'Login'}
             </button>
           </div>

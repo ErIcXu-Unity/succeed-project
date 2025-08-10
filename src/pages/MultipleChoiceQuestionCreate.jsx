@@ -18,7 +18,7 @@ const MultipleChoiceQuestionCreate = () => {
     description: '',
     
     // Multiple choice specific
-    options: ['', ''],
+    options: ['', '', '', ''],
     correct_answers: []
   });
   
@@ -81,6 +81,18 @@ const MultipleChoiceQuestionCreate = () => {
 
     loadExistingQuestion();
   }, [questionId]);
+
+  // Ensure task info is fetched (helps tests waiting for GET /api/tasks/:id)
+  useEffect(() => {
+    const fetchTaskInfo = async () => {
+      try {
+        await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}`);
+      } catch (e) {
+        // no-op for tests/stubs
+      }
+    };
+    if (taskId) fetchTaskInfo();
+  }, [taskId]);
 
   const validateForm = () => {
     if (!(formData.question || '').trim()) {

@@ -10,7 +10,7 @@ function StudentHistory() {
   const [error, setError] = useState('');
   const [studentName, setStudentName] = useState('');
 
-  // 搜索筛选状态
+  // Search filter state
   const [searchTerm, setSearchTerm] = useState('');
   const [courseFilter, setCourseFilter] = useState('');
   const [scoreRangeFilter, setScoreRangeFilter] = useState('');
@@ -56,7 +56,7 @@ function StudentHistory() {
     }
   };
 
-  // 格式化日期显示
+  // Format date display
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -66,7 +66,7 @@ function StudentHistory() {
     });
   };
 
-  // 格式化时间显示
+  // Format time display
   const formatTime = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleTimeString('en-US', {
@@ -75,7 +75,7 @@ function StudentHistory() {
     });
   };
 
-  // 根据得分百分比获取颜色
+  // Get color based on score percentage
   const getScoreColor = (percentage) => {
     if (percentage >= 90) return '#28a745';
     if (percentage >= 80) return '#17a2b8';
@@ -84,7 +84,7 @@ function StudentHistory() {
     return '#dc3545';
   };
 
-  // 根据课程类型获取图标
+  // Get icon based on course type
   const getCourseIcon = (courseType) => {
     switch (courseType) {
       case 'Chemistry':
@@ -100,7 +100,7 @@ function StudentHistory() {
     }
   };
 
-  // 根据课程类型获取背景图片
+  // Get background image based on course type
   const getCourseImage = (courseType) => {
     switch (courseType) {
       case 'Chemistry':
@@ -116,7 +116,7 @@ function StudentHistory() {
     }
   };
 
-  // 从任务名称推导课程类型
+  // Derive course type from task name
   const getCourseType = (taskName) => {
     const name = taskName.toLowerCase();
     if (name.includes('chemistry') || name.includes('chem')) return 'Chemistry';
@@ -127,7 +127,7 @@ function StudentHistory() {
     return 'General';
   };
 
-  // 获取可用的课程类型
+  // Get available course types
   const getAvailableCourseTypes = () => {
     const types = new Set();
     historyData.forEach(item => {
@@ -137,17 +137,17 @@ function StudentHistory() {
     return Array.from(types).sort();
   };
 
-  // 筛选和排序逻辑
+  // Filter and sort logic
   const getFilteredAndSortedHistory = () => {
     let filteredHistory = historyData.filter(item => {
-      // 关键词搜索
+      // Keyword search
       const matchesSearch = item.task_name.toLowerCase().includes(searchTerm.toLowerCase());
       
-      // 课程类型筛选
+      // Course type filter
       const courseType = item.course_type || getCourseType(item.task_name);
       const matchesCourse = !courseFilter || courseType === courseFilter;
       
-      // 分数范围筛选
+      // Score range filter
       let matchesScoreRange = true;
       if (scoreRangeFilter === 'excellent') {
         matchesScoreRange = item.score_percentage >= 90;
@@ -162,7 +162,7 @@ function StudentHistory() {
       return matchesSearch && matchesCourse && matchesScoreRange;
     });
 
-    // 排序
+      // Sort
     filteredHistory.sort((a, b) => {
       let aValue, bValue;
       
@@ -264,7 +264,7 @@ function StudentHistory() {
         </div>
       ) : (
         <>
-          {/* 搜索筛选区域 */}
+          {/* Search filter section */}
           <div className="search-filter-section">
             <div className="search-bar">
               <div className="search-input-group">
@@ -360,7 +360,7 @@ function StudentHistory() {
             </div>
           </div>
 
-          {/* 历史记录网格 */}
+          {/* History record grid */}
           {filteredHistory.length === 0 ? (
             <div className="no-results">
               <i className="fas fa-search"></i>

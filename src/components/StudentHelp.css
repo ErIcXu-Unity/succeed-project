@@ -539,7 +539,7 @@ main {
   font-weight: 600;
 }
 
-/* Focus 可见性 */
+/* Focus visibility */
 button:focus, a:focus, .faq-question:focus, input:focus, textarea:focus, select:focus {
   outline: 3px solid var(--focus);
   outline-offset: 2px;
@@ -554,7 +554,7 @@ footer {
   color: #777;
 }
 
-/* 响应式设计 */
+/* Responsive design */
 @media (max-width: 768px) {
   main {
     padding: 1rem;

@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import Chart from 'chart.js/auto';
 import './EachgameGrade.css';
 
-// 注意：此组件目前使用模拟数据，实际项目中应连接到后端API
+// Note: This component currently uses mock data, should connect to backend API in actual project
 const EachgameGrade = () => {
   const completionChartRef = useRef(null);
   const scoreChartRef = useRef(null);

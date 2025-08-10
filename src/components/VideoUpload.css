@@ -6,7 +6,7 @@
   background: #f8f9fa;
 }
 
-/* 上传选项按钮区域 */
+/* Upload option button area */
 .upload-options {
   display: flex;
   align-items: center;
@@ -18,7 +18,7 @@
   border: 1px solid #dee2e6;
 }
 
-/* 通用上传选项按钮样式 */
+/* General upload option button style */
 .upload-option-btn {
   display: inline-flex;
   align-items: center;
@@ -44,7 +44,7 @@
   box-shadow: none !important;
 }
 
-/* 本地文件上传按钮 */
+/* Local file upload button */
 .local-upload-btn {
   background-color: #28a745;
   color: white;
@@ -65,7 +65,7 @@
   box-shadow: 0 4px 8px rgba(40, 167, 69, 0.4);
 }
 
-/* YouTube选项按钮 */
+/* YouTube option button */
 .youtube-option-btn {
   background-color: #f8f9fa;
   color: #495057;
@@ -91,7 +91,7 @@
   border-color: #c82333;
 }
 
-/* 本地文件上传区域 */
+/* Local file upload area */
 .local-upload-section {
   margin-top: 1rem;
 }
@@ -140,7 +140,7 @@
   margin-top: 0.5rem;
 }
 
-/* YouTube 上传区域 */
+/* YouTube upload area */
 .youtube-upload-section {
   margin-top: 1rem;
 }
@@ -197,7 +197,7 @@
   cursor: not-allowed;
 }
 
-/* 错误消息 */
+/* Error message */
 .upload-error {
   display: flex;
   align-items: center;
@@ -210,7 +210,7 @@
   border: 1px solid #f5c6cb;
 }
 
-/* 上传进度 */
+/* Upload progress */
 .upload-progress {
   display: flex;
   align-items: center;
@@ -228,7 +228,7 @@
   color: #17a2b8;
 }
 
-/* 视频预览 */
+/* Video preview */
 .video-preview {
   margin-top: 1rem;
   background: white;
@@ -280,7 +280,7 @@
   text-decoration: underline;
 }
 
-/* 移除按钮 */
+/* Remove button */
 .remove-btn {
   position: absolute;
   top: 10px;
@@ -316,7 +316,7 @@
   transform: scale(1.1);
 }
 
-/* 响应式设计 */
+/* Responsive design */
 @media (max-width: 768px) {
   .upload-type-selector {
     flex-direction: column;
@@ -338,7 +338,7 @@
   }
 }
 
-/* 动画效果 */
+  /* Animation effect */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -362,7 +362,7 @@
   animation: fadeIn 0.3s ease-out;
 }
 
-/* 新建模式提示样式 */
+/* New mode notice style */
 .mode-notice {
   background-color: #e7f3ff;
   border: 1px solid #b3d9ff;
@@ -383,7 +383,7 @@
   font-size: 14px;
 }
 
-/* 禁用状态样式 */
+/* Disabled state style */
 .drop-zone.disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -393,7 +393,7 @@
   pointer-events: none;
 }
 
-/* 当前视频显示样式 */
+/* Current video display style */
 .current-video {
   background: white;
   border: 2px solid #28a745;

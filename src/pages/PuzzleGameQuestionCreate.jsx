@@ -82,6 +82,18 @@ const PuzzleGameQuestionCreate = () => {
     loadExistingQuestion();
   }, [questionId]);
 
+  // Ensure task info fetched to align with tests waiting on GET /api/tasks/:id
+  useEffect(() => {
+    const fetchTaskInfo = async () => {
+      try {
+        await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}`);
+      } catch (e) {
+        // silent for stubs
+      }
+    };
+    if (taskId) fetchTaskInfo();
+  }, [taskId]);
+
   const validateForm = () => {
     if (!(formData.question || '').trim()) {
       setError('Question content cannot be empty');

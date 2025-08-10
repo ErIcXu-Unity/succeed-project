@@ -11,11 +11,11 @@ tasks_bp = Blueprint('tasks', __name__, url_prefix='/api/tasks')
 
 @tasks_bp.route('', methods=['GET'])
 def get_tasks():
-    role = request.args.get('role', 'stu')  # 默认为 student
+    role = request.args.get('role', 'stu')  # Default to student
     now = datetime.now(timezone.utc)
 
     if role == 'tea':
-        tasks = Task.query.all()  # 老师看到所有任务
+        tasks = Task.query.all()  # Teachers see all tasks
     else:
         tasks = Task.query.filter(
             (Task.publish_at == None) | (Task.publish_at <= now)
@@ -33,7 +33,7 @@ def get_tasks():
         if t.image_path:
             task_data['image_url'] = f"/uploads/tasks/{t.image_path}"
         
-        # 添加视频信息
+        # Add video information
         if t.video_type:
             task_data['video_type'] = t.video_type
             if t.video_type == 'local' and t.video_path:
@@ -46,23 +46,22 @@ def get_tasks():
 
 @tasks_bp.route('', methods=['POST'])
 def create_task():
-    """创建新任务"""
     data = request.get_json()
     
-    # 验证必填字段
+    # Verify required fields
     if not data.get('name'):
         return jsonify({'error': 'Task name is required'}), 400
     
     if not data.get('introduction'):
         return jsonify({'error': 'Task introduction is required'}), 400
     
-    # 检查任务名称唯一性
+    # Check task name uniqueness
     existing_task = Task.query.filter_by(name=data['name']).first()
     if existing_task:
         return jsonify({'error': 'Task name already exists'}), 409
     
     try:
-        # 解析发布时间（可选字段）
+        # Parse publish time (optional field)
         publish_at = None
         if data.get('publish_at'):
             try:
@@ -70,7 +69,7 @@ def create_task():
             except Exception:
                 return jsonify({'error': 'Invalid publish_at datetime format'}), 400
         
-        # 创建新任务
+        # Create new task
         new_task = Task(
             name=data['name'],
             introduction=data['introduction'],
@@ -79,7 +78,7 @@ def create_task():
         db.session.add(new_task)
         db.session.commit()
         
-        # 返回新创建的任务信息
+        # Return new task information
         return jsonify({
             'message': 'Task created successfully',
             'task': {
@@ -97,7 +96,7 @@ def create_task():
 
 @tasks_bp.route('/<int:task_id>', methods=['GET'])
 def get_task_detail(task_id):
-    """获取任务详情"""
+    """Get task details"""
     task = Task.query.get_or_404(task_id)
     result = {
         'id': task.id,
@@ -109,7 +108,7 @@ def get_task_detail(task_id):
     if task.image_path:
         result['image_url'] = f"/uploads/tasks/{task.image_path}"
     
-    # 添加视频信息
+    # Add video information
     if task.video_type:
         result['video_type'] = task.video_type
         if task.video_type == 'local' and task.video_path:
@@ -122,7 +121,7 @@ def get_task_detail(task_id):
 
 @tasks_bp.route('/<int:task_id>', methods=['PUT'])
 def update_task(task_id):
-    """更新任务信息"""
+
     task = Task.query.get_or_404(task_id)
     data = request.get_json()
     
@@ -133,32 +132,32 @@ def update_task(task_id):
     if 'publish_at' in data:
         if data['publish_at']:
             try:
-                # 兼容 ISO 格式和带 Z 的时间
+                # Compatible with ISO format and time with Z
                 task.publish_at = datetime.fromisoformat(data['publish_at'].replace('Z', '+00:00'))
             except Exception:
                 return jsonify({'error': 'Invalid publish_at format'}), 400
         else:
             task.publish_at = None
     
-    # 处理视频相关字段 - 确保不会丢失现有的视频信息
-    # 只有在明确提供视频信息时才更新
+    # Process video-related fields - ensure existing video information is not lost
+    # Only update when video information is explicitly provided
     if 'video_type' in data:
         task.video_type = data['video_type']
         if data['video_type'] == 'local' and 'video_path' in data:
             task.video_path = data['video_path']
-            task.video_url = None  # 清除 YouTube 链接
+            task.video_url = None  # Clear YouTube link
         elif data['video_type'] == 'youtube' and 'video_url' in data:
             task.video_url = data['video_url']
-            task.video_path = None  # 清除本地视频路径
+            task.video_path = None  # Clear local video path
         elif data['video_type'] is None:
-            # 清除所有视频信息
+            # Clear all video information
             task.video_type = None
             task.video_path = None
             task.video_url = None
     
     try:
         db.session.commit()
-        # 构建返回的 task 信息，包含视频信息
+        # Build return task information, including video information
         task_response = {
             'id': task.id,
             'name': task.name,
@@ -166,7 +165,7 @@ def update_task(task_id):
             'publish_at': task.publish_at.isoformat() if task.publish_at else None
         }
         
-        # 添加视频信息到响应中
+        # Add video information to response
         if task.video_type:
             task_response['video_type'] = task.video_type
             if task.video_type == 'local' and task.video_path:
@@ -184,34 +183,33 @@ def update_task(task_id):
 
 @tasks_bp.route('/<int:task_id>', methods=['DELETE'])
 def delete_task(task_id):
-    """删除任务及其相关数据"""
-    # 验证任务存在
+    # Verify task exists
     task = Task.query.get_or_404(task_id)
     
     try:
-        # 开始事务 - 级联删除相关数据
+        # Start transaction - cascade delete related data
         
-        # 1. 删除学生任务进度
+        # 1. Delete student task progress
         StudentTaskProcess.query.filter_by(task_id=task_id).delete()
         
-        # 2. 删除学生任务结果
+        # 2. Delete student task results
         StudentTaskResult.query.filter_by(task_id=task_id).delete()
         
-        # 3. 删除相关成就记录（如果成就是任务特定的）
+        # 3. Delete related achievement records (if achievement is task-specific)
         task_achievements = Achievement.query.filter_by(task_id=task_id).all()
         for achievement in task_achievements:
-            # 删除学生获得的这些成就
+            # Delete achievements the student has received
             StudentAchievement.query.filter_by(achievement_id=achievement.id).delete()
-            # 删除成就本身
+            # Delete achievement itself
             db.session.delete(achievement)
         
-        # 4. 删除任务的所有问题
+                # 4. Delete all questions for the task
         Question.query.filter_by(task_id=task_id).delete()
         
-        # 5. 最后删除任务本身
+        # 5. Finally delete the task itself
         db.session.delete(task)
         
-        # 提交事务
+        # Commit transaction
         db.session.commit()
         
         return jsonify({
@@ -226,7 +224,6 @@ def delete_task(task_id):
 # Task Progress Routes
 @tasks_bp.route('/<int:task_id>/save-progress', methods=['POST'])
 def save_task_progress(task_id):
-    """保存答题进度"""
     data = request.get_json()
     student_id = data.get('student_id')
     current_question_index = data.get('current_question_index', 0)
@@ -235,7 +232,7 @@ def save_task_progress(task_id):
     if not student_id:
         return jsonify({'error': 'student_id required'}), 400
     
-    # 获取学生和任务信息
+    # Get student and task information
     student = Student.query.filter_by(student_id=student_id).first()
     if not student:
         return jsonify({'error': 'student not found'}), 404
@@ -244,19 +241,19 @@ def save_task_progress(task_id):
     if not task:
         return jsonify({'error': 'task not found'}), 404
     
-    # 查找现有进度记录
+    # Find existing progress record
     existing_process = StudentTaskProcess.query.filter_by(
         student_id=student_id, task_id=task_id
     ).first()
     
     try:
         if existing_process:
-            # 更新现有记录
+            # Update existing record
             existing_process.current_question_index = current_question_index
             existing_process.answers_json = json.dumps(answers)
             existing_process.updated_at = datetime.now(timezone.utc)
         else:
-            # 创建新记录
+            # Create new record
             new_process = StudentTaskProcess(
                 student_id=student_id,
                 student_name=student.real_name,
@@ -278,13 +275,12 @@ def save_task_progress(task_id):
 
 @tasks_bp.route('/<int:task_id>/progress', methods=['GET'])
 def get_task_progress(task_id):
-    """获取答题进度"""
     student_id = request.args.get('student_id')
     
     if not student_id:
         return jsonify({'error': 'student_id required'}), 400
     
-    # 查找进度记录
+    # Find progress record
     process = StudentTaskProcess.query.filter_by(
         student_id=student_id, task_id=task_id
     ).first()
@@ -306,14 +302,13 @@ def get_task_progress(task_id):
 
 @tasks_bp.route('/<int:task_id>/progress', methods=['DELETE'])
 def delete_task_progress(task_id):
-    """删除答题进度（完成任务后清理）"""
     student_id = request.args.get('student_id')
     
     if not student_id:
         return jsonify({'error': 'student_id required'}), 400
     
     try:
-        # 查找并删除进度记录
+        # Find and delete progress record
         process = StudentTaskProcess.query.filter_by(
             student_id=student_id, task_id=task_id
         ).first()
@@ -332,7 +327,6 @@ def delete_task_progress(task_id):
 # Video Upload Routes
 @tasks_bp.route('/<int:task_id>/video', methods=['POST'])
 def upload_task_video(task_id):
-    """上传任务视频文件"""
     task = Task.query.get_or_404(task_id)
     
     if 'video' not in request.files:
@@ -342,32 +336,32 @@ def upload_task_video(task_id):
     if file.filename == '':
         return jsonify({'error': 'No file selected'}), 400
     
-    # 验证文件类型
+        # Verify file type
     allowed_extensions = {'mp4', 'avi', 'mov', 'wmv', 'webm'}
     if not ('.' in file.filename and file.filename.rsplit('.', 1)[1].lower() in allowed_extensions):
         return jsonify({'error': 'Invalid video format. Allowed: mp4, avi, mov, wmv, webm'}), 400
     
-    # 验证文件大小 (最大 100MB)
+    # Verify file size (maximum 100MB)
     max_size = 100 * 1024 * 1024  # 100MB
     if request.content_length and request.content_length > max_size:
         return jsonify({'error': 'Video file too large. Maximum size: 100MB'}), 400
     
     try:
-        # 创建安全的文件名
+        # Create safe file name
         file_extension = file.filename.rsplit('.', 1)[1].lower()
         filename = f"task_{task_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{file_extension}"
         video_path = os.path.join(current_app.config['VIDEO_UPLOAD_FOLDER'], filename)
         
-        # 确保目录存在
+        # Ensure directory exists
         os.makedirs(current_app.config['VIDEO_UPLOAD_FOLDER'], exist_ok=True)
         
-        # 保存文件
+        # Save file
         file.save(video_path)
         
-        # 更新数据库
+        # Update database
         task.video_path = filename
         task.video_type = 'local'
-        task.video_url = f'/uploads/videos/{filename}'  # 设置本地视频访问路径
+        task.video_url = f'/uploads/videos/{filename}'  # Set local video access path
         db.session.commit()
         
         return jsonify({
@@ -382,7 +376,6 @@ def upload_task_video(task_id):
 
 @tasks_bp.route('/<int:task_id>/youtube', methods=['POST'])
 def save_youtube_url(task_id):
-    """保存 YouTube 视频链接"""
     task = Task.query.get_or_404(task_id)
     data = request.get_json()
     
@@ -390,15 +383,15 @@ def save_youtube_url(task_id):
     if not youtube_url:
         return jsonify({'error': 'YouTube URL is required'}), 400
     
-    # 简单的 YouTube URL 验证
+    # Simple YouTube URL validation
     if 'youtube.com/watch' not in youtube_url and 'youtu.be/' not in youtube_url:
         return jsonify({'error': 'Invalid YouTube URL'}), 400
     
     try:
-        # 更新数据库
+        # Update database
         task.video_url = youtube_url
         task.video_type = 'youtube'
-        task.video_path = None  # 清除本地视频路径
+        task.video_path = None  # Clear local video path
         db.session.commit()
         
         return jsonify({
@@ -412,18 +405,17 @@ def save_youtube_url(task_id):
 
 @tasks_bp.route('/<int:task_id>/video', methods=['DELETE'])
 def delete_task_video(task_id):
-    """删除任务的视频"""
     task = Task.query.get_or_404(task_id)
     
     try:
-        # 如果是本地视频，删除文件
+        # If local video, delete file
         if task.video_type == 'local' and task.video_path:
             video_file_path = os.path.join(current_app.config['VIDEO_UPLOAD_FOLDER'], os.path.basename(task.video_path))
             if os.path.exists(video_file_path):
                 os.remove(video_file_path)
                 print(f"Deleted video file: {video_file_path}")
         
-        # 清除数据库中的视频信息
+        # Clear video information in database
         task.video_path = None
         task.video_url = None
         task.video_type = None

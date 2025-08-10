@@ -4,7 +4,7 @@ import './CustomAlert.css';
 // Alert Context
 const AlertContext = createContext();
 
-// Alert类型
+// Alert type
 export const ALERT_TYPES = {
   SUCCESS: 'success',
   ERROR: 'error',
@@ -30,7 +30,7 @@ export const AlertProvider = ({ children }) => {
     autoClose = false,
     duration = 3000
   }) => {
-    // 防抖：如果在50ms内重复调用，忽略
+    // Debounce: if called within 50ms, ignore
     const now = Date.now();
     if (now - lastAlertTime.current < 50) {
       return null;
@@ -55,7 +55,7 @@ export const AlertProvider = ({ children }) => {
 
     setAlerts(prev => [...prev, alert]);
 
-    // 自动关闭
+    // Auto-close
     if (autoClose) {
       setTimeout(() => {
         removeAlert(id);
@@ -133,9 +133,9 @@ export const AlertProvider = ({ children }) => {
   );
 };
 
-// Alert Container - 优化：只显示最新的alert，避免多个alert同时渲染导致性能问题
+// Alert Container - Optimized: only show latest alert, avoid performance issues caused by multiple alerts rendering at the same time
 const AlertContainer = React.memo(({ alerts, removeAlert }) => {
-  // 只显示最新的alert，提高性能
+  // Only show latest alert, improve performance
   const latestAlert = alerts[alerts.length - 1];
   
   if (!latestAlert) return null;
@@ -147,7 +147,7 @@ const AlertContainer = React.memo(({ alerts, removeAlert }) => {
   );
 });
 
-// Alert Modal - 使用React.memo优化性能
+  // Alert Modal - Use React.memo to optimize performance
 const AlertModal = React.memo(({ alert, onClose }) => {
   const handleConfirm = () => {
     if (alert.onConfirm) {

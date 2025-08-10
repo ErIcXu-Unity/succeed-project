@@ -26,12 +26,12 @@ class Task(db.Model):
     __tablename__ = 'tasks'
     id           = db.Column(db.Integer, primary_key=True)
     name         = db.Column(db.String(80), unique=True, nullable=False)
-    introduction = db.Column(db.Text, nullable=True)  # 任务介绍描述
-    image_path   = db.Column(db.String(255), nullable=True)  # 任务背景图片
-    video_path   = db.Column(db.String(255), nullable=True)  # 本地视频文件路径
-    video_url    = db.Column(db.String(500), nullable=True)  # YouTube 链接
-    video_type   = db.Column(db.String(20), nullable=True)   # 'local' 或 'youtube'
-    publish_at   = db.Column(db.DateTime, nullable=True) # 发布时间
+    introduction = db.Column(db.Text, nullable=True)  # Task introduction/description
+    image_path   = db.Column(db.String(255), nullable=True)  # Task background image path
+    video_path   = db.Column(db.String(255), nullable=True)  # Local video file path
+    video_url    = db.Column(db.String(500), nullable=True)  # YouTube link
+    video_type   = db.Column(db.String(20), nullable=True)   # 'local' or 'youtube'
+    publish_at   = db.Column(db.DateTime, nullable=True) # Publish time
 
 class Question(db.Model):
     __tablename__ = 'questions'
@@ -40,8 +40,8 @@ class Question(db.Model):
     question        = db.Column(db.Text, nullable=False)
     
     # Question type and data
-    question_type   = db.Column(db.String(50), nullable=False, default='single_choice')  # 问题类型
-    question_data   = db.Column(db.Text, nullable=True)  # JSON格式存储问题特定数据
+    question_type   = db.Column(db.String(50), nullable=False, default='single_choice')  # Question type
+    question_data   = db.Column(db.Text, nullable=True)  # JSON string storing question-specific data
     
     # Legacy single choice fields (kept for backward compatibility)
     option_a        = db.Column(db.String(255), nullable=True)
@@ -52,15 +52,15 @@ class Question(db.Model):
     
     difficulty      = db.Column(db.String(20), nullable=False)
     score           = db.Column(db.Integer, nullable=False)
-    image_path      = db.Column(db.String(255), nullable=True)  # 图片文件路径
-    image_filename  = db.Column(db.String(255), nullable=True)  # 原始文件名
-    video_path      = db.Column(db.String(255), nullable=True)  # 视频文件路径
-    video_filename  = db.Column(db.String(255), nullable=True)  # 原始视频文件名
-    video_url       = db.Column(db.String(500), nullable=True)  # YouTube 视频链接
-    video_type      = db.Column(db.String(20), nullable=True)   # 'local' 或 'youtube'
-    description     = db.Column(db.Text, nullable=True)         # 文字描述/解释
-    created_by      = db.Column(db.String(20), db.ForeignKey('teachers.teacher_id'), nullable=True)  # 创建教师
-    created_at      = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)  # 创建时间
+    image_path      = db.Column(db.String(255), nullable=True)  # Image file path
+    image_filename  = db.Column(db.String(255), nullable=True)  # Original filename
+    video_path      = db.Column(db.String(255), nullable=True)  # Video file path
+    video_filename  = db.Column(db.String(255), nullable=True)  # Original video filename
+    video_url       = db.Column(db.String(500), nullable=True)  # YouTube video link
+    video_type      = db.Column(db.String(20), nullable=True)   # 'local' or 'youtube'
+    description     = db.Column(db.Text, nullable=True)         # Text description/explanation
+    created_by      = db.Column(db.String(20), db.ForeignKey('teachers.teacher_id'), nullable=True)  # Created by teacher
+    created_at      = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)  # Created time
 
     task = db.relationship('Task', backref=db.backref('questions', lazy=True))
 
@@ -93,7 +93,7 @@ class StudentTaskResult(db.Model):
     task_id      = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=False)
     task_name    = db.Column(db.String(80), nullable=False)  # redundant field for easy access
     total_score  = db.Column(db.Integer, nullable=False)
-    started_at   = db.Column(db.DateTime, nullable=True)  # 任务开始时间
+    started_at   = db.Column(db.DateTime, nullable=True)  # Task start time
     completed_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), nullable=False)
 
     student = db.relationship('Student', foreign_keys=[student_id], backref='task_results')
@@ -106,8 +106,8 @@ class StudentTaskProcess(db.Model):
     student_name         = db.Column(db.String(80), nullable=False)  # redundant field for easy access
     task_id              = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=False)
     task_name            = db.Column(db.String(80), nullable=False)  # redundant field for easy access
-    current_question_index = db.Column(db.Integer, nullable=False, default=0)  # 当前题目索引
-    answers_json         = db.Column(db.Text, nullable=True)  # JSON 格式存储已选择的答案
+    current_question_index = db.Column(db.Integer, nullable=False, default=0)  # Current question index
+    answers_json         = db.Column(db.Text, nullable=True)  # JSON storing selected answers
     saved_at             = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at           = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 

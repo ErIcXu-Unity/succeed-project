@@ -68,7 +68,7 @@ const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
         const result = await response.json();
         const videoInfo = {
           type: 'local',
-          path: result.filename || result.video_url.split('/').pop(), // 从返回结果获取文件名
+          path: result.filename || result.video_url.split('/').pop(), // Get filename from return result
           url: result.video_url
         };
         
@@ -175,14 +175,14 @@ const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // 验证文件类型
+      // Validate file type
       const allowedTypes = ['video/mp4', 'video/mov', 'video/avi', 'video/wmv', 'video/webm'];
       if (!allowedTypes.includes(file.type)) {
         setError('Please select a valid video format (MP4, MOV, AVI, WMV, WebM)');
         return;
       }
       
-      // 验证文件大小 (100MB)
+      // Validate file size (100MB)
       const maxSize = 100 * 1024 * 1024; // 100MB
       if (file.size > maxSize) {
         setError('Video file too large. Maximum size: 100MB');
@@ -192,7 +192,7 @@ const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
       handleLocalUpload(file);
     }
     
-    // 重置文件输入，这样用户可以重新选择同一个文件
+    // Reset file input so user can reselect the same file
     e.target.value = '';
   };
 
@@ -202,14 +202,14 @@ const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
     
     const file = e.dataTransfer.files[0];
     if (file) {
-      // 验证文件类型
+      // Validate file type
       const allowedTypes = ['video/mp4', 'video/mov', 'video/avi', 'video/wmv', 'video/webm'];
       if (!allowedTypes.includes(file.type)) {
         setError('Please select a valid video format (MP4, MOV, AVI, WMV, WebM)');
         return;
       }
       
-      // 验证文件大小 (100MB)
+      // Validate file size (100MB)
       const maxSize = 100 * 1024 * 1024; // 100MB
       if (file.size > maxSize) {
         setError('Video file too large. Maximum size: 100MB');
@@ -240,7 +240,7 @@ const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
         </div>
       )}
 
-      {/* 当前视频显示 */}
+      {/* Current video display */}
       {currentVideo && currentVideo.type && (
         <div className="current-video">
           <h4>
@@ -267,7 +267,7 @@ const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
               )}
             </div>
 
-            {/* 视频预览 */}
+            {/* Video preview */}
             <div className="video-preview">
               <h5>Video Preview:</h5>
               {currentVideo.type === 'local' ? (
@@ -319,7 +319,7 @@ const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
                             ? `${config.API_BASE_URL}/uploads/videos/${currentVideo.path}` 
                             : '')
                     } type="video/webm" />
-                    您的浏览器不支持视频播放
+                    Your browser does not support video playback
                   </video>
                   <div className="video-error-fallback" style={{ 
                     display: 'none', 
@@ -366,7 +366,7 @@ const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
         </div>
       )}
 
-      {/* 上传类型选择器 */}
+      {/* Upload type selector */}
       {(!currentVideo || !currentVideo.type) && !isCreateMode && (
         <>
           <div className="upload-options">
@@ -375,11 +375,11 @@ const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
               onClick={(e) => {
                 e.preventDefault();
                 
-                // 自动选择local上传类型
+                // Auto-select local upload type
                 setUploadType('local');
-                setError(''); // 清除之前的错误
+                setError(''); // Clear previous errors
                 
-                // 打开文件选择器
+                // Open file selector
                 const fileInput = document.getElementById('video-file-input');
                 if (fileInput) {
                   fileInput.click();
@@ -395,7 +395,7 @@ const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
               className={`upload-option-btn youtube-option-btn ${uploadType === 'youtube' ? 'active' : ''}`}
               onClick={() => {
                 setUploadType('youtube');
-                setError(''); // 清除之前的错误
+                setError(''); // Clear previous errors
               }}
             >
               <i className="fab fa-youtube"></i>
@@ -480,7 +480,7 @@ const VideoUpload = ({ taskId, isCreateMode = false, onVideoUploaded }) => {
         </div>
       )}
 
-      {/* 隐藏的文件选择器，放在组件最后以便任何按钮都能访问 */}
+      {/* Hidden file selector, placed at component end so any button can access it */}
       <input
         id="video-file-input"
         type="file"

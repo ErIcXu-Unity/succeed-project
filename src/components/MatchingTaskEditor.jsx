@@ -230,6 +230,7 @@ const MatchingTaskEditor = ({ formData, setFormData }) => {
               type="button"
               onClick={addMatchPair}
               className="btn-primary"
+              data-cy="add-match-pair-btn"
             >
               <i className="fas fa-plus"></i>
               Add Match Pair

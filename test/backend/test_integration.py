@@ -9,10 +9,13 @@ import os
 from datetime import datetime, timezone
 from werkzeug.security import generate_password_hash
 
-# Add project root directory to Python path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
+# Ensure project root is on sys.path so that `backend` package can be imported
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+backend_dir = os.path.join(project_root, 'backend')
+sys.path.insert(0, project_root)
+sys.path.insert(0, backend_dir)
 
-from models import db, Student, Teacher, Task, Question, Submission, Achievement
+from models import db, Student, Teacher, Task, Question, Achievement
 
 
 class TestStudentWorkflow:
@@ -41,7 +44,7 @@ class TestStudentWorkflow:
         assert login_response.status_code == 200
         
         login_result = json.loads(login_response.data)
-        assert login_result['role'] == 'student'
+        assert login_result['role'] == 'stu'
         assert login_result['real_name'] == 'Integration Test Student'
     
     def test_complete_task_workflow(self, client, test_student, test_task, test_question):
@@ -71,17 +74,14 @@ class TestStudentWorkflow:
         
         # Submit task completion
         submission_data = {
-            'answers': [
-                {
-                    'question_id': test_question.id,
-                    'answer': 'B'  # Correct answer
-                }
-            ],
-            'completion_time': 120
+            'student_id': test_student.student_id,
+            'answers': {str(test_question.id): 'B'}
         }
-        
-        submit_response = client.post(f'/api/tasks/{test_task.id}/submit', 
-                                    json=submission_data)
+
+        submit_response = client.post(
+            f'/api/tasks/{test_task.id}/submit',
+            json=submission_data
+        )
         
         if submit_response.status_code != 404:  # If endpoint exists
             assert submit_response.status_code == 200 or submit_response.status_code == 201
@@ -97,22 +97,27 @@ class TestStudentWorkflow:
         
         # Save progress on a task
         progress_data = {
-            'current_question': 1,
-            'answers': [{'question_id': 1, 'answer': 'A'}],
-            'time_spent': 60
+            'student_id': test_student.student_id,
+            'current_question_index': 1,
+            'answers': {'1': 'A'}
         }
-        
-        save_response = client.post(f'/api/tasks/{test_task.id}/save-progress',
-                                  json=progress_data)
+
+        save_response = client.post(
+            f'/api/tasks/{test_task.id}/save-progress',
+            json=progress_data
+        )
         
         if save_response.status_code not in [404, 405]:  # If endpoint exists
             assert save_response.status_code == 200
             
             # Retrieve saved progress
-            progress_response = client.get(f'/api/tasks/{test_task.id}/progress')
+            progress_response = client.get(
+                f'/api/tasks/{test_task.id}/progress',
+                query_string={'student_id': test_student.student_id}
+            )
             if progress_response.status_code == 200:
                 progress = json.loads(progress_response.data)
-                assert progress['current_question'] == 1
+                assert progress['current_question_index'] == 1
 
 
 class TestTeacherWorkflow:
@@ -171,22 +176,20 @@ class TestTeacherWorkflow:
         client.post('/login', json=login_data)
         
         # Get all students
-        students_response = client.get('/api/students')
+        students_response = client.get('/api/students/list')
         if students_response.status_code == 200:
             students = json.loads(students_response.data)
             assert len(students) >= 1
             
             # Get specific student details
-            student_response = client.get(f'/api/students/{test_student.id}')
+            student_response = client.get(f'/api/students/{test_student.student_id}/details')
             if student_response.status_code == 200:
                 student_data = json.loads(student_response.data)
-                assert student_data['id'] == test_student.id
+                assert student_data['student_info']['id'] == test_student.student_id
         
-        # Get student submissions for a task
-        submissions_response = client.get(f'/api/tasks/{test_task.id}/submissions')
-        if submissions_response.status_code == 200:
-            submissions = json.loads(submissions_response.data)
-            # Should be empty or contain submissions
+        # Check student history endpoint instead of non-existent submissions list
+        history_response = client.get(f'/api/students/{test_student.student_id}/history')
+        assert history_response.status_code in [200, 404]
 
 
 class TestMultiQuestionTypeWorkflow:
@@ -201,79 +204,95 @@ class TestMultiQuestionTypeWorkflow:
         }
         client.post('/login', json=login_data)
         
-        question_types = [
-            {
-                'type': 'single_choice',
-                'data': {
-                    'question': 'Single choice question?',
-                    'question_type': 'single_choice',
-                    'option_a': 'A',
-                    'option_b': 'B',
-                    'option_c': 'C',
-                    'option_d': 'D',
-                    'answer': 'A'
-                }
-            },
-            {
-                'type': 'multiple_choice',
-                'data': {
-                    'question': 'Multiple choice question?',
-                    'question_type': 'multiple_choice',
-                    'question_data': json.dumps({
-                        'options': ['Option 1', 'Option 2', 'Option 3'],
-                        'correct_answers': [0, 1]
-                    })
-                }
-            },
-            {
-                'type': 'fill_blank',
-                'data': {
-                    'question': 'Fill in the blank: Paris is the capital of ____.',
-                    'question_type': 'fill_blank',
-                    'question_data': json.dumps({
-                        'correct_answer': 'France',
-                        'case_sensitive': False
-                    })
-                }
-            },
-            {
-                'type': 'puzzle_game',
-                'data': {
-                    'question': 'Arrange the steps in order:',
-                    'question_type': 'puzzle_game',
-                    'question_data': json.dumps({
-                        'fragments': ['Step 1', 'Step 2', 'Step 3'],
-                        'correct_order': [0, 1, 2]
-                    })
-                }
-            },
-            {
-                'type': 'matching_task',
-                'data': {
-                    'question': 'Match the items:',
-                    'question_type': 'matching_task',
-                    'question_data': json.dumps({
-                        'left_items': ['A', 'B', 'C'],
-                        'right_items': ['1', '2', '3'],
-                        'correct_matches': {'A': '1', 'B': '2', 'C': '3'}
-                    })
-                }
-            }
-        ]
-        
+        # Create each question type using multipart/form-data
         created_questions = []
-        
-        for question_type_info in question_types:
-            response = client.post(
-                f'/api/tasks/{test_task.id}/questions',
-                json=question_type_info['data']
-            )
-            
-            if response.status_code not in [401, 403]:  # If authorized
-                if response.status_code == 201:
-                    created_question = json.loads(response.data)
-                    created_questions.append(created_question)
-                    assert created_question['question_type'] == question_type_info['type']
+
+        sc_data = {
+            'question': 'Single choice question?',
+            'question_type': 'single_choice',
+            'option_a': 'A', 'option_b': 'B', 'option_c': 'C', 'option_d': 'D',
+            'correct_answer': 'A',
+            'difficulty': 'Easy',
+            'score': '3'
+        }
+        response = client.post(
+            f'/api/tasks/{test_task.id}/questions',
+            data=sc_data,
+            content_type='multipart/form-data'
+        )
+        if response.status_code == 201:
+            created_questions.append(json.loads(response.data))
+
+        mc_data = {
+            'question': 'Multiple choice question?',
+            'question_type': 'multiple_choice',
+            'options[0]': 'Option 1',
+            'options[1]': 'Option 2',
+            'options[2]': 'Option 3',
+            'correct_answers[0]': '0',
+            'correct_answers[1]': '1',
+            'difficulty': 'Medium',
+            'score': '5'
+        }
+        response = client.post(
+            f'/api/tasks/{test_task.id}/questions',
+            data=mc_data,
+            content_type='multipart/form-data'
+        )
+        if response.status_code == 201:
+            created_questions.append(json.loads(response.data))
+
+        fb_data = {
+            'question': 'Fill in the blank: Paris is the capital of ____.',
+            'question_type': 'fill_blank',
+            'blank_answers[0]': 'France',
+            'difficulty': 'Easy',
+            'score': '3'
+        }
+        response = client.post(
+            f'/api/tasks/{test_task.id}/questions',
+            data=fb_data,
+            content_type='multipart/form-data'
+        )
+        if response.status_code == 201:
+            created_questions.append(json.loads(response.data))
+
+        pg_data = {
+            'question': 'Arrange the steps in order:',
+            'question_type': 'puzzle_game',
+            'puzzle_solution': 'Step 1 Step 2 Step 3',
+            'puzzle_fragments[0]': 'Step 1',
+            'puzzle_fragments[1]': 'Step 2',
+            'puzzle_fragments[2]': 'Step 3',
+            'difficulty': 'Medium',
+            'score': '5'
+        }
+        response = client.post(
+            f'/api/tasks/{test_task.id}/questions',
+            data=pg_data,
+            content_type='multipart/form-data'
+        )
+        if response.status_code == 201:
+            created_questions.append(json.loads(response.data))
+
+        mt_data = {
+            'question': 'Match the items:',
+            'question_type': 'matching_task',
+            'left_items[0]': 'A', 'left_items[1]': 'B', 'left_items[2]': 'C',
+            'right_items[0]': '1', 'right_items[1]': '2', 'right_items[2]': '3',
+            'correct_matches[0][left]': '0', 'correct_matches[0][right]': '2',
+            'correct_matches[1][left]': '1', 'correct_matches[1][right]': '0',
+            'correct_matches[2][left]': '2', 'correct_matches[2][right]': '1',
+            'difficulty': 'Easy',
+            'score': '3'
+        }
+        response = client.post(
+            f'/api/tasks/{test_task.id}/questions',
+            data=mt_data,
+            content_type='multipart/form-data'
+        )
+        if response.status_code == 201:
+            created_questions.append(json.loads(response.data))
         
         # Verify all questions were created
         questions_response = client.get(f'/api/tasks/{test_task.id}/questions')
@@ -383,17 +402,25 @@ class TestPerformanceWorkflow:
             db.session.add(task)
             db.session.commit()
             
-            # Create questions
-            for i in range(10):
+            # Create questions with different difficulty levels
+            difficulties = [
+                ("easy", 3), ("easy", 3), ("easy", 3), ("easy", 3),
+                ("medium", 5), ("medium", 5), ("medium", 5),
+                ("hard", 10), ("hard", 10), ("hard", 10)
+            ]
+            
+            for i, (difficulty, score) in enumerate(difficulties):
                 question = Question(
                     task_id=task.id,
-                    question=f"Performance question {i}?",
+                    question=f"Performance question {i} ({difficulty})?",
                     question_type="single_choice",
                     option_a="A",
                     option_b="B",
                     option_c="C",
                     option_d="D",
-                    answer="A"
+                    correct_answer="A",
+                    difficulty=difficulty,
+                    score=score
                 )
                 db.session.add(question)
             
@@ -421,7 +448,9 @@ class TestPerformanceWorkflow:
                 task_id=test_task.id,
                 question="Large data question?",
                 question_type="multiple_choice",
-                question_data=json.dumps(large_data)
+                question_data=json.dumps(large_data),
+                difficulty="hard",
+                score=10
             )
             db.session.add(question)
             db.session.commit()

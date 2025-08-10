@@ -128,8 +128,8 @@ def get_student_history(student_id):
     # Build history list
     history_data = []
     for result in task_results:
-            # Get task information
-        task = Task.query.get(result.task_id)
+        # Get task information
+        task = db.session.get(Task, result.task_id)
         if task:
             # Get all questions for the task to calculate total score
             task_questions = Question.query.filter_by(task_id=result.task_id).all()

@@ -4,7 +4,7 @@ Task Management Routes for the Escape Room Application
 import os
 import json
 from datetime import datetime, timezone
-from flask import Blueprint, request, jsonify, current_app, send_from_directory
+from flask import Blueprint, request, jsonify, current_app, send_from_directory, abort
 from models import db, Task, Question, StudentTaskProcess, StudentTaskResult, Achievement, StudentAchievement, Student
 
 tasks_bp = Blueprint('tasks', __name__, url_prefix='/api/tasks')
@@ -97,7 +97,9 @@ def create_task():
 @tasks_bp.route('/<int:task_id>', methods=['GET'])
 def get_task_detail(task_id):
     """Get task details"""
-    task = Task.query.get_or_404(task_id)
+    task = db.session.get(Task, task_id)
+    if not task:
+        abort(404)
     result = {
         'id': task.id,
         'name': task.name,
@@ -121,8 +123,10 @@ def get_task_detail(task_id):
 
 @tasks_bp.route('/<int:task_id>', methods=['PUT'])
 def update_task(task_id):
-
-    task = Task.query.get_or_404(task_id)
+    """Update task information"""
+    task = db.session.get(Task, task_id)
+    if not task:
+        abort(404)
     data = request.get_json()
     
     if 'name' in data:
@@ -183,8 +187,11 @@ def update_task(task_id):
 
 @tasks_bp.route('/<int:task_id>', methods=['DELETE'])
 def delete_task(task_id):
+    """Delete task and its related data"""
     # Verify task exists
-    task = Task.query.get_or_404(task_id)
+    task = db.session.get(Task, task_id)
+    if not task:
+        abort(404)
     
     try:
         # Start transaction - cascade delete related data
@@ -237,7 +244,7 @@ def save_task_progress(task_id):
     if not student:
         return jsonify({'error': 'student not found'}), 404
     
-    task = Task.query.get(task_id)
+    task = db.session.get(Task, task_id)
     if not task:
         return jsonify({'error': 'task not found'}), 404
     
@@ -327,7 +334,10 @@ def delete_task_progress(task_id):
 # Video Upload Routes
 @tasks_bp.route('/<int:task_id>/video', methods=['POST'])
 def upload_task_video(task_id):
-    task = Task.query.get_or_404(task_id)
+    """Upload task video file"""
+    task = db.session.get(Task, task_id)
+    if not task:
+        abort(404)
     
     if 'video' not in request.files:
         return jsonify({'error': 'No video file provided'}), 400
@@ -376,7 +386,10 @@ def upload_task_video(task_id):
 
 @tasks_bp.route('/<int:task_id>/youtube', methods=['POST'])
 def save_youtube_url(task_id):
-    task = Task.query.get_or_404(task_id)
+    """Save YouTube video link"""
+    task = db.session.get(Task, task_id)
+    if not task:
+        abort(404)
     data = request.get_json()
     
     youtube_url = data.get('youtube_url')
@@ -405,7 +418,10 @@ def save_youtube_url(task_id):
 
 @tasks_bp.route('/<int:task_id>/video', methods=['DELETE'])
 def delete_task_video(task_id):
-    task = Task.query.get_or_404(task_id)
+    """Delete task video"""
+    task = db.session.get(Task, task_id)
+    if not task:
+        abort(404)
     
     try:
         # If local video, delete file

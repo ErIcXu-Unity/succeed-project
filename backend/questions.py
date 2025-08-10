@@ -5,14 +5,17 @@ import os
 import json
 import uuid
 from datetime import datetime, timezone
-from flask import Blueprint, request, jsonify, send_from_directory, current_app
+from flask import Blueprint, request, jsonify, send_from_directory, current_app, abort
+from werkzeug.exceptions import HTTPException
 from models import db, Task, Question
 
 questions_bp = Blueprint('questions', __name__)
 
 @questions_bp.route('/api/tasks/<int:task_id>/questions', methods=['GET'])
 def get_questions(task_id):
-    task = Task.query.get_or_404(task_id)
+    task = db.session.get(Task, task_id)
+    if not task:
+        abort(404)
     result = []
     for q in task.questions:
         question_data = {
@@ -99,13 +102,16 @@ def get_questions(task_id):
 
 @questions_bp.route('/api/questions/<int:question_id>/check', methods=['POST'])
 def check_answer(question_id):
+    """Check answer for a single question"""
     data = request.get_json()
     selected_answer = data.get('answer')
     
     if not selected_answer:
         return jsonify({'error': 'answer required'}), 400
     
-    question = Question.query.get_or_404(question_id)
+    question = db.session.get(Question, question_id)
+    if not question:
+        abort(404)
     
     is_correct = selected_answer.upper() == question.correct_answer
     
@@ -120,8 +126,11 @@ def check_answer(question_id):
 
 @questions_bp.route('/api/tasks/<int:task_id>/questions', methods=['POST'])
 def create_single_question(task_id):
+    """Create single question (supports multiple question types)"""
     # Verify task exists
-    task = Task.query.get_or_404(task_id)
+    task = db.session.get(Task, task_id)
+    if not task:
+        abort(404)
     
     # Check current task's question count
     current_question_count = Question.query.filter_by(task_id=task_id).count()
@@ -379,8 +388,11 @@ def create_single_question(task_id):
 
 @questions_bp.route('/api/tasks/<int:task_id>/questions/batch', methods=['POST'])
 def create_questions_batch(task_id):
+    """Batch create questions"""
     # Verify task exists
-    task = Task.query.get_or_404(task_id)
+    task = db.session.get(Task, task_id)
+    if not task:
+        abort(404)
     
     data = request.get_json()
     questions_data = data.get('questions', [])
@@ -472,8 +484,11 @@ def create_questions_batch(task_id):
 
 @questions_bp.route('/api/questions/<int:question_id>', methods=['DELETE'])
 def delete_question(question_id):
+    """Delete a single question"""
     try:
-        question = Question.query.get_or_404(question_id)
+        question = db.session.get(Question, question_id)
+        if not question:
+            abort(404)
         
         # Delete related files
         if question.image_path:
@@ -498,6 +513,8 @@ def delete_question(question_id):
         
         return jsonify({'message': 'Question deleted successfully'}), 200
         
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions (like abort(404))
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': f'Failed to delete question: {str(e)}'}), 500
@@ -506,7 +523,9 @@ def delete_question(question_id):
 @questions_bp.route('/api/questions/<int:question_id>', methods=['GET'])
 def get_question(question_id):
     try:
-        question = Question.query.get_or_404(question_id)
+        question = db.session.get(Question, question_id)
+        if not question:
+            abort(404)
         
         question_data = {
             'id': question.id,
@@ -536,6 +555,8 @@ def get_question(question_id):
         
         return jsonify(question_data), 200
         
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions (like abort(404))
     except Exception as e:
         return jsonify({'error': f'Failed to get question: {str(e)}'}), 500
 
@@ -543,7 +564,9 @@ def get_question(question_id):
 @questions_bp.route('/api/questions/<int:question_id>', methods=['PUT'])
 def update_question(question_id):
     try:
-        question = Question.query.get_or_404(question_id)
+        question = db.session.get(Question, question_id)
+        if not question:
+            abort(404)
         data = request.get_json()
         
         # Update basic fields
@@ -581,6 +604,8 @@ def update_question(question_id):
         
         return jsonify({'message': 'Question updated successfully'}), 200
         
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions (like abort(404))
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': f'Failed to update question: {str(e)}'}), 500

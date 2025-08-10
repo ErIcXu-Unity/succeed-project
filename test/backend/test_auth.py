@@ -6,8 +6,11 @@ import json
 import sys
 import os
 
-    # Add project root directory to Python path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
+# Ensure project root is on sys.path so that `backend` package can be imported
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+backend_dir = os.path.join(project_root, 'backend')
+sys.path.insert(0, project_root)
+sys.path.insert(0, backend_dir)
 
 from models import db, Student, Teacher
 

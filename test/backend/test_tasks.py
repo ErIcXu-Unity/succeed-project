@@ -6,8 +6,11 @@ import json
 import sys
 import os
 
-# Add project root directory to Python path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
+# Ensure project root is on sys.path so that `backend` package can be imported
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+backend_dir = os.path.join(project_root, 'backend')
+sys.path.insert(0, project_root)
+sys.path.insert(0, backend_dir)
 
 from models import db, Task
 
@@ -58,9 +61,9 @@ class TestTasksAPI:
         
         if response.status_code != 401:  # If authentication is not required for testing
             assert response.status_code == 201
-            created_task = json.loads(response.data)
-            assert created_task['name'] == task_data['name']
-            assert created_task['introduction'] == task_data['introduction']
+            created = json.loads(response.data)
+            assert created['task']['name'] == task_data['name']
+            assert created['task']['introduction'] == task_data['introduction']
             
             # Verify task was created in database
             db_task = Task.query.filter_by(name=task_data['name']).first()
@@ -107,9 +110,9 @@ class TestTasksAPI:
         
         if response.status_code != 401:  # If authentication is not required for testing
             assert response.status_code == 200
-            updated_task = json.loads(response.data)
-            assert updated_task['name'] == updated_data['name']
-            assert updated_task['introduction'] == updated_data['introduction']
+            data = json.loads(response.data)
+            assert data['task']['name'] == updated_data['name']
+            assert data['task']['introduction'] == updated_data['introduction']
     
     def test_update_nonexistent_task(self, client, auth_headers_teacher):
         """Test updating a task that doesn't exist."""
@@ -140,7 +143,7 @@ class TestTasksAPI:
         if create_response.status_code not in [401, 403]:  # If we can create tasks
             if create_response.status_code == 201:
                 created_task = json.loads(create_response.data)
-                task_id = created_task['id']
+                task_id = created_task['task']['id'] if 'task' in created_task else created_task['id']
                 
                 # Now delete the task
                 delete_response = client.delete(f'/api/tasks/{task_id}', 

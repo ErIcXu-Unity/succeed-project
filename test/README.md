@@ -1,199 +1,260 @@
-# 测试目录 / Test Directory
+# 🧪 Test Directory — UNSW Escape Room Education Platform
 
-本目录包含UNSW逃脱室教育平台的所有测试文件，采用统一的测试架构。
+This directory contains **all backend and frontend tests** for the UNSW Escape Room Education Platform, following a unified testing architecture. It mirrors the original Chinese documentation, expanded and polished for clarity and use on GitHub.
 
-## 📁 目录结构 / Directory Structure
+---
+
+## 📁 Directory Structure
 
 ```
 test/
-├── backend/                   # 后端测试
-│   ├── conftest.py           # Pytest配置和fixtures
-│   ├── test_auth.py          # 认证功能测试
-│   ├── test_tasks.py         # 任务管理测试
-│   ├── test_questions.py     # 问题管理测试
-│   ├── test_models.py        # 数据模型测试
-│   └── test_integration.py   # 集成测试
-├── frontend/                  # 前端测试
-│   ├── Login.test.js         # 登录组件测试
-│   ├── QuestionCreateModal.test.js # 问题创建模态框测试
-│   └── ...更多组件测试
-├── pytest.ini               # Pytest配置文件
-└── README.md                 # 本文件
+├── backend/                         # Backend tests
+│   ├── conftest.py                  # Pytest configuration & fixtures
+│   ├── test_auth.py                 # Authentication tests
+│   ├── test_tasks.py                # Task management tests
+│   ├── test_questions.py            # Question management tests
+│   ├── test_models.py               # Data model tests
+│   └── test_integration.py          # Integration tests
+├── frontend/                        # Frontend tests
+│   ├── Login.test.js                # Login component tests
+│   ├── QuestionCreateModal.test.js  # Question creation modal tests
+│   └── ...more component tests
+├── pytest.ini                       # Pytest configuration
+└── README.md                        # This file
 ```
 
-## 🚀 快速开始 / Quick Start
+> **Notes**
+>
+> - Backend tests target the Flask/SQLAlchemy application.
+> - Frontend tests use React Testing Library + Jest.
+> - End‑to‑end (E2E) tests (if any, e.g., Cypress) live outside this folder in their own `e2e/` directory.
 
-### 运行所有后端测试
+---
+
+## 🚀 Quick Start
+
+### Run all backend tests
+
 ```bash
 cd test
 pytest backend
 ```
 
-### 运行特定测试文件
+### Run a specific test file
+
 ```bash
 cd test
 pytest backend/test_auth.py
 ```
 
-### 生成覆盖率报告
+### Generate an HTML coverage report
+
 ```bash
 cd test
 pytest --cov=../backend --cov-report=html:../htmlcov backend
+# Open ../htmlcov/index.html in your browser
 ```
 
-### 使用测试运行脚本（推荐）
+### Generate a terminal coverage report (with missing lines)
+
 ```bash
-# 从项目根目录运行
+cd test
+pytest --cov=../backend --cov-report=term-missing backend
+```
+
+### Use the test runner script (recommended)
+
+```bash
+# From the project root
 python run_tests.py --backend
 python run_tests.py --frontend
 python run_tests.py --all
 ```
 
-## 📝 测试说明 / Test Documentation
+---
 
-### 后端测试 / Backend Tests
+## 📝 Test Documentation
 
-- **test_auth.py**: 用户认证功能测试
-  - 学生注册和登录
-  - 密码验证
-  - 权限控制
+### Backend Tests
 
-- **test_tasks.py**: 任务管理测试
-  - 任务CRUD操作
-  - 任务权限验证
-  - 任务-问题关联
+- **`test_auth.py` — Authentication**
 
-- **test_questions.py**: 问题管理测试
-  - 6种问题类型创建
-  - 问题数据验证
-  - 问题-任务关联
+  - Student sign‑up and login
+  - Password validation
+  - Permission/role checks
 
-- **test_models.py**: 数据模型测试
-  - 模型创建和验证
-  - 数据关系测试
-  - 约束条件验证
+- **`test_tasks.py` — Task Management**
 
-- **test_integration.py**: 集成测试
-  - 完整用户流程
-  - 系统间交互
-  - 错误处理流程
+  - Task CRUD
+  - Access control
+  - Task–question associations
 
-### 前端测试 / Frontend Tests
+- **`test_questions.py` — Question Management**
 
-- **Login.test.js**: 登录组件测试
-  - 表单渲染和交互
-  - API调用和响应处理
-  - 导航和错误处理
+  - Creation of six question types
+  - Payload/data validation
+  - Question–task associations
 
-- **QuestionCreateModal.test.js**: 问题创建模态框测试
-  - 多种问题类型支持
-  - 表单验证
-  - 模态框交互
+- **`test_models.py` — Data Models**
 
-## 🛠️ 开发指南 / Development Guide
+  - Model creation and validation
+  - Relationship integrity
+  - Constraint enforcement
 
-### 添加新的后端测试
+- **`test_integration.py` — Integration**
+  - End‑to‑end user journeys
+  - Cross‑module interactions
+  - Error handling flows
 
-1. 在 `backend/` 目录下创建新的测试文件，命名为 `test_*.py`
-2. 确保导入必要的模块：
-```python
-import pytest
-import json
-import sys
-import os
+### Frontend Tests
 
-# 添加项目根目录到Python路径
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
+- **`Login.test.js` — Login Component**
 
-from models import db, YourModel
-```
+  - Form rendering and interactions
+  - API calls and response handling
+  - Navigation and error states
 
-3. 使用conftest.py中定义的fixtures
-4. 遵循AAA模式（Arrange, Act, Assert）
+- **`QuestionCreateModal.test.js` — Question Creation Modal**
+  - Multiple question type support
+  - Form validation rules
+  - Modal UI interactions
 
-### 添加新的前端测试
+---
 
-1. 在 `frontend/` 目录下创建新的测试文件，命名为 `*.test.js`
-2. 导入必要的测试工具和组件：
-```javascript
-import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import '@testing-library/jest-dom';
-import YourComponent from '../../src/components/YourComponent';
-```
+## 🛠️ Development Guide
 
-3. 模拟必要的依赖（如fetch、路由等）
-4. 编写描述性的测试用例
+### Adding a New Backend Test
 
-## 🔧 配置文件 / Configuration Files
+1. Create a file in `test/backend/` named `test_*.py`.
+2. Import required modules and ensure the project root is on `PYTHONPATH`:
 
-### pytest.ini
-Pytest的主要配置文件，定义了：
-- 测试路径
-- 覆盖率设置
-- 测试标记
-- 报告格式
+   ```python
+   import pytest
+   import json
+   import sys
+   import os
 
-### conftest.py
-包含所有的pytest fixtures：
-- 应用程序实例
-- 测试客户端
-- 测试数据（学生、教师、任务、问题）
-- 认证头部
+   # Add project root to Python path
+   sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'backend'))
 
-## 📊 测试标记 / Test Markers
+   from models import db, YourModel
+   ```
 
-使用pytest标记来分类测试：
+3. Reuse fixtures from `conftest.py` (app, client, auth headers, seed data).
+4. Follow the **AAA** pattern: _Arrange, Act, Assert_.
+5. Keep tests deterministic; avoid relying on wall‑clock time or external services.
+
+### Adding a New Frontend Test
+
+1. Create a file in `test/frontend/` named `*.test.js`.
+2. Import testing tools and the component:
+   ```javascript
+   import React from "react";
+   import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+   import "@testing-library/jest-dom";
+   import YourComponent from "../../src/components/YourComponent";
+   ```
+3. Mock external dependencies (fetch/axios, routing, context providers, etc.).
+4. Prefer user‑facing assertions (query by role/label) over implementation details.
+
+---
+
+## 🔧 Configuration Files
+
+### `pytest.ini`
+
+Defines:
+
+- Test discovery paths
+- Coverage configuration
+- Custom markers
+- Output/reporting options
+
+### `conftest.py`
+
+Centralised Pytest fixtures, including:
+
+- **Application factory/instance**
+- **Test client** (authenticated and anonymous)
+- **Seed test data** (students, teachers, tasks, questions)
+- **Authorisation headers / tokens**
+- **Database session/cleanup hooks**
+
+> **Database isolation**: Each test case uses a dedicated **SQLite in‑memory database**, created and torn down per test class or function (as configured), ensuring isolation and reproducibility.
+
+---
+
+## 📊 Test Markers
+
+Use markers to categorise and filter tests:
 
 ```bash
-# 运行快速测试
+# Run quick tests (exclude slow)
 pytest -m "not slow" backend
 
-# 运行集成测试
+# Run integration tests
 pytest -m "integration" backend
 
-# 运行单元测试
+# Run unit tests
 pytest -m "unit" backend
 
-# 运行API测试
+# Run API tests
 pytest -m "api" backend
 ```
 
-## 🐛 调试技巧 / Debugging Tips
+You can combine markers:
 
-### 查看详细输出
+```bash
+pytest -m "integration and not slow" backend
+```
+
+---
+
+## 🐛 Debugging Tips
+
+### Verbose output
+
 ```bash
 pytest -v -s backend/test_auth.py
 ```
 
-### 只运行失败的测试
+### Re‑run only failed tests
+
 ```bash
 pytest --lf backend
 ```
 
-### 进入调试模式
+### Drop into the debugger on failure
+
 ```bash
 pytest --pdb backend/test_auth.py::TestLogin::test_successful_login
 ```
 
-### 查看覆盖率详情
+### Coverage with missing lines in terminal
+
 ```bash
 pytest --cov=../backend --cov-report=term-missing backend
 ```
 
-## 🚨 注意事项 / Important Notes
-
-1. **路径依赖**: 所有后端测试都需要正确设置Python路径以导入项目模块
-2. **数据库隔离**: 每个测试使用独立的SQLite内存数据库
-3. **Mock策略**: 前端测试需要mock外部依赖（API调用、路由等）
-4. **测试数据**: 使用fixtures创建可重用的测试数据
-5. **清理机制**: 测试完成后自动清理数据和状态
-
-## 📚 更多信息 / More Information
-
-详细的测试文档请参考项目根目录下的 `TESTING.md` 文件。
+> If imports fail, verify `PYTHONPATH` manipulation in tests (see the snippet in _Adding a New Backend Test_), or run tests via `run_tests.py` which sets paths for you.
 
 ---
 
-**维护者**: UNSW逃脱室教育平台开发团队  
-**最后更新**: 2024年 
+## 🚨 Important Notes
+
+1. **Path dependencies**: Ensure the backend package is importable in tests (via `sys.path` update or an editable install).
+2. **Database isolation**: Tests must not leak state; fixtures should roll back or recreate the DB between tests.
+3. **Mock strategy**: Frontend tests should mock API calls and routing; avoid hitting live services.
+4. **Test data**: Prefer reusable fixtures over inline data duplication.
+5. **Cleanup**: All temporary files, state, and database rows are cleaned automatically by fixtures.
+
+---
+
+## 📚 More Information
+
+For detailed testing conventions and project‑wide guidance, see `TESTING.md` in the project root.
+
+---
+
+**Maintainer**: UNSW Escape Room Education Platform Development Team  
+**Last Updated**: 2025

@@ -1,15 +1,15 @@
-// useSearchFilter.js - 通用搜索筛选Hook
+// useSearchFilter.js - Generic search and filter hook
 
 import { useState, useMemo } from 'react';
 
 /**
- * 通用搜索筛选Hook
- * @param {Array} data - 要筛选的数据数组
- * @param {Object} config - 配置对象
- * @param {Function} config.searchFields - 返回要搜索的字段数组的函数
- * @param {Object} config.filterConfig - 筛选配置
- * @param {Array} config.sortConfig - 排序配置
- * @param {Object} config.defaultValues - 默认值
+ * Generic search and filter hook
+ * @param {Array} data - Data array to filter
+ * @param {Object} config - Configuration object
+ * @param {Function} config.searchFields - Function returning the list of fields to search
+ * @param {Object} config.filterConfig - Filter configuration
+ * @param {Array} config.sortConfig - Sort configuration
+ * @param {Object} config.defaultValues - Default values
  */
 export const useSearchFilter = (data = [], config = {}) => {
   const {
@@ -19,10 +19,10 @@ export const useSearchFilter = (data = [], config = {}) => {
     defaultValues = {}
   } = config;
 
-  // 搜索状态
+  // Search state
   const [searchTerm, setSearchTerm] = useState(defaultValues.searchTerm || '');
   
-  // 动态筛选状态
+  // Dynamic filter state
   const [filters, setFilters] = useState(() => {
     const initialFilters = {};
     Object.keys(filterConfig).forEach(key => {
@@ -31,11 +31,11 @@ export const useSearchFilter = (data = [], config = {}) => {
     return initialFilters;
   });
 
-  // 排序状态
+  // Sort state
   const [sortBy, setSortBy] = useState(defaultValues.sortBy || (sortConfig[0]?.value || ''));
   const [sortOrder, setSortOrder] = useState(defaultValues.sortOrder || 'asc');
 
-  // 更新单个筛选器
+  // Update a single filter
   const updateFilter = (key, value) => {
     setFilters(prev => ({
       ...prev,
@@ -43,7 +43,7 @@ export const useSearchFilter = (data = [], config = {}) => {
     }));
   };
 
-  // 清除所有筛选器
+  // Clear all filters
   const clearFilters = () => {
     setSearchTerm('');
     const clearedFilters = {};
@@ -55,11 +55,11 @@ export const useSearchFilter = (data = [], config = {}) => {
     setSortOrder('asc');
   };
 
-  // 筛选和排序数据
+  // Filter and sort data
   const filteredAndSortedData = useMemo(() => {
     let result = [...data];
 
-    // 应用搜索
+    // Apply search
     if (searchTerm.trim()) {
       const searchLower = searchTerm.toLowerCase();
       result = result.filter(item => {
@@ -70,7 +70,7 @@ export const useSearchFilter = (data = [], config = {}) => {
       });
     }
 
-    // 应用筛选器
+    // Apply filters
     Object.keys(filterConfig).forEach(filterKey => {
       const filterValue = filters[filterKey];
       if (filterValue) {
@@ -81,7 +81,7 @@ export const useSearchFilter = (data = [], config = {}) => {
       }
     });
 
-    // 应用排序
+    // Apply sorting
     if (sortBy) {
       const sortConfig_item = sortConfig.find(config => config.value === sortBy);
       if (sortConfig_item && sortConfig_item.sortFn) {
@@ -95,7 +95,7 @@ export const useSearchFilter = (data = [], config = {}) => {
     return result;
   }, [data, searchTerm, filters, sortBy, sortOrder, searchFields, filterConfig, sortConfig]);
 
-  // 生成筛选器配置（用于SearchFilter组件）
+  // Generate filter options (for SearchFilter component)
   const filterOptions = useMemo(() => {
     return Object.keys(filterConfig).map(key => {
       const config = filterConfig[key];
@@ -110,25 +110,25 @@ export const useSearchFilter = (data = [], config = {}) => {
   }, [filters, filterConfig]);
 
   return {
-    // 状态
+    // State
     searchTerm,
     filters,
     sortBy,
     sortOrder,
     
-    // 更新函数
+    // Update functions
     setSearchTerm,
     updateFilter,
     setSortBy,
     setSortOrder,
     clearFilters,
     
-    // 计算结果
+    // Computed results
     filteredData: filteredAndSortedData,
     filterOptions,
     sortOptions: sortConfig,
     
-    // 统计信息
+    // Statistics
     totalCount: data.length,
     filteredCount: filteredAndSortedData.length
   };

@@ -1,4 +1,4 @@
-/* TaskIntro.css - 清理和改进的样式 */
+/* TaskIntro.css - Cleaned and improved styles */
 
 .task-intro-container {
   max-width: 1200px;
@@ -16,7 +16,7 @@
   overflow: hidden;
 }
 
-/* 加载状态 */
+/* Loading state */
 .loading-spinner {
   text-align: center;
   padding: 4rem 2rem;
@@ -35,7 +35,7 @@
   margin: 0;
 }
 
-/* 错误状态 */
+/* Error state */
 .error-message {
   text-align: center;
   padding: 2rem;
@@ -102,7 +102,7 @@
   transform: translateY(-1px);
 }
 
-/* 任务标题 */
+/* Task title */
 .task-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -151,7 +151,7 @@
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-/* 任务说明 */
+/* Task description */
 .task-description {
   padding: 3rem 2.5rem;
   border-bottom: 1px solid #e2e8f0;
@@ -269,7 +269,7 @@
   scrollbar-color: #007bff #f1f5f9;
 }
 
-/* 视频区域 */
+/* Video area */
 .task-video {
   padding: 3rem 2.5rem;
   border-bottom: 1px solid #e2e8f0;
@@ -293,7 +293,7 @@
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* 操作按钮区域 */
+/* Action button area */
 .task-actions {
   padding: 3rem 2.5rem;
   text-align: center;
@@ -368,7 +368,7 @@
   font-weight: 500;
 }
 
-/* 提示信息部分 */
+/* Tips information part */
 .task-tips {
   padding: 3rem 2.5rem;
   background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
@@ -430,7 +430,7 @@
   border-left-color: #6f42c1;
 }
 
-/* 响应式设计 */
+/* Responsive design */
 @media (max-width: 1024px) {
   .task-intro-container {
     max-width: 900px;

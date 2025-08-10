@@ -8,18 +8,18 @@ const ImageUpload = ({ onImageSelect, maxSize = 5 * 1024 * 1024, acceptedFormats
   const fileInputRef = useRef(null);
 
   const validateFile = (file) => {
-    // 检查文件大小
+    // Check file size
     if (file.size > maxSize) {
       return `The file size cannot exceed ${Math.round(maxSize / 1024 / 1024)}MB`;
     }
 
-    // 检查文件格式
+    // Check file format
     const fileExtension = file.name.split('.').pop().toLowerCase();
     if (!acceptedFormats.includes(fileExtension)) {
       return `Only the following formats are supported: ${acceptedFormats.join(', ')}`;
     }
 
-    // 检查MIME类型
+    // Check MIME type
     const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif'];
     if (!allowedMimeTypes.includes(file.type)) {
       return 'Please select a valid image file';
@@ -37,14 +37,14 @@ const ImageUpload = ({ onImageSelect, maxSize = 5 * 1024 * 1024, acceptedFormats
 
     setError('');
     
-    // 创建预览
+    // Create preview
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreview(e.target.result);
     };
     reader.readAsDataURL(file);
 
-    // 通知父组件
+      // Notify parent component
     onImageSelect(file);
   };
 

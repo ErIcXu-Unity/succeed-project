@@ -68,6 +68,7 @@ const FillBlankEditor = ({ formData, setFormData }) => {
               onChange={(e) => handleLegacyTemplateChange(e.target.value)}
               placeholder="Write your question using {{placeholder}} for blanks. Example: The capital of {{country}} is {{capital}}."
               rows="3"
+              data-cy="fill-blank-template"
             />
             <small className="help-text">
               <i className="fas fa-info-circle"></i>
@@ -142,6 +143,7 @@ const FillBlankEditor = ({ formData, setFormData }) => {
                 type="button"
                 onClick={addLegacyBlank}
                 className="btn-add-blank"
+                data-cy="add-blank-btn"
               >
                 <i className="fas fa-plus"></i>
                 Add Blank
@@ -151,6 +153,7 @@ const FillBlankEditor = ({ formData, setFormData }) => {
                   type="button"
                   onClick={removeLegacyBlank}
                   className="btn-remove-blank"
+                  data-cy="remove-blank-btn"
                 >
                   <i className="fas fa-minus"></i>
                   Remove Blank

@@ -68,10 +68,9 @@ def login():
 
 @auth_bp.route('/change-password', methods=['POST'])
 def change_password():
-    """修改用户密码"""
     data = request.get_json()
     
-    # 验证必需字段
+    # Verify required fields
     required_fields = ['username', 'current_password', 'new_password']
     for field in required_fields:
         if not data.get(field):
@@ -81,11 +80,11 @@ def change_password():
     current_password = data.get('current_password')
     new_password = data.get('new_password')
     
-    # 验证新密码长度
+    # Verify new password length
     if len(new_password) < 6:
         return jsonify({'error': 'New password must be at least 6 characters'}), 400
     
-    # 查找用户（学生或教师）
+    # Find a user (student or teacher)
     user = Student.query.filter_by(username=username).first()
     user_type = 'student'
     
@@ -96,16 +95,16 @@ def change_password():
     if not user:
         return jsonify({'error': 'User not found'}), 404
     
-    # 验证当前密码
+    # Verify current password   
     if not check_password_hash(user.password, current_password):
         return jsonify({'error': 'Current password is incorrect'}), 401
     
-    # 检查新密码是否与当前密码相同
+    # Check if new password is the same as current password
     if check_password_hash(user.password, new_password):
         return jsonify({'error': 'New password must be different from current password'}), 400
     
     try:
-        # 更新密码
+        # Update password
         user.password = generate_password_hash(new_password)
         db.session.commit()
         

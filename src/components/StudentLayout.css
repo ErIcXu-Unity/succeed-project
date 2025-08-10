@@ -16,7 +16,7 @@
   position: relative;
 }
 
-/* 二级头部 */
+/* Secondary header */
 .sub-header {
   display: flex;
   align-items: center;
@@ -28,7 +28,7 @@
   color: var(--unsw-charcoal);
 }
 
-/* 二级导航 */
+/* Secondary navigation */
 .student-nav ul {
   display: flex;
   list-style: none;
@@ -72,7 +72,7 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* 主体内容区域 */
+/* Main content area */
 .student-content {
   padding: 2rem;
 }
@@ -283,7 +283,7 @@
   text-decoration: underline;
 }
 
-/* 响应式设计 */
+/* Responsive design */
 @media (max-width: 768px) {
   .student-layout {
     margin: 1rem;

@@ -4,7 +4,7 @@ import Chart from 'chart.js/auto';
 import config from '../config';
 
 const TeacherReports = () => {
-  // 状态管理
+  // State Management
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [reportData, setReportData] = useState({
@@ -35,7 +35,7 @@ const TeacherReports = () => {
   const progressChartRef = useRef(null);
   const chartInstances = useRef({});
 
-  // 数据获取
+  // Data fetching
   const fetchReportData = async () => {
     setLoading(true);
     setError(null);
@@ -66,20 +66,20 @@ const TeacherReports = () => {
     }
   };
 
-  // 初始化数据
+  // Initialize data
   useEffect(() => {
     fetchReportData();
   }, [filters]);
 
-  // 图表渲染与清理
+  // Chart rendering and cleanup
   useEffect(() => {
     if (!reportData) return;
 
     const renderCharts = () => {
-      // 清理旧图表
+      // Clean up old charts
       Object.values(chartInstances.current).forEach(chart => chart && chart.destroy());
 
-      // 概览图表
+      // Overview chart
       if (activeTab === 'overview' && overviewChartRef.current) {
         chartInstances.current.overview = new Chart(overviewChartRef.current, {
           type: 'doughnut',
@@ -98,7 +98,7 @@ const TeacherReports = () => {
         });
       }
 
-      // 性能图表
+      // Performance chart
       if (activeTab === 'performance' && performanceChartRef.current && reportData.taskPerformance.length > 0) {
         chartInstances.current.performance = new Chart(performanceChartRef.current, {
           type: 'bar',
@@ -146,7 +146,7 @@ const TeacherReports = () => {
 
   return (
     <div className="reports-container">
-      {/* 头部筛选器 */}
+      {/* Header filter */}
       <div className="reports-header">
         <h1><i className="fas fa-chart-line"></i> Performance Reports</h1>
         <div className="filters">
@@ -154,7 +154,7 @@ const TeacherReports = () => {
         </div>
       </div>
 
-      {/* 统计卡片 */}
+      {/* Statistics card */}
       <div className="summary-cards">
         <div className="stat-card">
           <div className="stat-icon students">
@@ -197,7 +197,7 @@ const TeacherReports = () => {
         </div>
       </div>
 
-      {/* 标签页导航 */}
+      {/* Tab navigation */}
       <div className="report-tabs">
         <button
           className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
@@ -213,7 +213,7 @@ const TeacherReports = () => {
         </button>
       </div>
 
-      {/* 图表内容 */}
+      {/* Chart content */}
       <div className="chart-content">
         {activeTab === 'overview' && (
           <div className="chart-container">
@@ -234,7 +234,7 @@ const TeacherReports = () => {
         )}
       </div>
 
-      {/* 表格显示每个任务的完成情况 */}
+      {/* Table showing completion of each task */}
       <div className="task-completion-table">
         <h3>Task Completion Overview</h3>
         <table className="performance-table">

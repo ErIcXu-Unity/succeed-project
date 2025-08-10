@@ -72,7 +72,7 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
     }));
   };
 
-  // 渲染函数定义为箭头函数避免语法错误
+  // Render function defined as arrow function to avoid syntax errors
   const renderEnhancedFillBlank = useCallback(() => {
     const template = questionData.template || '';
     const blanks = questionData.blanks || [];
@@ -203,7 +203,7 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
         showValidation: false,
         initialized: false,
         questionId: question.id,
-        dragCounter: 0 // 添加拖拽计数器防止事件冲突
+        dragCounter: 0 // Add drag counter to prevent event conflicts
       };
     });
 
@@ -293,11 +293,11 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
       }
     }, [question.id, puzzleState.initialized, puzzleState.questionId]); // Include minimal necessary deps
 
-    // Handle drag start - 优化拖拽开始逻辑
+    // Handle drag start - Optimize drag start logic
     const handleDragStart = useCallback((e, piece) => {
       console.log('🚀 Drag start:', piece);
       
-      // 设置拖拽数据
+      // Set drag data
       const dragData = {
         ...piece,
         timestamp: Date.now(),
@@ -314,11 +314,11 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
         dragCounter: prev.dragCounter + 1
       }));
       
-      // 添加视觉反馈
+      // Add visual feedback
       e.target.classList.add('dragging');
     }, []);
 
-    // Handle drag end - 清理拖拽状态
+    // Handle drag end - Clean up drag state
     const handleDragEnd = useCallback((e) => {
       console.log('🏁 Drag end');
       e.target.classList.remove('dragging');
@@ -328,20 +328,20 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
       }));
     }, []);
 
-    // Handle drag over - 优化拖拽悬停处理
+    // Handle drag over - Optimize drag hover handling
     const handleDragOver = useCallback((e) => {
       e.preventDefault();
       e.stopPropagation();
       e.dataTransfer.dropEffect = 'move';
     }, []);
 
-    // Handle drag enter - 添加视觉反馈
+    // Handle drag enter - Add visual feedback
     const handleDragEnter = useCallback((e) => {
       e.preventDefault();
       e.currentTarget.classList.add('drag-over');
     }, []);
 
-    // Handle drag leave - 移除视觉反馈
+    // Handle drag leave - Remove visual feedback
     const handleDragLeave = useCallback((e) => {
       e.preventDefault();
       if (!e.currentTarget.contains(e.relatedTarget)) {
@@ -349,7 +349,7 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
       }
     }, []);
 
-    // Handle drop in assembly area - 修复拖拽放置逻辑
+    // Handle drop in assembly area - Fix drag placement logic
     const handleDropAssembly = useCallback((e, dropIndex) => {
       e.preventDefault();
       e.stopPropagation();
@@ -358,7 +358,7 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
       console.log('📦 Drop in assembly at index:', dropIndex);
       
       try {
-        // 尝试获取 JSON 数据，如果失败则尝试 text 数据
+        // Try to get JSON data, if failed try text data
         let piece;
         try {
           const jsonData = e.dataTransfer.getData('application/json');
@@ -369,7 +369,7 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
           console.warn('Failed to parse JSON drag data, trying text fallback');
         }
         
-        // 如果 JSON 失败，尝试从当前拖拽状态获取
+        // If JSON fails, try to get from current drag state
         if (!piece && puzzleState.draggedPiece) {
           piece = puzzleState.draggedPiece;
         }
@@ -385,7 +385,7 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
           assembled: puzzleState.assembledPieces.length
         });
         
-        // 确保状态更新是原子操作
+        // Ensure state update is atomic operation
         setPuzzleState(prev => {
           let newAssembled = [...prev.assembledPieces];
           let newFragments = [...prev.fragments];
@@ -415,7 +415,7 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
             
             if (fragmentIndex !== -1) {
               const [movedFragment] = newFragments.splice(fragmentIndex, 1); // Remove from fragments
-              // 创建新的组装片段 ID 避免冲突
+              // Create new assembled fragment ID to avoid conflicts
               const assembledPiece = {
                 ...movedFragment,
                 id: `assembled-${dropIndex}-${movedFragment.originalIndex}-${Date.now()}`
@@ -423,7 +423,7 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
               newAssembled.splice(Math.max(0, Math.min(dropIndex, newAssembled.length)), 0, assembledPiece); // Add to assembly
             } else {
               console.warn('📦 Piece not found in fragments!', piece);
-              return prev; // 如果找不到片段，不更新状态
+              return prev; // If piece not found, don't update state
             }
           }
           
@@ -573,7 +573,7 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
       });
     }, [onAnswerChange]);
 
-    // Handle drop back to fragment bank - 修复返回逻辑
+    // Handle drop back to fragment bank - Fix return logic
     const handleDropFragment = useCallback((e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -582,7 +582,7 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
       console.log('🔄 Drop back to fragments');
       
       try {
-        // 尝试获取拖拽数据
+        // Try to get drag data
         let piece;
         try {
           const jsonData = e.dataTransfer.getData('application/json');
@@ -843,7 +843,7 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
     );
   });
 
-  // 渲染函数定义为箭头函数
+    // Render function defined as arrow function
   const renderPuzzleGame = useCallback(() => {
     return <PuzzleGameRenderer key={`puzzle-game-${question.id}`} />;
   }, [question.id]);
@@ -1143,7 +1143,7 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
               key={option}
               className={`option-button ${currentAnswer === option ? 'selected' : ''}`}
               onClick={() => {
-                console.log('🔵 单选题选择:', option, '→', question._originalKeyMapping?.[option] || option);
+                console.log('🔵 Single choice question selected:', option, '→', question._originalKeyMapping?.[option] || option);
                 onAnswerChange(option);
               }}
             >
@@ -1174,7 +1174,7 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
                     ? [...selectedOptions, index]
                     : selectedOptions.filter(i => i !== index);
                   const originalIndex = question._indexMapping ? Object.keys(question._indexMapping).find(k => question._indexMapping[k] === index) : index;
-                  console.log('🟢 多选题选择:', index, '→', originalIndex, e.target.checked ? '选中' : '取消');
+                  console.log('🟢 Multiple choice question selected:', index, '→', originalIndex, e.target.checked ? 'selected' : 'unselected');
                   onAnswerChange(newSelected);
                 }}
               />

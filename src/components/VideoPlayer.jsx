@@ -15,7 +15,7 @@ const VideoPlayer = ({ task }) => {
   }
 
   if (task.video_type === 'youtube') {
-    // YouTube 视频嵌入
+    // YouTube video embedding
     const getYouTubeEmbedUrl = (url) => {
       const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/;
       const match = url.match(regex);
@@ -62,7 +62,7 @@ const VideoPlayer = ({ task }) => {
   }
 
   if (task.video_type === 'local') {
-    // 本地视频播放 - 采用教师端的简洁样式
+    // Local video playback - Teacher preview style
     const videoUrl = task.video_url?.startsWith('http') 
       ? task.video_url 
       : `${config.API_BASE_URL}${task.video_url}`;
@@ -88,7 +88,7 @@ const VideoPlayer = ({ task }) => {
             onError={(e) => {
               console.error('Video load error. Current video URL:', videoUrl);
               e.target.style.display = 'none';
-              // 显示错误提示
+                // Display error notice
               const errorDiv = e.target.nextElementSibling;
               if (errorDiv && errorDiv.classList.contains('video-error-fallback')) {
                 errorDiv.style.display = 'block';

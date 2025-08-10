@@ -7,7 +7,7 @@
   --gray-mid: #e0e0e0;
   --focus: #065fd4;
   
-  /* 新增颜色变量 */
+  /* Add new color variables */
   --success-green: #28a745;
   --warning-orange: #ffc107;
   --danger-red: #dc3545;
@@ -98,7 +98,7 @@ main {
   margin: 0 auto;
 }
 
-/* 新增：无障碍设置头部 */
+/* New: Accessibility settings header */
 .accessibility-header {
   display: flex;
   justify-content: space-between;
@@ -131,7 +131,7 @@ main {
   transform: translateY(-1px);
 }
 
-/* 新增：控制区域网格布局 */
+/* New: Control area grid layout */
 .controls-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -231,7 +231,7 @@ main {
   margin-top: 0.25rem;
 }
 
-/* 新增：TTS控制区域 */
+/* New: TTS control area */
 .tts-controls {
   margin-top: 1rem;
 }
@@ -285,7 +285,7 @@ main {
 
 
 
-/* 新增：快捷键说明 */
+/* New: Keyboard shortcuts */
 .keyboard-shortcuts {
   background: var(--card-bg);
   padding: 1.5rem;
@@ -329,13 +329,13 @@ footer {
   color: #777;
 }
 
-/* Focus 指示 */
+/* Focus indicator */
 button:focus, a:focus, select:focus, input:focus {
   outline: 3px solid var(--focus);
   outline-offset: 2px;
 }
 
-/* 全局辅助模式类 */
+/* Global accessibility mode class */
 .high-contrast {
   filter: brightness(1.2) contrast(1.5);
 }
@@ -348,7 +348,7 @@ button:focus, a:focus, select:focus, input:focus {
   filter: grayscale(1) contrast(1.2);
 }
 
-/* 新增：主题样式 */
+/* New: Theme styles */
 .theme-darkMode {
   background: #1a1a1a !important;
   color: #e0e0e0 !important;
@@ -399,21 +399,21 @@ button:focus, a:focus, select:focus, input:focus {
   filter: sepia(100%) saturate(150%) hue-rotate(270deg);
 }
 
-/* 新增：减少动画模式 */
+/* New: Reduce animation mode */
 .reduce-motion * {
   animation-duration: 0.01ms !important;
   animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
 }
 
-/* 新增：键盘导航增强 */
+/* New: Keyboard navigation enhancement */
 .keyboard-nav-enhanced *:focus {
   outline: 4px solid var(--focus) !important;
   outline-offset: 3px !important;
   box-shadow: 0 0 0 2px rgba(6, 95, 212, 0.3) !important;
 }
 
-/* 新增：阅读指导线 */
+/* New: Reading guide line */
 .reading-guide::before {
   content: '';
   position: fixed;
@@ -426,7 +426,7 @@ button:focus, a:focus, select:focus, input:focus {
   z-index: 1000;
 }
 
-/* 新增：专注模式 */
+/* New: Focus mode */
 .focus-mode .student-accessibility nav,
 .focus-mode .accessibility-header,
 .focus-mode .keyboard-shortcuts {
@@ -440,7 +440,7 @@ button:focus, a:focus, select:focus, input:focus {
   opacity: 1;
 }
 
-/* 密码修改表单样式 */
+  /* Password change form style */
 .password-change-form {
   background: var(--card-bg);
   border-radius: 8px;
@@ -558,7 +558,7 @@ button:focus, a:focus, select:focus, input:focus {
   }
 }
 
-/* 响应式设计 */
+/* Responsive design */
 @media (max-width: 768px) {
   .controls-grid {
     grid-template-columns: 1fr;
@@ -587,7 +587,7 @@ button:focus, a:focus, select:focus, input:focus {
   }
 }
 
-/* 新增：高对比度模式下的特殊样式 */
+/* New: Special styles for high contrast mode */
 .theme-highContrast {
   background: #000000 !important;
   color: #ffffff !important;
@@ -616,7 +616,7 @@ button:focus, a:focus, select:focus, input:focus {
   border: 2px solid #ffffff !important;
 }
 
-/* 新增：动画减少模式的覆盖 */
+/* New: Override for reduce animation mode */
 .reduce-motion * {
   animation-duration: 0.01ms !important;
   animation-iteration-count: 1 !important;
@@ -629,7 +629,7 @@ button:focus, a:focus, select:focus, input:focus {
   animation: none !important;
 }
 
-/* 新增：打印样式 */
+/* New: Print style */
 @media print {
   .accessibility-header,
   .controls-grid,

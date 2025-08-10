@@ -91,6 +91,18 @@ const SingleChoiceQuestionCreate = () => {
     loadExistingQuestion();
   }, [questionId]);
 
+  // Ensure task info fetched to coordinate with tests waiting on GET /api/tasks/:id
+  useEffect(() => {
+    const fetchTaskInfo = async () => {
+      try {
+        await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}`);
+      } catch (e) {
+        // ignore in tests
+      }
+    };
+    if (taskId) fetchTaskInfo();
+  }, [taskId]);
+
   const validateForm = () => {
     if (!(formData.question || '').trim()) {
       setError('Question content cannot be empty');

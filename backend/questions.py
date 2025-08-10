@@ -24,7 +24,7 @@ def get_questions(task_id):
             'question_type': q.question_type or 'single_choice',
             'question_data': q.question_data,
             'correct_answer': q.correct_answer,
-            'options': {},  # 将被智能填充
+            'options': {},  # Will be intelligently filled
             'option_a': q.option_a,
             'option_b': q.option_b,
             'option_c': q.option_c,
@@ -34,30 +34,30 @@ def get_questions(task_id):
             'description': q.description
         }
         
-        # 智能构建options对象 - 根据问题类型处理
+        # Intelligently construct options objects - handle according to question type
         try:
             if q.question_type == 'multiple_choice' and q.question_data:
-                # Multiple Choice: 从question_data JSON中解析选项
+                # Multiple Choice: Parse options from question_data JSON
                 parsed_data = json.loads(q.question_data)
                 options_list = parsed_data.get('options', [])
                 
-                # 将选项数组转换为A/B/C/D格式
+                # Convert options array to A/B/C/D format
                 for i, option_text in enumerate(options_list):
-                    if i < 26:  # 支持最多26个选项(A-Z)
+                    if i < 26:  # Support up to 26 options (A-Z)
                         letter = chr(65 + i)  # A, B, C, D, ...
                         question_data['options'][letter] = option_text
                         
-                # 为Multiple Choice设置正确答案（如果需要）
+                # Set correct answer for Multiple Choice (if needed)
                 if 'correct_answers' in parsed_data:
                     correct_indices = parsed_data['correct_answers']
                     if correct_indices:
-                        # 将第一个正确答案设为primary correct_answer（兼容性）
+                        # Set the first correct answer as primary correct_answer (compatibility)
                         first_correct = correct_indices[0]
                         if first_correct < len(options_list):
                             question_data['correct_answer'] = chr(65 + first_correct)
                             
             elif q.question_type == 'single_choice':
-                # Single Choice: 使用传统字段
+                # Single Choice: Use traditional fields
                 question_data['options'] = {
                     'A': q.option_a,
                     'B': q.option_b,
@@ -65,7 +65,7 @@ def get_questions(task_id):
                     'D': q.option_d
                 }
             else:
-                # 其他问题类型: 使用传统字段（如果存在）
+                # Other question types: Use traditional fields (if available)
                 if q.option_a or q.option_b or q.option_c or q.option_d:
                     question_data['options'] = {
                         'A': q.option_a,
@@ -77,7 +77,7 @@ def get_questions(task_id):
                     question_data['options'] = {}
                     
         except (json.JSONDecodeError, TypeError, KeyError) as e:
-            # JSON解析失败的容错处理
+            # JSON parsing failed, handle gracefully
             print(f"Warning: Failed to parse question_data for question {q.id}: {e}")
             question_data['options'] = {
                 'A': q.option_a,
@@ -86,11 +86,11 @@ def get_questions(task_id):
                 'D': q.option_d
             }
         
-        # 添加图片路径（如果存在）
+        # Add image path (if exists)
         if q.image_path:
             question_data['image_url'] = f"/uploads/questions/{q.image_path}"
         
-        # 添加视频信息（如果存在）
+        # Add video information (if exists)
         if q.video_type == 'local' and q.video_path:
             question_data['video_url'] = f"/uploads/videos/{q.video_path}"
             question_data['video_type'] = 'local'
@@ -102,7 +102,7 @@ def get_questions(task_id):
 
 @questions_bp.route('/api/questions/<int:question_id>/check', methods=['POST'])
 def check_answer(question_id):
-    """检查单个问题的答案"""
+    """Check answer for a single question"""
     data = request.get_json()
     selected_answer = data.get('answer')
     
@@ -126,37 +126,37 @@ def check_answer(question_id):
 
 @questions_bp.route('/api/tasks/<int:task_id>/questions', methods=['POST'])
 def create_single_question(task_id):
-    """创建单个问题（支持多种问题类型）"""
-    # 验证任务存在
+    """Create single question (supports multiple question types)"""
+    # Verify task exists
     task = db.session.get(Task, task_id)
     if not task:
         abort(404)
     
-    # 检查当前任务的问题数量
+    # Check current task's question count
     current_question_count = Question.query.filter_by(task_id=task_id).count()
     if current_question_count >= 100:
         return jsonify({'error': 'Maximum 100 questions allowed per task'}), 400
     
     try:
-        # 从表单数据获取基本字段
+        # Get basic fields from form data
         question_text = request.form.get('question')
         question_type = request.form.get('question_type', 'single_choice')
         difficulty = request.form.get('difficulty', 'Easy')
         score = request.form.get('score', '3')
-        description = request.form.get('description', '')  # 文字描述
+        description = request.form.get('description', '')  # Text description
         created_by = request.form.get('created_by')
         
-        # 验证必填字段
+        # Verify required fields
         if not question_text:
             return jsonify({'error': 'Question text is required'}), 400
         
-        # 验证分数
+        # Verify score
         try:
             score = int(score)
         except ValueError:
             return jsonify({'error': 'Score must be a number'}), 400
         
-        # 根据问题类型验证和处理数据
+        # Verify and process data according to question type
         question_data = {}
         option_a = option_b = option_c = option_d = correct_answer = None
         
@@ -253,14 +253,14 @@ def create_single_question(task_id):
         else:
             return jsonify({'error': 'Invalid question type'}), 400
         
-        # 检查是否至少有一种描述（图片、视频或文字描述）
+        # Check if there is at least one description (image, video, or text description)
         has_image = 'image' in request.files and request.files['image'].filename != ''
         has_video = 'video' in request.files and request.files['video'].filename != ''
         has_youtube = request.form.get('youtube_url', '').strip() != ''
         has_description = description.strip() != ''
         
         
-        # 创建问题对象
+        # Create question object
         new_question = Question(
             task_id=task_id,
             question=question_text,
@@ -278,77 +278,77 @@ def create_single_question(task_id):
             created_at=datetime.now(timezone.utc)
         )
         
-        # 处理图片上传
+        # Process image upload
         if has_image:
             image_file = request.files['image']
             if image_file and image_file.filename:
-                # 验证图片格式
+                # Verify image format
                 allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
                 file_extension = image_file.filename.rsplit('.', 1)[1].lower()
                 if file_extension not in allowed_extensions:
                     return jsonify({'error': 'Invalid image format. Allowed: png, jpg, jpeg, gif, webp'}), 400
                 
-                # 生成唯一文件名
+                    # Generate unique filename
                 unique_filename = f"{uuid.uuid4().hex}.{file_extension}"
                 
-                # 确保上传目录存在
+                # Ensure upload directory exists
                 task_upload_dir = os.path.join(current_app.config['UPLOAD_FOLDER'], f'task_{task_id}')
                 os.makedirs(task_upload_dir, exist_ok=True)
                 
-                # 保存图片
+                # Save image
                 image_path = os.path.join(task_upload_dir, unique_filename)
                 image_file.save(image_path)
                 
-                # 设置相对路径用于数据库存储和 URL 生成
+                # Set relative path for database storage and URL generation
                 new_question.image_path = f"task_{task_id}/{unique_filename}"
                 new_question.image_filename = image_file.filename
         
-        # 处理视频上传
+        # Process video upload
         if has_video:
             video_file = request.files['video']
             if video_file and video_file.filename:
-                # 验证视频格式
+                # Verify video format
                 allowed_video_extensions = {'mp4', 'avi', 'mov', 'wmv', 'webm'}
                 file_extension = video_file.filename.rsplit('.', 1)[1].lower()
                 if file_extension not in allowed_video_extensions:
                     return jsonify({'error': 'Invalid video format. Allowed: mp4, avi, mov, wmv, webm'}), 400
                 
-                # 验证文件大小 (最大 50MB)
+                # Verify file size (maximum 50MB)
                 max_size = 50 * 1024 * 1024  # 50MB
                 if request.content_length and request.content_length > max_size:
                     return jsonify({'error': 'Video file too large. Maximum size: 50MB'}), 400
                 
-                # 生成唯一文件名
+                # Generate unique filename
                 unique_filename = f"{uuid.uuid4().hex}.{file_extension}"
                 
-                # 确保上传目录存在
+                # Ensure upload directory exists
                 video_upload_dir = os.path.join(current_app.config['VIDEO_UPLOAD_FOLDER'])
                 os.makedirs(video_upload_dir, exist_ok=True)
                 
-                # 保存视频
+                # Save video
                 video_path = os.path.join(video_upload_dir, unique_filename)
                 video_file.save(video_path)
                 
-                # 设置视频信息
+                # Set video information
                 new_question.video_path = unique_filename
                 new_question.video_filename = video_file.filename
                 new_question.video_type = 'local'
         
-        # 处理 YouTube 链接
+        # Process YouTube link
         elif has_youtube:
             youtube_url = request.form.get('youtube_url').strip()
-            # 简单的 YouTube URL 验证
+            # Simple YouTube URL validation
             if 'youtube.com/watch' in youtube_url or 'youtu.be/' in youtube_url:
                 new_question.video_url = youtube_url
                 new_question.video_type = 'youtube'
             else:
                 return jsonify({'error': 'Invalid YouTube URL'}), 400
         
-        # 保存到数据库
+        # Save to database
         db.session.add(new_question)
         db.session.commit()
         
-        # 构建返回数据
+        # Build return data
         result = {
             'id': new_question.id,
             'question': new_question.question,
@@ -366,7 +366,7 @@ def create_single_question(task_id):
             'created_at': new_question.created_at.isoformat()
         }
         
-        # 添加媒体文件 URL
+        # Add media file URL
         if new_question.image_path:
             result['image_url'] = f"/uploads/questions/{new_question.image_path}"
         
@@ -388,8 +388,8 @@ def create_single_question(task_id):
 
 @questions_bp.route('/api/tasks/<int:task_id>/questions/batch', methods=['POST'])
 def create_questions_batch(task_id):
-    """批量创建问题"""
-    # 验证任务存在
+    """Batch create questions"""
+    # Verify task exists
     task = db.session.get(Task, task_id)
     if not task:
         abort(404)
@@ -408,7 +408,7 @@ def create_questions_batch(task_id):
     
     try:
         for i, q_data in enumerate(questions_data):
-            # 验证每个问题的必填字段
+            # Verify required fields for each question
             required_fields = ['question', 'option_a', 'option_b', 'option_c', 'option_d', 
                              'correct_answer', 'difficulty', 'score']
             
@@ -417,19 +417,19 @@ def create_questions_batch(task_id):
                 errors.append(f"Question {i+1}: Missing fields: {', '.join(missing_fields)}")
                 continue
             
-            # 验证分数
+            # Verify score
             try:
                 score = int(q_data['score'])
             except ValueError:
                 errors.append(f"Question {i+1}: Score must be a number")
                 continue
             
-            # 验证正确答案
+            # Verify correct answer
             if q_data['correct_answer'].upper() not in ['A', 'B', 'C', 'D']:
                 errors.append(f"Question {i+1}: Correct answer must be A, B, C, or D")
                 continue
             
-            # 创建问题
+            # Create question
             question = Question(
                 task_id=task_id,
                 question=q_data['question'],
@@ -453,7 +453,7 @@ def create_questions_batch(task_id):
         
         db.session.commit()
         
-        # 构建返回数据
+        # Build return data
         result = []
         for question in created_questions:
             q_data = {
@@ -484,13 +484,13 @@ def create_questions_batch(task_id):
 
 @questions_bp.route('/api/questions/<int:question_id>', methods=['DELETE'])
 def delete_question(question_id):
-    """删除单个问题"""
+    """Delete a single question"""
     try:
         question = db.session.get(Question, question_id)
         if not question:
             abort(404)
         
-        # 删除相关的文件
+        # Delete related files
         if question.image_path:
             try:
                 image_file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], question.image_path)
@@ -507,7 +507,7 @@ def delete_question(question_id):
             except Exception as e:
                 print(f"Warning: Failed to delete video file: {str(e)}")
         
-        # 从数据库中删除问题
+        # Delete question from database
         db.session.delete(question)
         db.session.commit()
         
@@ -522,7 +522,6 @@ def delete_question(question_id):
 
 @questions_bp.route('/api/questions/<int:question_id>', methods=['GET'])
 def get_question(question_id):
-    """获取单个问题的详细信息"""
     try:
         question = db.session.get(Question, question_id)
         if not question:
@@ -544,11 +543,11 @@ def get_question(question_id):
             'video_type': question.video_type
         }
         
-        # 添加图片路径（如果存在）
+        # Add image path (if exists)
         if question.image_path:
             question_data['image_url'] = f"/uploads/questions/{question.image_path}"
         
-        # 添加视频信息（如果存在）
+        # Add video information (if exists)
         if question.video_type == 'local' and question.video_path:
             question_data['video_url'] = f"/uploads/videos/{question.video_path}"
         elif question.video_type == 'youtube' and question.video_url:
@@ -564,14 +563,13 @@ def get_question(question_id):
 
 @questions_bp.route('/api/questions/<int:question_id>', methods=['PUT'])
 def update_question(question_id):
-    """更新单个问题"""
     try:
         question = db.session.get(Question, question_id)
         if not question:
             abort(404)
         data = request.get_json()
         
-        # 更新基本字段
+        # Update basic fields
         if 'question' in data:
             question.question = data['question']
         if 'question_type' in data:
@@ -585,7 +583,7 @@ def update_question(question_id):
         if 'correct_answer' in data:
             question.correct_answer = data['correct_answer']
             
-        # 更新选项字段（单选题）
+        # Update option fields (single choice)
         if 'option_a' in data:
             question.option_a = data['option_a']
         if 'option_b' in data:
@@ -595,7 +593,7 @@ def update_question(question_id):
         if 'option_d' in data:
             question.option_d = data['option_d']
             
-        # 更新question_data字段（用于复杂数据类型）
+        # Update question_data field (for complex data types)
         if 'question_data' in data:
             if isinstance(data['question_data'], dict):
                 question.question_data = json.dumps(data['question_data'])

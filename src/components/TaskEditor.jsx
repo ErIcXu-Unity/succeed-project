@@ -19,21 +19,21 @@ const TaskEditor = () => {
   const [error, setError] = useState('');
   const [publishAt, setPublishAt] = useState('');
 
-  // 视频信息状态（用于新建模式下保存视频）
+  // Video info state (for saving video in create mode)
   const [pendingVideo, setPendingVideo] = useState(null);
-  // 新增：用于编辑模式下同步最新视频
+  // Added: for syncing latest video in edit mode
   const [currentVideo, setCurrentVideo] = useState(null);
 
-  // 调试：检查 taskId 的值
+  // Debug: check taskId value
   console.log('TaskEditor Debug - taskId:', taskId, 'type:', typeof taskId);
 
-  // 判断是否为新建模式 (taskId 为'new'或 undefined 时都视为新建模式)
+  // Determine if in create mode (when taskId is 'new' or undefined, treat as create mode)
   const isCreateMode = taskId === 'new' || taskId === undefined;
 
-  // 调试：检查 isCreateMode
+  // Debug: check isCreateMode
   console.log('TaskEditor Debug - isCreateMode:', isCreateMode);
 
-  // 当前任务 ID（新建模式下为 null，创建后获得）
+  // Current task ID (null in create mode, obtained after creation)
   const [currentTaskId, setCurrentTaskId] = useState(isCreateMode ? null : taskId);
 
   // Refresh questions when user returns from question creation
@@ -49,7 +49,7 @@ const TaskEditor = () => {
     return () => window.removeEventListener('focus', handleFocus);
   }, [isCreateMode, currentTaskId, taskId]);
 
-  // 初始化空问题模板
+  // Initialize empty question template
   const createEmptyQuestion = () => ({
     question: '',
     option_a: '',
@@ -64,15 +64,15 @@ const TaskEditor = () => {
   useEffect(() => {
     console.log('TaskEditor useEffect - taskId:', taskId, 'isCreateMode:', isCreateMode);
 
-    // 清除之前的错误
+    // Clear previous errors
     setError('');
 
     if (isCreateMode) {
-      // 新建模式：直接设置 loading 为 false
+      // Create mode: set loading to false directly
       console.log('TaskEditor - Create mode detected');
       setLoading(false);
     } else {
-      // 编辑模式：获取任务详情
+      // Edit mode: fetch task details
       console.log('TaskEditor - Edit mode detected, fetching task details');
       fetchTaskDetails();
     }
@@ -99,7 +99,7 @@ const TaskEditor = () => {
         setTaskName(data.name);
         setTaskIntroduction(data.introduction || '');
 
-        // 处理 publish_at 字段（用于显示到 datetime-local 输入框）
+        // Handle publish_at field (for display in datetime-local input)
         if (data.publish_at) {
           const formatted = new Date(data.publish_at).toISOString().slice(0, 16); // yyyy-MM-ddTHH:mm
           setPublishAt(formatted);
@@ -107,7 +107,7 @@ const TaskEditor = () => {
           setPublishAt('');
         }
 
-        // 加载现有问题列表
+        // Load existing question list
         await fetchExistingQuestions();
 
       } else {
@@ -122,14 +122,14 @@ const TaskEditor = () => {
     }
   };
 
-  // 获取现有问题列表
+  // Get existing question list
   const fetchExistingQuestions = async () => {
     try {
       const response = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}/questions`);
       if (response.ok) {
         const questionsData = await response.json();
         console.log('Existing questions loaded:', questionsData);
-        // 保持完整的问题数据，支持所有问题类型
+        // Keep full question data, support all question types
         const formattedQuestions = questionsData.map(q => ({
           id: q.id,
           question: q.question,
@@ -180,7 +180,7 @@ const TaskEditor = () => {
     const confirmed = await alert.confirm('Are you sure you want to delete this question?');
     if (confirmed) {
       try {
-        // 如果问题有 ID，说明已经保存到数据库，需要调用删除 API
+        // If question has ID, it means it's already saved to database, need to call delete API
         if (questionId) {
           const response = await fetch(`${config.API_BASE_URL}/api/questions/${questionId}`, {
             method: 'DELETE'
@@ -191,7 +191,7 @@ const TaskEditor = () => {
           }
         }
         
-        // 重新加载问题列表
+        // Reload question list
         await fetchExistingQuestions();
         
       } catch (error) {
@@ -204,16 +204,16 @@ const TaskEditor = () => {
   // Questions are now created via dedicated pages
   // fetchExistingQuestions is called when returning from question creation pages
 
-  // 保存待处理的视频
+  // Save pending video
   const savePendingVideo = async (taskId, videoInfo) => {
     try {
       if (videoInfo.type === 'local') {
-        // 本地视频需要重新上传（因为之前没有真实的 taskId）
+        // Local video needs to be re-uploaded (because there was no real taskId before)
         console.log('Local video needs to be re-uploaded with real taskId');
-        // 这种情况下，用户需要重新选择文件，所以我们暂时跳过
-        // 实际上，这种情况很复杂，需要保存文件数据
+        // In this case, user needs to re-select file, so we skip for now
+        // Actually, this is very complex, need to save file data
       } else if (videoInfo.type === 'youtube') {
-        // YouTube 链接可以直接保存
+        // YouTube link can be saved directly
         const response = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}/youtube`, {
           method: 'POST',
           headers: {
@@ -242,7 +242,7 @@ const TaskEditor = () => {
       let taskIdToUse = currentTaskId;
 
       if (isCreateMode) {
-        // 新建模式：先创建任务
+        // Create mode: first create task
         const createResponse = await fetch(`${config.API_BASE_URL}/api/tasks`, {
           method: 'POST',
           headers: {
@@ -264,22 +264,22 @@ const TaskEditor = () => {
         taskIdToUse = createData.task.id;
         setCurrentTaskId(taskIdToUse);
 
-        // 新建模式：如果有待保存的视频，现在保存它
+        // Create mode: if there is pending video, save it now
         if (pendingVideo) {
           console.log('Saving pending video with taskId:', taskIdToUse);
           await savePendingVideo(taskIdToUse, pendingVideo);
         }
 
       } else {
-        // 编辑模式：更新任务信息
-        // 构建更新数据，包含现有的视频信息
+        // Edit mode: update task information
+        // Build update data, including existing video information
         const updateData = {
           name: taskName,
           introduction: taskIntroduction,
           publish_at: publishAt ? new Date(publishAt).toISOString() : null
         };
 
-        // 优先用 currentVideo（刚刚上传/更换的视频），否则用 task 里的
+        // Use currentVideo (just uploaded/replaced video) first, otherwise use task
         if (currentVideo && currentVideo.type) {
           updateData.video_type = currentVideo.type;
           if (currentVideo.type === 'local' && currentVideo.path) {
@@ -310,14 +310,14 @@ const TaskEditor = () => {
           throw new Error('Failed to update task');
         }
 
-        // 更新本地 task 状态，包含返回的视频信息
+        // Update local task status, including returned video information
         const updateResult = await updateResponse.json();
         if (updateResult.task) {
           setTask(updateResult.task);
         }
       }
 
-      // 批量创建新问题（只创建没有 ID 的问题）
+      // Batch create new questions (only create questions without ID)
       const newQuestions = questions.filter(q => !q.id);
       if (newQuestions.length > 0 && taskIdToUse) {
         const user = JSON.parse(localStorage.getItem('user_data'));
@@ -338,10 +338,10 @@ const TaskEditor = () => {
         }
       }
 
-      // 保存成功提示
+      // Save success prompt
       alert.success(`✅ ${isCreateMode ? 'Task created successfully!' : 'Task updated successfully!'}`);
       
-      // 延迟跳转，让用户看到成功信息
+      // Delay jump, so user can see success information
       setTimeout(() => {
         // Navigate back and force a refresh by adding timestamp
         navigate('/teacher', { replace: true, state: { refresh: Date.now() } });
@@ -366,7 +366,7 @@ const TaskEditor = () => {
       return false;
     }
 
-    // 验证问题
+    // Validate questions
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i];
       if (!(q.question || '').trim()) {
@@ -374,7 +374,7 @@ const TaskEditor = () => {
         return false;
       }
       
-      // 只验证单选题的选项，其他类型的问题可能没有这些字段
+      // Only validate options for single choice questions, other types of questions may not have these fields
       if (q.question_type === 'single_choice' || !q.question_type) {
         if (!(q.option_a || '').trim() || !(q.option_b || '').trim() || 
             !(q.option_c || '').trim() || !(q.option_d || '').trim()) {
@@ -475,6 +475,7 @@ const TaskEditor = () => {
             />
           </div>
 
+          {/* Only show Publish Schedule in edit mode */}
           {/* Only show Publish Schedule in edit mode */}
           {!isCreateMode && (
             <div className="publish-time-section">
@@ -627,12 +628,12 @@ const TaskEditor = () => {
               onVideoUploaded={(result) => {
                 console.log('Video uploaded:', result);
                 
-                // 如果是新建模式，保存视频信息待稍后处理
+                // If in create mode, save video information for later processing
                 if (isCreateMode && !currentTaskId) {
                   setPendingVideo(result);
                   console.log('Pending video saved for later:', result);
                 } else {
-                  // 编辑模式：同步最新视频到 currentVideo
+                    // Edit mode: sync latest video to currentVideo
                   setCurrentVideo(result);
                 }
               }}

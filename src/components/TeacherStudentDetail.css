@@ -4,7 +4,7 @@
   margin: 0 auto;
 }
 
-/* 顶部导航区域 */
+/* Top navigation area */
 .profile-header {
   display: flex;
   justify-content: space-between;
@@ -27,14 +27,14 @@
   background: #e0e0e0;
 }
 
-/* 主内容信息卡片区域 */
+/* Main content information card area */
 .profile-content {
   display: flex;
   flex-direction: column;
   gap: 30px;
 }
 
-/* 基本信息与统计 */
+/* Basic information and statistics */
 .basic-info {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -69,7 +69,7 @@
   padding-bottom: 8px;
 }
 
-/* performance status */
+/* Performance status */
 .profile-content .stats-card {
   display: flex;
   flex-direction: column;
@@ -116,7 +116,7 @@
   color: #666;
 }
 
-/* 任务完成历史 */
+/* Task completion history */
 .task-history {
   background: white;
   border-radius: 8px;
@@ -157,7 +157,7 @@
   color: #777;
 }
 
-/* 加载 & 错误状态 */
+/* Loading & error status */
 .loading-container,
 .error-container {
   display: flex;
@@ -190,7 +190,7 @@
   margin-bottom: 15px;
 }
 
-/* 响应式设计 */
+/* Responsive design */
 @media (max-width: 768px) {
   .basic-info {
     grid-template-columns: 1fr;

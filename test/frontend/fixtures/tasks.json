@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "name": "Chemistry Basics",
+    "introduction": "Learn core chemistry concepts.",
+    "question_count": 5,
+    "publish_at": null,
+    "image_url": "/assets/course-chem.jpg"
+  },
+  {
+    "id": 2,
+    "name": "Statistics 101",
+    "introduction": "Intro to statistics and probability.",
+    "question_count": 4,
+    "publish_at": null,
+    "image_url": "/assets/course-stat.jpg"
+  }
+]
+
+

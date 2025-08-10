@@ -198,6 +198,21 @@ npm start
 
 3. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+### E2E tests (Cypress)
+
+Install dev dependency and open Cypress runner:
+
+```
+npm install
+npm run cypress:open:e2e
+```
+
+Headless run:
+
+```
+npm run cypress:run:e2e
+```
+
 ## Usage
 
 ### For Teachers

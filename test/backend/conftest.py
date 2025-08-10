@@ -13,6 +13,9 @@ backend_dir = os.path.join(project_root, 'backend')
 sys.path.insert(0, project_root)
 sys.path.insert(0, backend_dir)
 
+from app import create_app
+from models import db, Student, Teacher, Task, Question
+
 
 @pytest.fixture(scope='function')
 def app():

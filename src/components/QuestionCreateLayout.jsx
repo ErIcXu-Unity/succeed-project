@@ -124,6 +124,7 @@ const QuestionCreateLayout = ({
                   <textarea
                     className="form-textarea-redesigned"
                     name="question"
+                    data-cy="question-text"
                     value={formData.question}
                     onChange={handleInputChange}
                     placeholder="Enter your question here..."
@@ -141,7 +142,7 @@ const QuestionCreateLayout = ({
           {/* Right Sidebar - Settings */}
           <div className="content-sidebar">
             {/* Question Settings */}
-            <div className="form-card">
+            <div className="form-card" data-cy="question-settings">
               <div className="card-header">
                 <i className="fas fa-cog"></i>
                 <h3>Question Settings</h3>
@@ -156,6 +157,7 @@ const QuestionCreateLayout = ({
                   <select
                     className="form-input-redesigned"
                     name="difficulty"
+                    data-cy="question-difficulty"
                     value={formData.difficulty}
                     onChange={handleInputChange}
                   >
@@ -174,6 +176,7 @@ const QuestionCreateLayout = ({
                     type="number"
                     className="form-input-redesigned"
                     name="score"
+                    data-cy="question-score"
                     value={formData.score}
                     onChange={handleInputChange}
                     min="1"
@@ -190,6 +193,7 @@ const QuestionCreateLayout = ({
                   <textarea
                     className="form-textarea-redesigned"
                     name="description"
+                    data-cy="question-description"
                     value={formData.description}
                     onChange={handleInputChange}
                     placeholder="Add any additional instructions or context..."
@@ -218,6 +222,7 @@ const QuestionCreateLayout = ({
             type="submit" 
             className="btn-primary" 
             onClick={onSubmit}
+            data-cy="create-question-btn"
             disabled={loading}
           >
             {loading ? (

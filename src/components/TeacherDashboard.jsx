@@ -216,7 +216,7 @@ const TeacherDashboard = () => {
       });
 
       if (response.ok) {
-        // 删除成功，重新获取任务列表
+        // Delete successful, refresh task list
         await fetchTasks();
         setDeleteConfirm(null);
         alert.success('Task deleted successfully!');
@@ -233,13 +233,13 @@ const TeacherDashboard = () => {
   };
 
   const handleGradeTask = (taskId) => {
-    // 这里可以导航到成绩页面
+    // Can navigate to grades page here
     alert.info(`Grading feature for task ${taskId} - Coming soon!`);
   };
 
 
 
-  // 获取课程类型对应的图片
+  // Get course type corresponding image
   const getCourseImage = (courseType) => {
     const imageMap = {
       'Chemistry': '/assets/course-chem.jpg',
@@ -252,7 +252,7 @@ const TeacherDashboard = () => {
     return imageMap[courseType] || '/assets/task1.jpg';
   };
 
-  // 获取课程类型图标
+  // Get course type icon
   const getCourseIcon = (courseType) => {
     const iconMap = {
       'Chemistry': '🧪',
@@ -265,18 +265,18 @@ const TeacherDashboard = () => {
     return iconMap[courseType] || '📚';
   };
 
-  // 清理描述文字，移除过多的emoji和格式化
+  // Clean description text, remove excessive emojis and formatting
   const getCleanDescription = (introduction) => {
     if (!introduction) return 'No description available';
 
-    // 移除连续的emoji和特殊字符，只保留第一句话
+    // Remove consecutive emojis and special characters, keep only first sentence
     let cleaned = introduction
-      .replace(/[🎯🧪⚗️🔬📝📊⚡🧬📚🎮🏃‍♂️🎊🎉]/g, '') // 移除emoji
-      .replace(/\n+/g, ' ') // 将换行替换为空格
-      .replace(/\s+/g, ' ') // 合并多个空格
+      .replace(/[🎯🧪⚗️🔬📝📊⚡🧬📚🎮🏃‍♂️🎊🎉]/g, '') // Remove emojis
+      .replace(/\n+/g, ' ') // Replace newlines with spaces
+      .replace(/\s+/g, ' ') // Merge multiple spaces
       .trim();
 
-    // 取第一句话或前100个字符
+    // Take first sentence or first 100 characters
     const sentences = cleaned.split(/[.!?]/);
     if (sentences[0] && sentences[0].length > 20) {
       return sentences[0].trim() + (sentences.length > 1 ? '...' : '');
@@ -335,7 +335,7 @@ const TeacherDashboard = () => {
                 <i className="fas fa-users"></i>
               </div>
               <div className="stat-info">
-                <h3>{studentCount}</h3>  {/* 动态显示 */}
+                <h3>{studentCount}</h3>  {/* Dynamic display */}
                 <p>Active Students</p>
               </div>
             </div>
@@ -344,7 +344,7 @@ const TeacherDashboard = () => {
                 <i className="fas fa-chart-line"></i>
               </div>
               <div className="stat-info">
-                <h3>{completionRate}%</h3>  {/* 动态显示 */}
+                <h3>{completionRate}%</h3>  {/* Dynamic display */}
                 <p>Completion Rate</p>
               </div>
             </div>

@@ -113,7 +113,7 @@ export default function StudentLayout() {
 
   return (
     <div className="student-layout">
-      {/* 二级头部 */}
+      {/* Secondary header */}
       <div className="sub-header">
         <h2>Escape Room • Student Dashboard</h2>
         {/*
@@ -123,7 +123,7 @@ export default function StudentLayout() {
         */}
       </div>
 
-      {/* 学生端二级导航 */}
+      {/* Student secondary navigation */}
       <nav className="student-nav">
         <ul>
           <li><NavLink to="home">Home</NavLink></li>
@@ -234,7 +234,7 @@ export default function StudentLayout() {
         )}
       </div>
 
-      {/* 子路由挂载点 */}
+      {/* Sub-route mount point */}
       <div className="student-content">
         <Outlet />
       </div>

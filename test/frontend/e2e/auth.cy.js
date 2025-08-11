@@ -154,7 +154,7 @@ describe('Authentication flows', () => {
       }
     });
     cy.contains('UNSW Escape Room');
-    cy.wait(3600);
+    cy.wait(3500);
     cy.location('pathname', { timeout: 6000 }).should('include', '/student');
   });
 
@@ -165,7 +165,7 @@ describe('Authentication flows', () => {
         win.localStorage.setItem('user_data', JSON.stringify(userData));
       }
     });
-    cy.wait(3600);
+    cy.wait(3500);
     cy.get('button.logout-btn').click();
     cy.location('pathname', { timeout: 6000 }).should('eq', '/');
     cy.window().then((win) => {

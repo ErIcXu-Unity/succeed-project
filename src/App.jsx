@@ -74,7 +74,7 @@ function AppWrapper() {
       }
       
       // Show loading screen for at least 3 seconds to display the cool animation
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      await new Promise(resolve => setTimeout(resolve, 20));
       setLoading(false);
     };
 

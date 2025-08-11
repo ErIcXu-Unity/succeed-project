@@ -32,11 +32,11 @@ describe('Question Editors - rich interactions', () => {
     cy.wait('@task');
     // Wait for component to load and check initial state
     cy.get('.option-item-vertical', { timeout: 5000 }).should('have.length.at.least', 4);
-    // 添加两项
+   
     cy.contains('button', 'Add Option').click();
     cy.contains('button', 'Add Option').click();
     cy.get('.option-item-vertical').should('have.length.at.least', 6);
-    // 设置内容并标记正确
+    // Set the content and mark it correctly
     cy.get('[data-cy="mc-option-0"]').type('A1');
     cy.get('[data-cy="mc-option-1"]').type('A2');
     cy.get('[data-cy="mc-option-2"]').type('A3');
@@ -45,7 +45,7 @@ describe('Question Editors - rich interactions', () => {
     cy.get('[data-cy="mc-correct-2"]').click();
     cy.get('[data-cy="mc-correct-0"]').contains('Correct Answer');
     cy.get('[data-cy="mc-correct-2"]').contains('Correct Answer');
-    // 移除一项并确认选择仍有效
+    // Remove an item and confirm the selection remains valid
     cy.contains('button', 'Remove Option').click();
     cy.get('.option-item-vertical').should('have.length.at.least', 5);
   });
@@ -69,14 +69,14 @@ describe('Question Editors - rich interactions', () => {
   it('PuzzleGameEditor: switch input modes, use helpers and auto fragments', () => {
     cy.visit('/teacher/tasks/1/create/puzzle-game');
     cy.wait('@task');
-    // text -> math -> chemistry 切换
+    // text -> math -> chemistry 
     cy.get('[data-cy="puzzle-mode-math"]', { timeout: 5000 }).click();
     cy.get('[data-cy="puzzle-solution"]').type('E=mc');
     cy.get('[data-cy="superscript-2"]').click(); // superscript helper
     cy.get('[data-cy="puzzle-mode-chemistry"]').click();
     cy.get('[data-cy="arrow-btn"]').click(); // arrow helper
     cy.get('[data-cy="puzzle-solution"]').type(' H2O');
-    // 自动片段建议
+    // auto fragment suggestion
     cy.get('[data-cy="use-auto-fragments"]').click({ force: true });
     cy.get('.fragments-list .fragment-editor-item').should('have.length.at.least', 1);
   });
@@ -84,17 +84,17 @@ describe('Question Editors - rich interactions', () => {
   it('MatchingTaskEditor: add pair, create matches via click, remove match', () => {
     cy.visit('/teacher/tasks/1/create/matching-task');
     cy.wait('@task');
-    // 初始两对，增加一对
+    // Initial two pairs, add one pair
     cy.get('[data-cy="add-match-pair-btn"]', { timeout: 5000 }).click();
     cy.get('.left-items .left-item').should('have.length.at.least', 3);
-    // 填充并匹配（1→A, 2→B, 3→C）
+    // fill and match (1→A, 2→B, 3→C)
     cy.get('.left-items .left-item').eq(0).find('input').type('France');
     cy.get('.right-items .right-item').eq(0).find('input').type('Paris');
     cy.get('.left-items .left-item').eq(1).find('input').type('Japan');
     cy.get('.right-items .right-item').eq(1).find('input').type('Tokyo');
     cy.get('.left-items .left-item').eq(2).find('input').type('China');
     cy.get('.right-items .right-item').eq(2).find('input').type('Beijing');
-    // 点击匹配
+    // click match
     cy.get('.left-items .left-item').eq(0).find('.drag-handle').click();
     cy.get('.right-items .right-item').eq(0).find('.drop-zone').click();
     cy.get('.left-items .left-item').eq(1).find('.drag-handle').click();
@@ -102,7 +102,7 @@ describe('Question Editors - rich interactions', () => {
     cy.get('.left-items .left-item').eq(2).find('.drag-handle').click();
     cy.get('.right-items .right-item').eq(2).find('.drop-zone').click();
     cy.get('.match-progress .matches-count').contains('3/3');
-    // 移除一个匹配
+    // remove a match
     cy.get('.left-items .left-item').eq(2).find('.btn-remove-match').click();
     cy.get('.match-progress .matches-count').contains('2/3');
   });

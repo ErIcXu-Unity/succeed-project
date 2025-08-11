@@ -16,7 +16,21 @@ sys.path.insert(0, backend_dir)
 from app import create_app
 from models import db, Student, Teacher, Task, Question
 
+import webbrowser
 
+def pytest_terminal_summary(terminalreporter, exitstatus, config):
+    htmlcov_path = os.path.abspath(
+        os.path.join(config.rootpath, "backend", "htmlcov", "index.html")
+    )
+    if os.path.exists(htmlcov_path):
+        file_url = f"file:///{htmlcov_path.replace(os.sep, '/')}"
+        terminalreporter.write_sep("-", f"HTML coverage report: {file_url}")
+        try:
+            webbrowser.open(file_url)
+        except Exception:
+            pass
+    else:
+        terminalreporter.write_sep("-", "No HTML coverage report found.")
 @pytest.fixture(scope='function')
 def app():
     """Create and configure a new app instance for each test."""

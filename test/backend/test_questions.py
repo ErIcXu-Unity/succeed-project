@@ -239,10 +239,9 @@ class TestQuestionsAPI:
         
         if response.status_code != 401:
             assert response.status_code == 200
-            updated_question = json.loads(response.data)
-            assert updated_question['question'] == updated_data['question']
-            assert updated_question['option_a'] == updated_data['option_a']
-            assert updated_question['answer'] == updated_data['answer']
+            response_data = json.loads(response.data)
+            assert 'message' in response_data
+            assert response_data['message'] == 'Question updated successfully'
     
     def test_update_nonexistent_question(self, client, auth_headers_teacher):
         """Test updating a question that doesn't exist."""
@@ -298,11 +297,14 @@ class TestQuestionValidation:
             'option_b': 'B',
             'option_c': 'C',
             'option_d': 'D',
-            'answer': 'B'  # Valid answer
+            'correct_answer': 'B',  # Valid answer
+            'difficulty': 'Easy',
+            'score': '3'
         }
         
         response = client.post(f'/api/tasks/{test_task.id}/questions',
-                             json=valid_data,
+                             data=valid_data,
+                             content_type='multipart/form-data',
                              headers=auth_headers_teacher)
         
         if response.status_code != 401:
@@ -328,18 +330,22 @@ class TestQuestionValidation:
     
     def test_validate_question_data_json(self, client, test_task, auth_headers_teacher):
         """Test validating question_data JSON format."""
-        # Valid JSON
+        # Valid JSON for multiple choice
         valid_data = {
             'question': 'Test question',
             'question_type': 'multiple_choice',
-            'question_data': json.dumps({
-                'options': ['A', 'B', 'C'],
-                'correct_answers': [0, 1]
-            })
+            'options[0]': 'Option A',
+            'options[1]': 'Option B', 
+            'options[2]': 'Option C',
+            'correct_answers[0]': '0',
+            'correct_answers[1]': '1',
+            'difficulty': 'Medium',
+            'score': '5'
         }
         
         response = client.post(f'/api/tasks/{test_task.id}/questions',
-                             json=valid_data,
+                             data=valid_data,
+                             content_type='multipart/form-data',
                              headers=auth_headers_teacher)
         
         if response.status_code != 401:

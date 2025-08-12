@@ -22,7 +22,7 @@ describe('Task Quiz - All Question Types', () => {
 
   it('answers different question types and submits', () => {
     cy.visit('/');
-    cy.wait(3500);
+    cy.wait(30);
     cy.loginAs('stu').then((res) => {
       if (res.status !== 200) {
         cy.log('Backend not available; skipping quiz E2E');
@@ -122,7 +122,7 @@ describe('Task Quiz - All Question Types', () => {
         win.localStorage.setItem(sessionKey, JSON.stringify({ seed: fixedSeed, completed: false, startTime: new Date().toISOString() }));
       }
     });
-    cy.wait(3500);
+    cy.wait(30);
     cy.visit(`/student/tasks/${taskId}/quiz`);
   };
 

@@ -23,7 +23,7 @@ Total: **14 suites, 217 tests**. Network stubs are used extensively: ~175 `cy.in
 
 - Default (stubbed) mode: designed for deterministic runs; pass rate is 100% on Chromium-based browsers.
 - Real-backend mode: pass rate depends on backend availability and seed data; tests that rely on stubs still pass, but real API-dependent flows require the backend to be up at `http://localhost:5001`.
-- Flake considerations: the app intentionally shows a ~3s loading animation; tests account for this with an initial `cy.wait(3500)` before interacting with the login cards.
+- Flake considerations: the app intentionally shows a ~3s loading animation; tests account for this with an initial `cy.wait(30)` before interacting with the login cards.
 
 ### How to run (frontend-first)
 

@@ -8,10 +8,7 @@ module.exports = defineConfig({
     // Point specs and support to test/frontend
     specPattern: 'test/frontend/e2e/**/*.cy.{js,jsx,ts,tsx}',
     supportFile: 'test/frontend/support/e2e.js',
-    setupNodeEvents(on, config) {
-      require('@cypress/code-coverage/task')(on, config);
-      return config;
-    },
+
     video: false,
     chromeWebSecurity: false,
     env: {

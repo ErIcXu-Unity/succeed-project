@@ -1,5 +1,4 @@
 // Global Cypress support setup
-import '@cypress/code-coverage/support';
 
 // Command: login via API and set localStorage user_data
 // This command is resilient to the backend being unavailable.

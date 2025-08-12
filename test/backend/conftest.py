@@ -5,6 +5,7 @@ import os
 import sys
 import tempfile
 import pytest
+import webbrowser
 from werkzeug.security import generate_password_hash
 
 # Ensure project root is on sys.path so that `backend` package can be imported
@@ -16,6 +17,14 @@ sys.path.insert(0, backend_dir)
 from app import create_app
 from models import db, Student, Teacher, Task, Question
 
+def pytest_terminal_summary(terminalreporter, exitstatus, config):
+    htmlcov_path = os.path.abspath(os.path.join(config.rootpath, "htmlcov", "index.html"))
+    if os.path.exists(htmlcov_path):
+        file_url = f"file:///{htmlcov_path.replace(os.sep, '/')}"
+        terminalreporter.write_sep("-", f"HTML coverage report: {file_url}")
+        webbrowser.open(file_url)
+    else:
+        terminalreporter.write_sep("-", "No HTML coverage report found.")
 
 @pytest.fixture(scope='function')
 def app():

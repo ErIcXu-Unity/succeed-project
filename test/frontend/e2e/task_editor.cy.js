@@ -19,7 +19,7 @@ describe('Task Editor flows', () => {
     cy.intercept('POST', '**/api/tasks', { statusCode: 200, body: { task: { id: 9009 } } }).as('createTask');
     cy.contains('button', 'Create Task').click();
     cy.wait('@createTask');
-    // 返回教师首页
+    // Return to teacher home
     cy.location('pathname', { timeout: 6000 }).should('include', '/teacher');
   });
 

@@ -152,7 +152,7 @@ describe('Teacher Dashboard and Task Management', () => {
     stubTasks([{ id: 1, name: 'Any', introduction: 'intro', question_count: 0 }]);
     cy.visit('/teacher');
     cy.wait(['@tasks','@stats']);
-    // 由于侧边栏未提供，这里检查页面关键元素
+    // Since the sidebar is not provided, here we check the key elements of the page
     cy.contains('Teacher Dashboard');
     cy.contains('Task Management');
   });

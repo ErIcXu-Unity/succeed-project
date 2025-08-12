@@ -61,7 +61,7 @@ describe('Question Create Pages (stubbed)', () => {
     cy.contains(/Create|Edit/);
   });
 
-  // 替换：单题型创建 -> 返回任务编辑页 -> 删除刚创建的题目
+  // Replace: Create a single question -> Return to the task editing page -> Delete the newly created question
   it('single choice: create then navigate task editor and delete this question (stubbed)', () => {
     stubTask();
     cy.visit('/teacher/tasks/1/create/single-choice');
@@ -75,16 +75,16 @@ describe('Question Create Pages (stubbed)', () => {
     cy.get('[data-cy="create-question-btn"]').click();
     cy.wait('@createQ');
 
-    // 进入任务编辑页并加载题目列表（包含刚创建的501）
+    // Enter the task editing page and load the task list (including the newly created 501)
     cy.intercept('GET', '**/api/tasks/1/questions', { statusCode: 200, body: [
       { id: 501, question: 'What is 2 + 2?', question_type: 'single_choice', option_a: '3', option_b: '4', option_c: '5', option_d: '22', correct_answer: 'B', score: 3, difficulty: 'Easy' }
     ] }).as('list1');
     cy.visit('/teacher/tasks/1/edit');
     cy.wait('@list1');
-    // 等待问题列表渲染
+    // Waiting for the issue list to render
     cy.get('.questions-list .question-card', { timeout: 10000 }).should('have.length.at.least', 1);
 
-    // 点击删除，确认弹窗，并拦截 DELETE 与刷新GET
+    // Click delete, confirm alert, and intercept DELETE and refresh GET
     cy.intercept('DELETE', '**/api/questions/501', { statusCode: 200 }).as('delQ');
     cy.intercept('GET', '**/api/tasks/1/questions', { statusCode: 200, body: [] }).as('list2');
     cy.get('.questions-list .question-card').first().find('.remove-btn').click();
@@ -94,7 +94,7 @@ describe('Question Create Pages (stubbed)', () => {
     cy.get('.questions-list .question-card').should('have.length', 0);
   });
 
-  // 替换：单题型编辑（加载已有题目并更新）
+  // Replace: Edit existing single choice question (load existing question and update)
   it('edit existing single choice question (stubbed)', () => {
     stubTask();
     cy.intercept('GET', '**/api/questions/777', { statusCode: 200, body: {
@@ -115,37 +115,37 @@ describe('Question Create Pages (stubbed)', () => {
     cy.wait('@putQ');
   });
 
-  // 多选题：动态添加/删除选项与切换正确答案
+  // Multiple choice: dynamically add/remove options and toggle correct answers
   it('multiple choice: add/remove options and toggle correct answers', () => {
     stubTask();
     cy.visit('/teacher/tasks/1/create/multiple-choice');
     cy.wait('@task');
     cy.get('[data-cy="question-text"]').type('Pick the prime numbers');
-    // 默认4个，继续添加到6个
+    // Default 4, continue to add to 6
     cy.contains('button', 'Add Option').click();
     cy.contains('button', 'Add Option').click();
     cy.get('.option-item-vertical').should('have.length.at.least', 6);
-    // 填充前四个
+    // Fill the first four
     cy.get('input[placeholder^="Option"]').eq(0).type('2');
     cy.get('input[placeholder^="Option"]').eq(1).type('3');
     cy.get('input[placeholder^="Option"]').eq(2).type('4');
     cy.get('input[placeholder^="Option"]').eq(3).type('5');
-    // 选择正确 2、3、5
+    // Select correct 2, 3, 5
     cy.get('.option-item-vertical').eq(0).contains('button', 'Set as Correct').click();
     cy.get('.option-item-vertical').eq(1).contains('button', 'Set as Correct').click();
     cy.get('.option-item-vertical').eq(3).contains('button', 'Set as Correct').click();
-    // 删除一个选项，长度减少
+    // Delete one option, length decreases
     cy.contains('button', 'Remove Option').click();
     cy.get('.option-item-vertical').its('length').should('be.gte', 5);
   });
 
-  // 拼图题：简单文本碎片 + 自动添加碎片 + 创建
+  // Puzzle game: simple text fragments + automatically add fragments + create
   it('puzzle game: add fragments manually and create (stubbed)', () => {
     stubTask();
     cy.visit('/teacher/tasks/1/create/puzzle-game');
     cy.wait('@task');
     cy.get('[data-cy="question-text"]').type('Assemble a short sentence');
-    // 默认一条，手动添加2条
+    // Default one, manually add 2
     cy.contains('button', 'Add Fragment').click();
     cy.contains('button', 'Add Fragment').click();
     cy.get('[data-cy="puzzle-fragment"]').eq(0).clear().type('Cypress');

@@ -5,6 +5,7 @@ import os
 import sys
 import tempfile
 import pytest
+import webbrowser
 from werkzeug.security import generate_password_hash
 
 # Ensure project root is on sys.path so that `backend` package can be imported
@@ -15,8 +16,6 @@ sys.path.insert(0, backend_dir)
 
 from app import create_app
 from models import db, Student, Teacher, Task, Question
-
-import webbrowser
 
 def pytest_terminal_summary(terminalreporter, exitstatus, config):
     htmlcov_path = os.path.abspath(

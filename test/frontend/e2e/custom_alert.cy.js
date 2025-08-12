@@ -10,7 +10,7 @@ describe('CustomAlert behaviors (indirect via pages)', () => {
         win.localStorage.setItem('user_data', JSON.stringify(teacher));
       }
     });
-    cy.wait(3500);
+    cy.wait(30);
   };
 
   beforeEach(() => {

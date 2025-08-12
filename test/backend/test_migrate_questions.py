@@ -79,7 +79,9 @@ def test_migrate_is_idempotent(tmp_path, monkeypatch):
     # Act: run again via normal import; should not raise and schema unchanged
     _import_migrator().migrate_database()
 
-    # And also execute module as a script to cover the __main__ guard path
+    # Execute module as a script to cover the __main__ guard path without warnings
+    sys.modules.pop('backend.migrate_questions', None)
+    sys.modules.pop('migrate_questions', None)
     runpy.run_module('backend.migrate_questions', run_name='__main__')
     cols = _get_table_columns(str(db_path))
     assert 'question_type' in cols and 'question_data' in cols

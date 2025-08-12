@@ -105,14 +105,10 @@ function StudentHistory() {
     switch (courseType) {
       case 'Chemistry':
         return '/assets/course-chem.jpg';
-      case 'Mathematics':
-        return '/assets/course-math.jpg';
-      case 'Physics':
-        return '/assets/course-physics.jpg';
       case 'Statistics':
         return '/assets/course-stat.jpg';
       default:
-        return '/assets/course-general.jpg';
+        return '/assets/task1.jpg';
     }
   };
 
@@ -383,7 +379,7 @@ function StudentHistory() {
                       <img 
                         src={getCourseImage(courseType)} 
                         alt={item.task_name}
-                        onError={(e) => { e.target.src = '/assets/course-general.jpg'; }}
+                        onError={(e) => { e.target.src = '/assets/task1.jpg'; }}
                       />
                       <div className="course-badge">
                         {getCourseIcon(courseType)} {courseType}

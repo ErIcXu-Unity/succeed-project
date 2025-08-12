@@ -1,5 +1,6 @@
 // src/components/StudentHelp.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import './StudentHelp.css';
 
 function StudentHelp() {
@@ -92,10 +93,10 @@ function StudentHelp() {
   ];
 
   const quickActions = [
-    { title: 'Start New Task', action: '→ Dashboard', icon: '🎯' },
-    { title: 'View Achievements', action: '→ Achievements', icon: '🏆' },
-    { title: 'Accessibility Settings', action: '→ Accessibility', icon: '♿' },
-    { title: 'Check History', action: '→ History', icon: '📊' }
+    { title: 'Start New Task', action: '→ Dashboard', icon: '🎯', to: '/student/home' },
+    { title: 'View Achievements', action: '→ Achievements', icon: '🏆', to: '/student/achievements' },
+    { title: 'Accessibility Settings', action: '→ Accessibility', icon: '♿', to: '/student/accessibility' },
+    { title: 'Check History', action: '→ History', icon: '📊', to: '/student/history' }
   ];
 
   // Filter content based on search and category
@@ -141,13 +142,18 @@ function StudentHelp() {
         <h2>Quick Actions</h2>
         <div className="actions-grid">
           {quickActions.map((action, idx) => (
-            <div key={idx} className="action-card">
+            <Link
+              key={idx}
+              to={action.to}
+              className="action-card"
+              aria-label={`Go to ${action.title}`}
+            >
               <span className="action-icon">{action.icon}</span>
               <div className="action-content">
                 <h3>{action.title}</h3>
                 <span className="action-link">{action.action}</span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

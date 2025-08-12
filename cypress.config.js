@@ -14,6 +14,21 @@ module.exports = defineConfig({
     env: {
       apiBaseUrl: 'http://localhost:5001'
     }
+  },
+  component: {
+    // Component Testing spec and support paths
+    specPattern: 'test/frontend/components/**/*.cy.{js,jsx,ts,tsx}',
+    supportFile: 'test/frontend/support/component.js',
+    indexHtmlFile: 'test/frontend/support/component-index.html',
+    devServer: {
+      framework: 'react',
+      bundler: 'vite'
+    },
+    setupNodeEvents(on, config) {
+      // Enable code coverage task for component testing
+      require('@cypress/code-coverage/task')(on, config);
+      return config;
+    }
   }
 });
 

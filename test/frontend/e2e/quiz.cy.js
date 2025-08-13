@@ -248,9 +248,13 @@ describe('Task Quiz - All Question Types', () => {
     // capture initial width style
     cy.get('.progress-fill').invoke('attr', 'style').then((style1) => {
       cy.contains('button', 'Next').click();
+      // Wait for progress bar to update after navigation
+      cy.wait(100);
       cy.get('.progress-fill').invoke('attr', 'style').then((style2) => {
         expect(style1).to.not.equal(style2);
         cy.contains('button', 'Next').click();
+        // Wait for progress bar to update after second navigation
+        cy.wait(100);
         cy.get('.progress-fill').invoke('attr', 'style').then((style3) => {
           expect(style3).to.not.equal(style2);
         });

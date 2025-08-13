@@ -58,17 +58,6 @@ describe('CustomAlert behaviors (indirect via pages)', () => {
     cy.get('.alert-modal.error, .upload-error, .error-toast').should('exist');
   });
 
-  it('Grades button triggers info alert with expected message', () => {
-    cy.intercept('GET', `${Cypress.env('apiBaseUrl')}/api/tasks*`, { statusCode: 200, body: [
-      { id: 1, name: 'Task A', introduction: 'intro', question_count: 1 },
-    ] }).as('tasks');
-    cy.intercept('GET', `${Cypress.env('apiBaseUrl')}/api/students/dashboard-summary`, { statusCode: 200, body: { total_students: 5, completion_rate: 50 } }).as('stats');
-    cy.visit('/teacher');
-    cy.wait(['@tasks','@stats']);
-    cy.get('.task-card').first().find('.btn-grade').click();
-    cy.get('.alert-modal.info').should('exist').and('contain.text','Grading feature for task');
-  });
-
   it('TaskEditor confirm modal shows default buttons OK and Cancel', () => {
     const list = [{ id: 9, question:'Q', option_a:'A', option_b:'B', option_c:'C', option_d:'D', correct_answer:'A', score:3 }];
     cy.intercept('GET','**/api/tasks/1', { statusCode:200, body:{ id:1, name:'Edit', introduction:'intro' } }).as('task');

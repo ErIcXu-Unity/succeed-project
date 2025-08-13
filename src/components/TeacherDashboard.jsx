@@ -232,10 +232,7 @@ const TeacherDashboard = () => {
     }
   };
 
-  const handleGradeTask = (taskId) => {
-    // Can navigate to grades page here
-    alert.info(`Grading feature for task ${taskId} - Coming soon!`);
-  };
+
 
 
 
@@ -469,14 +466,7 @@ const TeacherDashboard = () => {
                           <i className="fas fa-edit"></i>
                           Edit
                         </button>
-                        <button
-                          className="btn btn-grade"
-                          onClick={() => handleGradeTask(task.id)}
-                          title="View grades"
-                        >
-                          <i className="fas fa-chart-bar"></i>
-                          Grades
-                        </button>
+
                         <button
                           className="btn btn-delete"
                           onClick={() => setDeleteConfirm(task.id)}

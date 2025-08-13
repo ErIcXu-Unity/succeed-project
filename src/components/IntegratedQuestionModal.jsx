@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './QuestionCreateModal.css';
+// CSS styles should be handled by individual editor components
 import config from '../config';
 // Import all question type editors
 import SingleChoiceEditor from './SingleChoiceEditor';
@@ -7,7 +7,6 @@ import MultipleChoiceEditor from './MultipleChoiceEditor';
 import FillBlankEditor from './FillBlankEditor';
 import PuzzleGameEditor from './PuzzleGameEditor';
 import MatchingTaskEditor from './MatchingTaskEditor';
-import ErrorSpottingEditor from './ErrorSpottingEditor';
 
 const IntegratedQuestionModal = ({ isOpen, onClose, onSubmit, taskId }) => {
   // Basic form data

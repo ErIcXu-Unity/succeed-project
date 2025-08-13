@@ -263,11 +263,18 @@ describe('Task Quiz - All Question Types', () => {
     cy.intercept('GET', '**/api/tasks/1/progress*', { statusCode: 200, body: { has_progress: false } }).as('progress');
     visitQuizAsStudent(1);
     cy.wait(['@task', '@questions', '@progress']);
+    
+    // Wait for network status to be initialized
+    cy.get('.network-status').should('exist');
+    
     // simulate offline/online
     cy.window().then((win) => win.dispatchEvent(new Event('offline')));
     cy.get('.network-status.offline').should('exist');
+    cy.get('.network-status').should('contain.text', 'Offline');
+    
     cy.window().then((win) => win.dispatchEvent(new Event('online')));
     cy.get('.network-status.online').should('exist');
+    cy.get('.network-status').should('contain.text', 'Connected');
   });
 
   it('handles questions API error with friendly error UI', () => {

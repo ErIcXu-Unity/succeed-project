@@ -503,4 +503,76 @@ describe('VideoUpload (Component)', () => {
     cy.get('.youtube-save-btn').click();
     cy.get('.youtube-embed iframe', { timeout: 8000 }).should('have.attr', 'src').and('match', /embed\/xyz789/);
   });
+
+
+  it('triggers file input click when upload area is clicked (lines 414-416)', () => {
+    // Mock fetch for normal mode
+    stubFetch((url, options = {}) => {
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
+    });
+    
+    // Create a spy for the file input click
+    cy.mount(<VideoUpload taskId={70} isCreateMode={false} />);
+    cy.get('.upload-options', { timeout: 8000 }).should('be.visible');
+    cy.get('.local-upload-btn').click();
+    cy.get('.local-upload-section').should('be.visible');
+    
+    // Mock the file input element and its click method
+    cy.get('input#video-file-input').then($input => {
+      const clickSpy = cy.spy($input[0], 'click').as('fileInputClick');
+      
+      // Click on the upload area (should trigger fileInput.click())
+      cy.get('.upload-area').click();
+      cy.get('@fileInputClick').should('have.been.called');
+    });
+  });
+
+  it('handles file input change with invalid file type', () => {
+    // Mock fetch for normal mode
+    stubFetch((url, options = {}) => {
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
+    });
+    
+    cy.mount(<VideoUpload taskId={71} isCreateMode={false} />);
+    cy.get('.upload-options', { timeout: 8000 }).should('be.visible');
+    cy.get('.local-upload-btn').click();
+    
+    // Try uploading an invalid file type
+    const invalidFile = { name: 'test.txt', type: 'text/plain', size: 1024 };
+    cy.get('input[type="file"]').then($input => {
+      const dataTransfer = new DataTransfer();
+      const file = new File(['fake text'], 'test.txt', { type: 'text/plain' });
+      dataTransfer.items.add(file);
+      $input[0].files = dataTransfer.files;
+      $input[0].dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    
+    cy.get('.upload-error').should('contain.text', 'valid video format');
+  });
+
+  it('handles oversized file upload via input (lines 188-189)', () => {
+    // Mock fetch for normal mode
+    stubFetch((url, options = {}) => {
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
+    });
+    
+    cy.mount(<VideoUpload taskId={72} isCreateMode={false} />);
+    cy.get('.upload-options', { timeout: 8000 }).should('be.visible');
+    cy.get('.local-upload-btn').click();
+    
+    // Create a file that's too large (>100MB)
+    cy.get('input[type="file"]').then($input => {
+      // Mock a large file
+      const largeFile = new File(['x'.repeat(101 * 1024 * 1024)], 'large.mp4', { type: 'video/mp4' });
+      Object.defineProperty(largeFile, 'size', { value: 101 * 1024 * 1024, writable: false });
+      
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(largeFile);
+      $input[0].files = dataTransfer.files;
+      $input[0].dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    
+    // Should show file size error (lines 188-189)
+    cy.get('.upload-error').should('contain.text', 'Maximum size: 100MB');
+  });
 });

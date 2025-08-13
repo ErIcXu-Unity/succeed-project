@@ -36,6 +36,7 @@ A full-stack web application for creating and managing educational escape room g
 
 ### For Teachers
 - **Dashboard Management**: Overview of all escape room games and student progress
+- 
 - **Advanced Game Creation**: Create escape rooms with 5 different question types
 - **Question Management**: 
   - Single Choice: Traditional A/B/C/D questions

@@ -216,7 +216,7 @@ if __name__ == '__main__':
     app = create_app()
     initialize_database(app)
     
-    print('✅ Database initialized and seeded successfully')
-    print('🚀 Starting Flask application on port 5001')
+    print('Database initialized and seeded successfully')
+    print('Starting Flask application on port 5001')
     
     app.run(debug=True, host='0.0.0.0', port=5001)

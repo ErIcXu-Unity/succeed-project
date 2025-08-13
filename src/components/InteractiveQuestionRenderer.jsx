@@ -15,7 +15,6 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
       questionData = question.question_data || {};
     }
   } catch (error) {
-    console.error('Error parsing question_data:', error);
     questionData = {};
   }
 
@@ -194,7 +193,6 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
     const stableKey = `puzzle-${question.id}`;
     
     const [puzzleState, setPuzzleState] = useState(() => {
-      console.log('🏠 Creating NEW puzzle state for key:', stableKey);
       return {
         fragments: [],
         assembledPieces: [],
@@ -213,11 +211,8 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
       
       // Prevent re-initialization if already initialized OR if question ID hasn't changed
       if (puzzleState.initialized && puzzleState.questionId === currentQuestionId) {
-        console.log('🚫 STABLE: Puzzle already initialized for question', question.id);
         return;
       }
-      
-      console.log('🔄 FRESH INIT: Initializing puzzle for question', currentQuestionId);
       
       let allFragments = [];
       let solution = '';
@@ -239,7 +234,6 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
           originalIndex: index
         }));
         
-        console.log('🧩 Created fragment objects:', fragmentObjects);
         
         // Handle saved answers
         let assembledPieces = [];
@@ -247,7 +241,6 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
         
         // Handle initial state setup
         if (Array.isArray(currentAnswer) && currentAnswer.length > 0) {
-          console.log('🔄 Restoring saved answer state:', currentAnswer);
           // Restore saved answer state
           assembledPieces = currentAnswer.map((content, index) => {
             const fragmentObj = fragmentObjects.find(f => f.content === content);
@@ -269,14 +262,9 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
           });
         } else {
           // Shuffle fragments for new puzzle
-          console.log('🔀 Shuffling fragments for new puzzle');
           availableFragments = fragmentObjects.sort(() => Math.random() - 0.5);
         }
 
-        console.log('🧩 Final puzzle state:', {
-          fragments: availableFragments,
-          assembledPieces: assembledPieces
-        });
         
         setPuzzleState(prev => ({
           ...prev,
@@ -286,16 +274,13 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
           questionId: currentQuestionId
         }));
         
-        console.log('✅ MARKED as initialized for question', currentQuestionId);
 
       } catch (error) {
-        console.error('Error parsing puzzle data:', error);
       }
     }, [question.id, puzzleState.initialized, puzzleState.questionId]); // Include minimal necessary deps
 
     // Handle drag start - Optimize drag start logic
     const handleDragStart = useCallback((e, piece) => {
-      console.log('🚀 Drag start:', piece);
       
       // Set drag data
       const dragData = {
@@ -320,7 +305,6 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
 
     // Handle drag end - Clean up drag state
     const handleDragEnd = useCallback((e) => {
-      console.log('🏁 Drag end');
       e.target.classList.remove('dragging');
       setPuzzleState(prev => ({ 
         ...prev, 
@@ -355,8 +339,6 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
       e.stopPropagation();
       e.currentTarget.classList.remove('drag-over');
       
-      console.log('📦 Drop in assembly at index:', dropIndex);
-      
       try {
         // Try to get JSON data, if failed try text data
         let piece;
@@ -375,15 +357,8 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
         }
         
         if (!piece) {
-          console.error('❌ No piece data found in drop event');
           return;
         }
-        
-        console.log('📦 Dropped piece:', piece);
-        console.log('📦 Current state:', {
-          fragments: puzzleState.fragments.length,
-          assembled: puzzleState.assembledPieces.length
-        });
         
         // Ensure state update is atomic operation
         setPuzzleState(prev => {
@@ -394,24 +369,19 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
           const currentAssemblyIndex = newAssembled.findIndex(p => 
             p.id === piece.id || (p.originalIndex === piece.originalIndex && p.originalIndex !== -1)
           );
-          console.log('📦 Current assembly index:', currentAssemblyIndex);
           
           if (currentAssemblyIndex !== -1) {
             // Reordering within assembly area
-            console.log('📦 Reordering within assembly');
             const [movedPiece] = newAssembled.splice(currentAssemblyIndex, 1); // Remove from current position
             
             // Adjust drop index if we removed an item before the drop position
             const adjustedDropIndex = currentAssemblyIndex < dropIndex ? dropIndex - 1 : dropIndex;
-            console.log('📦 Adjusted drop index:', adjustedDropIndex);
             newAssembled.splice(Math.max(0, Math.min(adjustedDropIndex, newAssembled.length)), 0, movedPiece); // Insert at new position
           } else {
             // Moving from fragment bank to assembly
-            console.log('📦 Moving from fragments to assembly');
             const fragmentIndex = newFragments.findIndex(f => 
               f.id === piece.id || (f.originalIndex === piece.originalIndex && f.originalIndex !== -1)
             );
-            console.log('📦 Fragment index:', fragmentIndex);
             
             if (fragmentIndex !== -1) {
               const [movedFragment] = newFragments.splice(fragmentIndex, 1); // Remove from fragments
@@ -422,15 +392,10 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
               };
               newAssembled.splice(Math.max(0, Math.min(dropIndex, newAssembled.length)), 0, assembledPiece); // Add to assembly
             } else {
-              console.warn('📦 Piece not found in fragments!', piece);
               return prev; // If piece not found, don't update state
             }
           }
           
-          console.log('📦 New state:', {
-            fragments: newFragments.length,
-            assembled: newAssembled.length
-          });
           
           // Update answer in parent component
           const answerData = newAssembled.map(p => p.content);
@@ -464,7 +429,6 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
             piece = JSON.parse(jsonData);
           }
         } catch (error) {
-          console.warn('Failed to parse JSON drag data, trying fallback');
         }
         
         if (!piece && puzzleState.draggedPiece) {
@@ -590,7 +554,6 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
             piece = JSON.parse(jsonData);
           }
         } catch (error) {
-          console.warn('Failed to parse JSON drag data, trying fallback');
         }
         
         if (!piece && puzzleState.draggedPiece) {

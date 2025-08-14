@@ -185,6 +185,9 @@ The database design supports flexible educational content management:
 
 ```bash
 docker compose up -d --build
+# Or, if you are using legacy Docker Compose v1:
+docker-compose up -d --build
+
 # Access at http://localhost
 ```
 
@@ -192,6 +195,8 @@ docker compose up -d --build
 
 ```bash
 docker compose --profile dev up -d --build
+# Or (legacy v1):
+docker-compose --profile dev up -d --build
 # Access at http://localhost:3000
 ```
 
@@ -201,6 +206,60 @@ docker compose --profile dev up -d --build
 docker compose up db backend -d
 npm start  # Frontend runs locally with hot reload
 ```
+
+### Local Backend (without Docker)
+
+If you run the backend directly with `python app.py`, you must set up a local database and a `.env` file under `backend/`.
+
+1. Create the PostgreSQL database (name must be `test-project`)
+
+```bash
+# Option A: Using Docker for Postgres only (matches docker-compose port mapping)
+docker compose up -d db
+# Database will be available on host port 5433
+
+# Option B: Using your own Postgres (default 5432)
+```
+
+Create the database:
+
+```bash
+# Using createdb (Postgres CLI)
+createdb -h localhost -p 5433 -U postgres test-project   # if using Docker DB
+# or
+createdb -h localhost -p 5432 -U postgres test-project   # if using native Postgres
+
+# Or via psql
+psql -h localhost -p 5433 -U postgres -c "CREATE DATABASE \"test-project\";"
+```
+
+2. Create `backend/.env`
+
+```env
+# Point to your Postgres instance
+# If using Docker DB exposed on 5433:
+DATABASE_URL=postgresql://postgres:123456@localhost:5433/test-project
+# If using native Postgres on 5432, adjust accordingly:
+# DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/test-project
+
+FLASK_ENV=development
+FLASK_DEBUG=True
+SECRET_KEY=dev-secret-key
+```
+
+3. Install dependencies and run the backend
+
+```bash
+cd backend
+pip install -r requirements.txt
+python app.py
+# Backend runs at http://localhost:5001
+```
+
+Notes:
+
+- When using Docker Compose (frontend + backend + db), you do NOT need `backend/.env`; Compose injects `DATABASE_URL` for you.
+- Access the app in Docker: `http://localhost:3000` (frontend) and `http://localhost:5001` (backend API).
 
 ### Manual Installation
 

@@ -35,7 +35,7 @@ Prerequisites:
 Install deps once:
 
 ```bash
-npm ci
+npm install
 ```
 
 Option A — Stubbed E2E (no backend required):

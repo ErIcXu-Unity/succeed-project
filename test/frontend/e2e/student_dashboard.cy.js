@@ -8,7 +8,7 @@ describe('Student Dashboard (merged)', () => {
         win.localStorage.setItem('user_data', JSON.stringify(student));
       }
     });
-    cy.wait(30);
+    cy.wait(3500);
   };
 
   beforeEach(() => {

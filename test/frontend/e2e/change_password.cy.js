@@ -9,7 +9,7 @@ describe('ChangePasswordModal flows (teacher header button)', () => {
         win.localStorage.setItem('user_data', JSON.stringify(teacher));
       }
     });
-    cy.wait(30);
+    cy.wait(3500);
   };
 
   const openModal = () => {

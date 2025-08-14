@@ -3,7 +3,7 @@
 describe('Student Registration', () => {
   const openRegister = () => {
     cy.visit('/');
-    cy.wait(30);
+    cy.wait(3500);
     cy.contains('Student Register').click();
     cy.contains('Student Registration');
   };

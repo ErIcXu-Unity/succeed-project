@@ -9,7 +9,7 @@ describe('Task Editor flows', () => {
         win.localStorage.setItem('user_data', JSON.stringify(teacher));
       }
     });
-    cy.wait(30);
+    cy.wait(3500);
   });
 
   it('create new task in create mode and navigate back to teacher dashboard (stubbed)', () => {

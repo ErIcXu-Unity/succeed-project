@@ -9,7 +9,7 @@ describe('Question Editors - rich interactions', () => {
         win.localStorage.setItem('user_data', JSON.stringify(teacher));
       }
     });
-    cy.wait(30);
+    cy.wait(3500);
     cy.intercept('GET', '**/api/tasks/1', { statusCode: 200, body: { id: 1, name: 'Stubbed Task' } }).as('task');
   });
 

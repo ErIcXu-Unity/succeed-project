@@ -411,7 +411,7 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
         });
 
       } catch (error) {
-        console.error('❌ Error handling drop:', error);
+        console.error('Error handling drop:', error);
       }
     }, [puzzleState.draggedPiece, onAnswerChange]);
 
@@ -436,7 +436,7 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
         }
         
         if (!piece) {
-          console.error('❌ No piece data found');
+          console.error('No piece data found');
           return;
         }
         
@@ -461,7 +461,6 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
           }
         }
         
-        console.log('📦 Smart drop at index:', insertIndex);
         
         setPuzzleState(prev => {
           let newAssembled = [...prev.assembledPieces];
@@ -509,7 +508,7 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
         });
         
       } catch (error) {
-        console.error('❌ Error in smart drop:', error);
+        console.error('Error in smart drop:', error);
       }
     }, [puzzleState.draggedPiece, puzzleState.assembledPieces, onAnswerChange]);
 
@@ -543,8 +542,6 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
       e.stopPropagation();
       e.currentTarget.classList.remove('drag-over');
       
-      console.log('🔄 Drop back to fragments');
-      
       try {
         // Try to get drag data
         let piece;
@@ -561,18 +558,15 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
         }
         
         if (!piece) {
-          console.error('❌ No piece data found');
+          console.error('No piece data found');
           return;
         }
-        
-        console.log('🔄 Piece to return:', piece);
         
         setPuzzleState(prev => {
           // Only move piece if it's currently in assembly area
           const assemblyIndex = prev.assembledPieces.findIndex(p => 
             p.id === piece.id || (p.originalIndex === piece.originalIndex && p.originalIndex !== -1)
           );
-          console.log('🔄 Assembly index:', assemblyIndex);
           
           if (assemblyIndex !== -1) {
             let newAssembled = [...prev.assembledPieces];
@@ -589,11 +583,6 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
             };
             newFragments.push(fragmentPiece);
             
-            console.log('🔄 After return:', {
-              fragments: newFragments.length,
-              assembled: newAssembled.length
-            });
-            
             // Update answer
             const answerData = newAssembled.map(p => p.content);
             onAnswerChange(answerData);
@@ -606,13 +595,12 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
               showValidation: false
             };
           } else {
-            console.log('🔄 Piece not in assembly, ignoring');
             return prev;
           }
         });
 
       } catch (error) {
-        console.error('❌ Error handling fragment drop:', error);
+        console.error('Error handling fragment drop:', error);
       }
     }, [puzzleState.draggedPiece, onAnswerChange]);
 
@@ -1106,7 +1094,6 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
               key={option}
               className={`option-button ${currentAnswer === option ? 'selected' : ''}`}
               onClick={() => {
-                console.log('🔵 Single choice question selected:', option, '→', question._originalKeyMapping?.[option] || option);
                 onAnswerChange(option);
               }}
             >
@@ -1137,7 +1124,6 @@ const InteractiveQuestionRenderer = ({ question, currentAnswer, onAnswerChange }
                     ? [...selectedOptions, index]
                     : selectedOptions.filter(i => i !== index);
                   const originalIndex = question._indexMapping ? Object.keys(question._indexMapping).find(k => question._indexMapping[k] === index) : index;
-                  console.log('🟢 Multiple choice question selected:', index, '→', originalIndex, e.target.checked ? 'selected' : 'unselected');
                   onAnswerChange(newSelected);
                 }}
               />

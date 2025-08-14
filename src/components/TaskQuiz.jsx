@@ -86,14 +86,6 @@ const randomizeQuestionOptions = (question, seed) => {
 
     newQuestion.question_data = JSON.stringify(newQuestionData);
     newQuestion._indexMapping = indexMapping; // Save index mapping for answer conversion
-    
-    console.log('Multiple Choice randomization:', {
-      originalOptions,
-      shuffledOptions,
-      originalCorrectAnswers,
-      newCorrectAnswers,
-      indexMapping
-    });
 
   } else if (question.question_type === 'single_choice') {
     // Single Choice: maintain original letter mapping logic
@@ -150,7 +142,6 @@ const generateStudentSeed = (studentId, taskId) => {
     const session = JSON.parse(savedSession);
     // If session is incomplete, use saved seed
     if (!session.completed) {
-      console.log('🔄 Use a saved session seed:', session.seed);
       return session.seed;
     }
   }
@@ -173,7 +164,6 @@ const generateStudentSeed = (studentId, taskId) => {
     startTime: new Date().toISOString()
   };
   localStorage.setItem(sessionKey, JSON.stringify(newSession));
-  console.log('🆕 Generated new session seed:', newSeed);
   
   return newSeed;
 };
@@ -187,7 +177,6 @@ const markSessionCompleted = (studentId, taskId) => {
     session.completed = true;
     session.endTime = new Date().toISOString();
     localStorage.setItem(sessionKey, JSON.stringify(session));
-    console.log('✅ Session marked as completed');
   }
 };
 
@@ -195,7 +184,6 @@ const markSessionCompleted = (studentId, taskId) => {
 const restartSession = (studentId, taskId) => {
   const sessionKey = `quiz_session_${studentId}_${taskId}`;
   localStorage.removeItem(sessionKey);
-  console.log('🔄 The session has been reset and will be re-randomized next time you enter');
 };
 
 const TaskQuiz = () => {
@@ -288,19 +276,15 @@ const TaskQuiz = () => {
                     convertedAnswers[questionId] = originalAnswer.map(originalIndex => {
                       return question._indexMapping[originalIndex] !== undefined ? question._indexMapping[originalIndex] : originalIndex;
                     });
-                    console.log('📥 Multiple choice restore:', originalAnswer, '→', convertedAnswers[questionId]);
                   } else if (question?._originalKeyMapping) {
                     // Single Choice: convert original letters to current randomized letters
                     convertedAnswers[questionId] = question._originalKeyMapping[originalAnswer] || originalAnswer;
-                    console.log('📥 Single choice restore:', originalAnswer, '→', convertedAnswers[questionId]);
                   } else {
                     convertedAnswers[questionId] = originalAnswer;
                   }
                 });
                 
                 setAllAnswers(convertedAnswers);
-                console.log('✅ Progress restored, answers converted to current randomized format');
-
               }
             }
           } else {
@@ -510,7 +494,6 @@ const TaskQuiz = () => {
             return reverseIndexMapping[randomizedIndex] !== undefined ? reverseIndexMapping[randomizedIndex] : randomizedIndex;
           });
           
-          console.log('💾 Multiple choice save:', userAnswer, '→', originalAnswers[questionId]);
         } else if (question && question._originalKeyMapping) {
           // Single Choice: use letter mapping to convert answers
           const reverseMapping = {};
@@ -521,20 +504,11 @@ const TaskQuiz = () => {
           
           originalAnswers[questionId] = reverseMapping[userAnswer] || userAnswer;
           
-          console.log('💾 Single choice save:', userAnswer, '→', originalAnswers[questionId]);
         } else {
           originalAnswers[questionId] = userAnswer;
-          console.log('💾 SAVE PROGRESS - No Mapping:', {
-            questionId,
-            questionType: question?.question_type,
-            userAnswer,
-            directlySaved: true
-          });
         }
       });
       
-      console.log('💾 Save progress:', Object.keys(allAnswers).length, 'answers');
-
       const response = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}/save-progress`, {
         method: 'POST',
         headers: {
@@ -583,10 +557,8 @@ const TaskQuiz = () => {
         const success = await saveProgress(false, false); // Don't show success message, don't navigate to home
         if (success) {
           setLastSaved(new Date());
-          console.log('✅ Auto-save successful');
         }
       } catch (error) {
-        console.error('❌ Auto-save failed:', error);
       } finally {
         setAutoSaving(false);
       }
@@ -628,7 +600,7 @@ const TaskQuiz = () => {
 
     setSubmitting(true);
     
-    // 首先检查网络连接
+    // Check network connection
     if (retryCount === 0) {
       const isConnected = await checkNetworkConnection();
       if (!isConnected) {
@@ -642,10 +614,10 @@ const TaskQuiz = () => {
     }
 
     try {
-      // 构建提交数据 - 需要将随机化后的答案转换回原始答案
+      // Build submission data - need to convert randomized answers back to original answers
       const user = JSON.parse(localStorage.getItem('user_data'));
       
-      // 转换随机化后的答案为原始答案
+      // Convert randomized answers to original answers
       const originalAnswers = {};
       Object.keys(allAnswers).forEach(questionId => {
         const userAnswer = allAnswers[questionId];
@@ -664,7 +636,6 @@ const TaskQuiz = () => {
             return reverseIndexMapping[randomizedIndex] !== undefined ? reverseIndexMapping[randomizedIndex] : randomizedIndex;
           });
           
-          console.log('🚀 Multiple choice submission:', userAnswer, '→', originalAnswers[questionId]);
         } else if (question && question._originalKeyMapping) {
           // Single Choice: use letter mapping to convert answers
           const reverseMapping = {};
@@ -675,16 +646,9 @@ const TaskQuiz = () => {
           
           originalAnswers[questionId] = reverseMapping[userAnswer] || userAnswer;
           
-          console.log('🚀 Single choice submission:', userAnswer, '→', originalAnswers[questionId]);
         } else {
           // Questions without mapping use original answers directly
           originalAnswers[questionId] = userAnswer;
-          console.log('🚀 SUBMIT - No Mapping:', {
-            questionId,
-            questionType: question?.question_type,
-            userAnswer,
-            directlySaved: true
-          });
         }
       });
       
@@ -693,8 +657,6 @@ const TaskQuiz = () => {
         student_id: user?.user_id,
         started_at: taskStartTime  // Include task start time
       };
-
-      console.log('🚀 Submission:', Object.keys(allAnswers).length, 'answers');
       
       // Debug Fill Blank questions specifically
       Object.keys(allAnswers).forEach(questionId => {
@@ -709,7 +671,7 @@ const TaskQuiz = () => {
       });
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 秒超时
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 seconds timeout
 
       const response = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}/submit`, {
         method: 'POST',
@@ -811,9 +773,7 @@ const TaskQuiz = () => {
       return;
     }
 
-    try {
-      console.log('🔄 Start retrying the quiz, clearing progress data...');
-      
+    try {      
       // First clear backend progress data
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
@@ -826,25 +786,23 @@ const TaskQuiz = () => {
       clearTimeout(timeoutId);
 
       if (deleteResponse.ok) {
-        console.log('✅ Backend progress data has been cleared');
+        console.log('Backend progress data has been cleared');
       } else {
-        console.warn('⚠️ Backend progress clearing may have failed, status code:', deleteResponse.status);
+        console.warn('Backend progress clearing may have failed, status code:', deleteResponse.status);
       }
     } catch (error) {
       if (error.name === 'AbortError') {
-        console.warn('⚠️ The request to clear progress data timed out, continuing with retry');
+        console.warn('The request to clear progress data timed out, continuing with retry');
       } else if (error.message.includes('Failed to fetch')) {
-        console.warn('⚠️ Network connection failed, unable to clear backend progress data');
+        console.warn('Network connection failed, unable to clear backend progress data');
       } else {
-        console.warn('⚠️ An error occurred while clearing progress data:', error.message);
+        console.warn('An error occurred while clearing progress data:', error.message);
       }
     }
     
     // Clear frontend session data (keep original logic)
     restartSession(user.user_id, taskId);
     
-    // Reset all states, re-initialize quiz
-    console.log('🔄 Resetting quiz state and reloading data');
     
     // Reset component state
     setQuestions([]);

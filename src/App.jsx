@@ -121,7 +121,7 @@ function AppWrapper() {
                     <Route path="settings" element={<TeacherSettings />} />
                     <Route path="gamegrade" element={<EachgameGrade />} />
                   </Route>
-                  {/* 任务管理路由 - 在TeacherLayout外部 */}
+                  {/* Task management routes */}
                   <Route path="/teacher/tasks/new" element={<TaskEditor />} />
                   <Route path="/teacher/tasks/:taskId/edit" element={<TaskEditor />} />
                   {/* Question creation routes */}
@@ -144,7 +144,7 @@ function AppWrapper() {
                     <Route path="accessibility" element={<StudentAccessibility />} />
                     <Route path="help" element={<StudentHelp />} />
                   </Route>
-                  {/* 任务相关路由 - 在StudentLayout外部 */}
+                  {/* Task related routes */}
                   <Route path="/student/tasks/:taskId/intro" element={<TaskIntro />} />
                   <Route path="/student/tasks/:taskId/quiz" element={<TaskQuiz />} />
                   {/* Test route for QuestionRenderer */}

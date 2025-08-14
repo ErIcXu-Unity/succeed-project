@@ -286,7 +286,7 @@
   }
 }
 
-/* 响应式设计 */
+/* Responsive styles */
 @media (max-width: 768px) {
   .teacher-settings-container {
     padding: 1rem;

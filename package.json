@@ -32,8 +32,9 @@
       "eject": "react-scripts eject",
       "cypress:open": "cypress open",
       "cypress:run": "cypress run",
-      "cypress:run:ct": "cypress run --component",
-      "ct:cov": "cypress run --component && nyc report --reporter=html --reporter=text-summary --report-dir coverage/ct --temp-dir .nyc_output"
+    "cypress:run:ct": "cypress run --component",
+    "ct:cov": "cypress run --component && nyc report --reporter=html --reporter=text-summary --report-dir coverage/ct --temp-dir .nyc_output",
+    "postct:cov": "start \"\" \"coverage\\ct\\index.html\""
   },
   "eslintConfig": {
       "extends": [

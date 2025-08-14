@@ -512,7 +512,6 @@
   background: rgba(253, 126, 20, 0.9);
 }
 
-/* 内部状态样式 - 在course-badge内显示 */
 .course-badge .internal-status {
   background: var(--success-green);
   color: var(--white);

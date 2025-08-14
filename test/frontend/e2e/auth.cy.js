@@ -10,7 +10,7 @@ describe('Authentication flows', () => {
     cy.contains('UNSW Escape Room');
     // Loading screen progresses then hides after ~3s (App has 3s minimum)
     cy.contains('Waiting to start the adventure');
-    cy.wait(30);
+    cy.wait(3500);
     cy.contains('Teacher Login');
     cy.contains('Student Login');
     cy.contains('Student Register');
@@ -18,7 +18,7 @@ describe('Authentication flows', () => {
 
   it('student login modal validation (empty fields, missing password, wrong password, network error)', () => {
     cy.visit('/');
-    cy.wait(30);
+    cy.wait(3500);
     cy.contains('Student Login').click();
     cy.get('.modal-content').within(() => {
       // empty fields
@@ -56,7 +56,7 @@ describe('Authentication flows', () => {
 
   it('student login success path (stubbed)', () => {
     cy.visit('/');
-    cy.wait(30);
+    cy.wait(3500);
     cy.contains('Student Login').click();
     cy.get('.modal-content input[name="username"]').type('9000001@stu.com');
     cy.get('.modal-content input[name="password"]').type('123456');
@@ -73,7 +73,7 @@ describe('Authentication flows', () => {
 
   it('teacher login success path (stubbed via UI)', () => {
     cy.visit('/');
-    cy.wait(30);
+    cy.wait(3500);
     cy.contains('Teacher Login').click();
     cy.get('.modal-content input[name="username"]').type('st1000@tea.com');
     cy.get('.modal-content input[name="password"]').type('123456');
@@ -91,7 +91,7 @@ describe('Authentication flows', () => {
 
   it('opens Teacher login modal, shows correct title, and closes via X button', () => {
     cy.visit('/');
-    cy.wait(30);
+    cy.wait(3500);
     cy.contains('Teacher Login').click();
     cy.get('.modal-content').within(() => {
       cy.contains('Teacher Login');
@@ -102,7 +102,7 @@ describe('Authentication flows', () => {
 
   it('closes login modal by clicking outside overlay', () => {
     cy.visit('/');
-    cy.wait(30);
+    cy.wait(3500);
     cy.contains('Student Login').click();
     cy.get('.modal').click('topLeft');
     cy.get('.modal-content').should('not.exist');
@@ -110,7 +110,7 @@ describe('Authentication flows', () => {
 
   it('switches Teacher -> Student login resets fields and title', () => {
     cy.visit('/');
-    cy.wait(30);
+    cy.wait(3500);
     cy.contains('Teacher Login').click();
     cy.get('.modal-content input[name="username"]').type('t@tea.com');
     cy.get('.close-btn').click();
@@ -125,7 +125,7 @@ describe('Authentication flows', () => {
   it('login button shows loading and is disabled during pending request; prevents double submit', () => {
     let calls = 0;
     cy.visit('/');
-    cy.wait(30);
+    cy.wait(3500);
     cy.contains('Student Login').click();
     cy.get('.modal-content input[name="username"]').type('9000001@stu.com');
     cy.get('.modal-content input[name="password"]').type('123456');
@@ -154,7 +154,7 @@ describe('Authentication flows', () => {
       }
     });
     cy.contains('UNSW Escape Room');
-    cy.wait(30);
+    cy.wait(3500);
     cy.location('pathname', { timeout: 6000 }).should('include', '/student');
   });
 
@@ -165,7 +165,7 @@ describe('Authentication flows', () => {
         win.localStorage.setItem('user_data', JSON.stringify(userData));
       }
     });
-    cy.wait(30);
+    cy.wait(3500);
     cy.get('button.logout-btn').click();
     cy.location('pathname', { timeout: 6000 }).should('eq', '/');
     cy.window().then((win) => {
@@ -175,7 +175,7 @@ describe('Authentication flows', () => {
 
   it('error message clears after closing and reopening modal', () => {
     cy.visit('/');
-    cy.wait(30);
+    cy.wait(3500);
     cy.contains('Student Login').click();
     cy.get('.modal-content').within(() => {
       cy.contains('button', 'Login').click();
@@ -189,7 +189,7 @@ describe('Authentication flows', () => {
 
   it('switch role opens correct modal titles', () => {
     cy.visit('/');
-    cy.wait(30);
+    cy.wait(3500);
     cy.contains('Teacher Login').click();
     cy.get('.modal-content').contains('Teacher Login');
     cy.get('.close-btn').click();
@@ -199,7 +199,7 @@ describe('Authentication flows', () => {
 
   it('register flow visible and back to login', () => {
     cy.visit('/');
-    cy.wait(30);
+    cy.wait(3500);
     cy.contains('Student Register').click();
     cy.contains('Student Registration');
     cy.contains('Back to Login').click();

@@ -39,7 +39,6 @@ const QuestionPreview = ({ question, onEdit }) => {
       const routeType = routeTypeMap[questionType] || questionType;
       const editUrl = `/teacher/tasks/${taskId}/create/${routeType}?questionId=${question.id}`;
       
-      console.log('Navigating to edit URL:', editUrl);
       navigate(editUrl);
     }
   };

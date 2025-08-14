@@ -16,7 +16,6 @@ function StudentAchievements() {
   const fetchStudentData = async () => {
     try {
       const user = JSON.parse(localStorage.getItem('user_data'));
-      console.log('User data from localStorage:', user);
       
       if (!user?.user_id) {
         setError('User not logged in');
@@ -24,15 +23,11 @@ function StudentAchievements() {
         return;
       }
 
-      console.log('Fetching profile for user:', user.user_id);
-
       // Get student profile information
               const profileResponse = await fetch(`${config.API_BASE_URL}/api/students/${user.user_id}/profile`);
-      console.log('Profile response status:', profileResponse.status);
       
       if (profileResponse.ok) {
         const profileData = await profileResponse.json();
-        console.log('Profile data received:', profileData);
         setProfile(profileData);
       } else {
         const errorText = await profileResponse.text();
@@ -40,24 +35,18 @@ function StudentAchievements() {
         throw new Error(`Failed to fetch profile: ${profileResponse.status}`);
       }
 
-      console.log('Fetching achievements for user:', user.user_id);
-
       // Get student achievement information
               const achievementsResponse = await fetch(`${config.API_BASE_URL}/api/students/${user.user_id}/achievements`);
-      console.log('Achievements response status:', achievementsResponse.status);
       
       if (achievementsResponse.ok) {
         const achievementsData = await achievementsResponse.json();
-        console.log('Achievements data received:', achievementsData);
         setAchievements(achievementsData.achievements);
       } else {
         const errorText = await achievementsResponse.text();
-        console.error('Achievements fetch error:', errorText);
         throw new Error(`Failed to fetch achievements: ${achievementsResponse.status}`);
       }
 
     } catch (error) {
-      console.error('Error fetching student data:', error);
       setError(`Failed to load student data: ${error.message}`);
     } finally {
       setLoading(false);

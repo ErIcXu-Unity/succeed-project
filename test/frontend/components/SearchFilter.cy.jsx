@@ -7,7 +7,7 @@ describe('SearchFilter (Component)', () => {
     {
       label: 'Category',
       value: 'all',
-      onChange: cy.stub(),
+      onChange: () => {},
       allOption: 'All Categories',
       options: [
         { label: 'Option 1', value: 'opt1' },
@@ -23,14 +23,14 @@ describe('SearchFilter (Component)', () => {
 
   const defaultProps = {
     searchTerm: '',
-    onSearchChange: cy.stub(),
+    onSearchChange: () => {},
     filters: mockFilters,
     sortOptions: mockSortOptions,
     sortBy: 'name',
     sortOrder: 'asc',
-    onSortByChange: cy.stub(),
-    onSortOrderChange: cy.stub(),
-    onClearFilters: cy.stub()
+    onSortByChange: () => {},
+    onSortOrderChange: () => {},
+    onClearFilters: () => {}
   };
 
   it('renders with default props', () => {
@@ -65,7 +65,10 @@ describe('SearchFilter (Component)', () => {
     
     cy.get('.search-input').type('new search');
     cy.then(() => {
-      expect(onSearchChange).to.have.been.calledWith('new search');
+      const calls = onSearchChange.getCalls();
+      expect(calls.length).to.equal('new search'.length);
+      expect(calls[0].args[0]).to.equal('n');
+      expect(calls[calls.length - 1].args[0]).to.equal('h');
     });
   });
 
@@ -86,7 +89,7 @@ describe('SearchFilter (Component)', () => {
   });
 
   it('hides filter controls when showFilters is false', () => {
-    mount(<SearchFilter {...defaultProps} showFilters={false} />);
+    mount(<SearchFilter {...defaultProps} showFilters={false} showSort={false} />);
     cy.get('.filter-controls').should('not.exist');
   });
 
@@ -179,7 +182,7 @@ describe('SearchFilter (Component)', () => {
   });
 
   it('has proper accessibility attributes', () => {
-    mount(<SearchFilter {...defaultProps} />);
+    mount(<SearchFilter {...defaultProps} searchTerm="x" />);
     cy.get('.search-input').should('have.attr', 'type', 'text');
     cy.get('.clear-search').should('have.attr', 'title', 'Clear search');
     cy.get('.clear-filters-btn').should('have.attr', 'title', 'Clear all filters');

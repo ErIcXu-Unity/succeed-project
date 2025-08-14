@@ -7,26 +7,29 @@ The UNSW Escape Room Educational Platform is a full-stack web application design
 ## Architecture
 
 ### System Architecture
+
 The platform follows a modern three-tier architecture:
 
 - **Frontend**: React 18-based single-page application with component-based architecture
-- **Backend**: Flask-based RESTful API with modular blueprint structure  
+- **Backend**: Flask-based RESTful API with modular blueprint structure
 - **Database**: PostgreSQL with SQLAlchemy ORM for data persistence
 - **Infrastructure**: Docker containerization for development and production deployment
 
 ### Technology Stack
 
 #### Frontend Technologies
+
 - **Framework**: React 18 with JavaScript ES6+
 - **Architecture**: Component-based design with specialized question type editors
 - **Styling**: CSS3 with responsive design and CSS Variables
-- **State Management**: React Hooks (useState, useEffect) 
+- **State Management**: React Hooks (useState, useEffect)
 - **Routing**: React Router with dynamic navigation
 - **HTTP Client**: Fetch API with comprehensive error handling
 - **Media Support**: Images, videos, and YouTube integration
 - **Testing**: Cypress for end-to-end and component testing
 
 #### Backend Technologies
+
 - **Framework**: Flask 2.0+ with Blueprint architecture
 - **Database**: PostgreSQL with SQLAlchemy ORM
 - **Authentication**: Session-based with secure password hashing
@@ -35,6 +38,7 @@ The platform follows a modern three-tier architecture:
 - **Environment**: python-dotenv for configuration management
 
 #### Infrastructure
+
 - **Containerization**: Docker and Docker Compose
 - **Web Server**: Nginx for production static file serving
 - **Development**: Hot reload support for rapid development
@@ -43,10 +47,11 @@ The platform follows a modern three-tier architecture:
 ## Core Features
 
 ### Educational Content Management
+
 The platform supports five distinct question types for maximum educational versatility:
 
 1. **Single Choice Questions**: Traditional multiple-choice with single correct answers
-2. **Multiple Choice Questions**: Multiple correct answers with flexible option counts  
+2. **Multiple Choice Questions**: Multiple correct answers with flexible option counts
 3. **Fill in Blank**: Text completion exercises for knowledge assessment
 4. **Puzzle Game**: Fragment assembly challenges for problem-solving skills
 5. **Matching Task**: Relationship-based learning through item connections
@@ -54,6 +59,7 @@ The platform supports five distinct question types for maximum educational versa
 ### User Management System
 
 #### Teacher Capabilities
+
 - **Dashboard Management**: Comprehensive overview of escape room games and student progress
 - **Advanced Game Creation**: Design escape rooms with all five question types
 - **Media Integration**: Upload and manage images, videos, and YouTube content
@@ -61,7 +67,8 @@ The platform supports five distinct question types for maximum educational versa
 - **Achievement Monitoring**: Track student badges and milestone progress
 - **Responsive Interface**: Full functionality across desktop, tablet, and mobile devices
 
-#### Student Features  
+#### Student Features
+
 - **Interactive Gameplay**: Participate in diverse escape room challenges
 - **Multi-Type Questions**: Experience varied question formats for enhanced learning
 - **Achievement System**: Earn badges and track progress through completed tasks
@@ -70,6 +77,7 @@ The platform supports five distinct question types for maximum educational versa
 - **Mobile Support**: Complete escape rooms on mobile devices with touch optimization
 
 ### Achievement and Gamification
+
 - **Badge System**: Milestone-based achievement tracking
 - **Progress Visualization**: Real-time progress indicators and completion status
 - **Performance Analytics**: Comprehensive statistics for students and teachers
@@ -78,6 +86,7 @@ The platform supports five distinct question types for maximum educational versa
 ## Technical Implementation
 
 ### Complete Project Structure
+
 ```
 capstone-project-25t2-9900-h18b-donut/
 ├── backend/                     # Flask backend
@@ -127,21 +136,24 @@ capstone-project-25t2-9900-h18b-donut/
 ```
 
 ### Database Schema
+
 The database design supports flexible educational content management:
 
 - **Core Tables**: students, teachers, tasks, questions, achievements
-- **Relationship Tables**: student_achievements, student_task_results  
+- **Relationship Tables**: student_achievements, student_task_results
 - **Media Tables**: Organized file path management for uploaded content
 - **Progress Tracking**: Comprehensive student advancement monitoring
 
 ## API Architecture
 
 ### Authentication Endpoints
+
 - `POST /register` - Student registration
 - `POST /login` - User authentication (student/teacher)
 - `POST /change-password` - Password management
 
 ### Task Management APIs
+
 - `GET /api/tasks` - List tasks with role-based filtering
 - `POST /api/tasks` - Create new escape room tasks (teachers)
 - `PUT /api/tasks/{id}` - Update task information
@@ -150,6 +162,7 @@ The database design supports flexible educational content management:
 - `GET /api/tasks/{id}/progress` - Retrieve saved progress
 
 ### Question Management APIs
+
 - `GET /api/tasks/{id}/questions` - Retrieve task questions with type information
 - `POST /api/tasks/{id}/questions` - Create questions (supports all 5 types)
 - `PUT /api/questions/{id}` - Update question content (teachers)
@@ -157,6 +170,7 @@ The database design supports flexible educational content management:
 - `POST /api/questions/{id}/check` - Validate question answers
 
 ### Analytics and Reporting APIs
+
 - `GET /api/students/dashboard-report` - Comprehensive dashboard analytics
 - `GET /api/students/{id}/details` - Detailed student information
 - `GET /api/students/{id}/history` - Task completion history
@@ -168,18 +182,21 @@ The database design supports flexible educational content management:
 ### Quick Start with Docker (Recommended)
 
 #### Production Deployment
+
 ```bash
 docker compose up -d --build
 # Access at http://localhost
 ```
 
 #### Development Mode
+
 ```bash
 docker compose --profile dev up -d --build
 # Access at http://localhost:3000
 ```
 
 #### Mixed Development (Recommended for Active Development)
+
 ```bash
 docker compose up db backend -d
 npm start  # Frontend runs locally with hot reload
@@ -188,12 +205,14 @@ npm start  # Frontend runs locally with hot reload
 ### Manual Installation
 
 #### Prerequisites
+
 - Node.js 18 or higher
 - Python 3.8+
 - PostgreSQL 12+
 - Docker (optional but recommended)
 
 #### Backend Setup
+
 1. Create virtual environment and activate
 2. Install dependencies: `pip install -r requirements.txt`
 3. Configure environment variables in `.env` file
@@ -202,6 +221,7 @@ npm start  # Frontend runs locally with hot reload
 6. Start server: `python app.py`
 
 #### Frontend Setup
+
 1. Install dependencies: `npm install`
 2. Start development server: `npm start`
 3. Access application at http://localhost:3000
@@ -211,6 +231,7 @@ npm start  # Frontend runs locally with hot reload
 This project includes extensive testing for both frontend and backend components. Below are detailed instructions for running all types of tests, designed for users with no prior testing experience.
 
 ### Prerequisites for Testing
+
 1. Complete the installation steps in the Installation section
 2. Install all frontend dependencies: `npm install`
 3. Ensure the application is properly set up and running
@@ -235,6 +256,7 @@ npm run cypress:open:e2e
 ```
 
 **What you'll see:**
+
 - A Cypress window opens showing available test files
 - Click on any test file (e.g., `auth.cy.js`, `student_dashboard.cy.js`)
 - Watch tests run automatically in a browser window
@@ -251,12 +273,14 @@ npm run cypress:run:e2e
 ```
 
 **What you'll see:**
+
 - Test results printed directly in your terminal
 - Summary showing total passed/failed tests
 - Screenshots automatically saved for any test failures
 - Execution videos generated (if configured)
 
 #### Available E2E Test Suites (Total: 217 tests across 14 suites)
+
 - `auth.cy.js` - User login and authentication (13 tests)
 - `register.cy.js` - Student registration process (14 tests)
 - `student_dashboard.cy.js` - Student interface features (20 tests)
@@ -292,6 +316,7 @@ pytest --cov=. --cov-report=html --cov-report=term
 ```
 
 **What you'll see:**
+
 - Terminal output showing each test result (PASSED/FAILED)
 - Coverage percentage for each Python file
 - Overall coverage summary
@@ -316,6 +341,7 @@ xdg-open htmlcov/index.html
 ```
 
 **The coverage report shows:**
+
 - **Overall coverage percentage** for the entire backend
 - **File-by-file breakdown** showing coverage for each Python module
 - **Line-by-line analysis** with color coding:
@@ -352,6 +378,7 @@ npm run cypress:open:ct
 ```
 
 **What you'll see:**
+
 - Cypress component testing interface opens
 - List of component test files (files ending in .cy.jsx)
 - Click any test file to run it interactively
@@ -366,30 +393,28 @@ npm run ct:cov
 ```
 
 **What you'll see:**
+
 - All component tests execute automatically
 - Test results displayed in terminal
 - Coverage information calculated and displayed
-- Detailed coverage report generated
+- The HTML coverage report generated at `coverage/ct/index.html`
+- On Windows, the report opens automatically after the run
 
 #### Viewing Frontend Component Test Coverage Report
 
-After running component tests, view the detailed coverage analysis:
+After `npm run ct:cov`, the coverage report is available at `coverage/ct/index.html`.
 
 ```bash
-# Open the frontend coverage report
-# On macOS:
-open coverage/lcov-report/index.html
+# Open the frontend coverage report (macOS/Linux)
+open coverage/ct/index.html   # macOS
+xdg-open coverage/ct/index.html  # Linux
 
-# On Windows:
-start coverage/lcov-report/index.html
-
-# On Linux:
-xdg-open coverage/lcov-report/index.html
-
-# Or manually navigate to: coverage/lcov-report/index.html
+# On Windows, the report opens automatically; or open manually:
+start coverage/ct/index.html
 ```
 
 **The coverage report includes:**
+
 - **Overall JavaScript/JSX code coverage** percentage
 - **File-by-file breakdown** for all React components
 - **Multiple coverage metrics:**
@@ -399,17 +424,17 @@ xdg-open coverage/lcov-report/index.html
   - **Statement coverage**: Percentage of statements executed
 - **Visual code highlighting** showing tested vs untested code
 
-#### Available Component Test Files (Total: 113+ tests)
+#### Available Component Test Files (Total: 270+ tests)
+
 - `ChangePasswordModal.cy.jsx` - Password change modal testing (19 tests)
 - `CustomAlert.cy.jsx` - Alert notification system (16 tests)
 - `Login.cy.jsx` - Login component functionality (6 tests)
-- `QuestionRendererTest.cy.jsx` - Question display component (19 tests)
 - `TeacherDashboard.cy.jsx` - Teacher dashboard component (15 tests)
 - `EachgameGrade.cy.jsx` - Grade display component (7 tests)
 - `FillBlankEditor.cy.jsx` - Fill-in-blank question editor (19 tests)
 - `LoadingScreen.cy.jsx` - Loading screen component (21 tests)
 - `Register.cy.jsx` - Registration form component (15 tests)
-- `SearchFilter.cy.jsx` - Search and filter functionality (13 tests)
+- `SearchFilter.cy.jsx` - Search and filter functionality (14+ tests)
 - And more components...
 
 ### 4. Running Complete Test Suite
@@ -432,17 +457,20 @@ npm run cypress:run:e2e
 ### Understanding Test Results
 
 #### Successful Test Execution
+
 - **Green checkmarks (✓)** or "PASSED" indicate successful tests
 - **High coverage percentages** (80%+ is generally good) show comprehensive testing
 - **All tests passing** confirms the application functions correctly
 
 #### Failed Test Execution
+
 - **Red X marks (✗)** or "FAILED" indicate problematic tests
 - **Error messages** provide specific details about failures
 - **Screenshots** (for Cypress tests) show the application state when tests failed
 - **Stack traces** help developers identify exactly where problems occur
 
 ### Test Configuration Files
+
 - `cypress.config.js` - Cypress testing framework configuration
 - `backend/conftest.py` - Pytest configuration and shared test fixtures
 - `backend/pytest.ini` - Pytest-specific settings and options
@@ -451,22 +479,26 @@ npm run cypress:run:e2e
 ### Troubleshooting Common Test Issues
 
 #### Backend Test Problems
+
 1. **"ModuleNotFoundError"**: Ensure virtual environment is activated
 2. **Database connection errors**: Check PostgreSQL is running and accessible
 3. **"ImportError"**: Verify all dependencies are installed with `pip install -r requirements.txt`
 
 #### Frontend Test Problems
+
 1. **"ECONNREFUSED" errors**: Backend server isn't running on http://localhost:5001
 2. **"Port 3000 already in use"**: Stop other frontend instances with `Ctrl+C`
 3. **Cypress won't open**: Try reinstalling with `npx cypress install`
 4. **Component tests failing**: Ensure all npm dependencies are installed
 
 #### E2E Test Problems
+
 1. **Tests timeout**: Application might be loading slowly; increase timeout values
 2. **Element not found**: UI might have changed; check selectors in test files
 3. **Authentication failures**: Verify test accounts exist in database
 
 ### Getting Additional Help
+
 - **Test output messages**: Read error messages carefully for specific guidance
 - **Coverage reports**: Use them to identify untested code areas
 - **Screenshots**: For Cypress failures, check generated screenshots in `cypress/screenshots/`
@@ -475,18 +507,21 @@ npm run cypress:run:e2e
 ## Security Implementation
 
 ### Authentication Security
+
 - Secure password hashing using Werkzeug
 - Session-based authentication management
 - CORS protection with configured allowed origins
 - Input validation and sanitization
 
-### File Upload Security  
+### File Upload Security
+
 - File type validation and restrictions
 - Size limitations (configurable, default 16MB development, 50MB production)
 - Organized directory structure for media storage
 - SQL injection prevention through SQLAlchemy ORM
 
 ### Data Protection
+
 - Parameter binding for database queries
 - Secure session handling
 - Environment-based configuration management
@@ -495,18 +530,21 @@ npm run cypress:run:e2e
 ## Performance Optimization
 
 ### Frontend Optimization
+
 - Component-based architecture for efficient re-rendering
 - Responsive design with mobile-first approach
 - Image and video optimization for web delivery
 - Lazy loading for improved initial page load
 
-### Backend Optimization  
+### Backend Optimization
+
 - Database query optimization through SQLAlchemy
 - Connection pooling for database performance
 - Efficient file serving for media content
 - RESTful API design for optimal data transfer
 
 ### Infrastructure Optimization
+
 - Docker multi-stage builds for reduced image sizes
 - Nginx static file serving in production
 - Database indexing for query performance
@@ -515,13 +553,14 @@ npm run cypress:run:e2e
 ## Configuration Management
 
 ### Environment Variables
+
 ```env
 # Database Configuration
 DATABASE_URL=postgresql://username:password@host:port/database
 
 # Application Settings
 FLASK_ENV=production|development
-FLASK_DEBUG=True|False  
+FLASK_DEBUG=True|False
 SECRET_KEY=your-production-secret-key
 
 # Upload Configuration
@@ -529,6 +568,7 @@ MAX_CONTENT_LENGTH=52428800  # File size limits
 ```
 
 ### Docker Configuration
+
 - Production and development profiles
 - Service orchestration with health checks
 - Volume management for data persistence
@@ -537,11 +577,13 @@ MAX_CONTENT_LENGTH=52428800  # File size limits
 ## Monitoring and Maintenance
 
 ### Development Monitoring
+
 - Debug mode for detailed error reporting
 - Comprehensive logging throughout application layers
 - Real-time error tracking and reporting
 
 ### Production Considerations
+
 - Gunicorn or uWSGI for production WSGI serving
 - Reverse proxy configuration (nginx/Apache)
 - SSL/TLS certificate implementation
@@ -551,22 +593,27 @@ MAX_CONTENT_LENGTH=52428800  # File size limits
 ## Default Test Accounts
 
 ### Teacher Accounts
+
 - **Primary Teacher**: st1000@tea.com (Teacher ID: 1000, Password: 123456)
 - **Secondary Teacher**: st1001@tea.com (Teacher ID: 1001, Password: 123456)
 
 ### Student Registration
+
 Students register through the application interface. Default student accounts are not pre-seeded to ensure clean production deployments.
 
 ## Migration and Upgrades
 
 ### Database Migration
+
 For existing installations upgrading to support new question types:
+
 ```bash
 cd backend
 python migrate_questions.py
 ```
 
 ### Version Compatibility
+
 - Backward compatibility maintained through migration scripts
 - Database schema versioning for safe upgrades
 - Configuration file migration support
@@ -594,6 +641,7 @@ This project is developed for UNSW educational purposes under the Computer Scien
 ## Support and Documentation
 
 For additional support:
+
 - **Technical Issues**: Reference troubleshooting sections in component READMEs
 - **Development Setup**: Follow Docker installation guide for streamlined setup
 - **API Documentation**: Refer to endpoint specifications for integration details
@@ -602,6 +650,7 @@ For additional support:
 ## Project Status
 
 The platform represents a complete educational escape room solution with:
+
 - Full-featured question type support (5 types)
 - Comprehensive user management system
 - Production-ready deployment configuration

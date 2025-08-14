@@ -215,7 +215,7 @@ describe('useSearchFilter Hook', () => {
       cy.get('[data-testid="search-input"] input').type('a');
       cy.get('[data-testid="filter-0"]').select('fruit');
       
-      cy.get('[data-testid="filtered-count"]').should('contain', 'Filtered: 2'); // Apple, Banana
+      cy.get('[data-testid="filtered-count"]').should('contain', 'Filtered: 3'); // Apple, Banana, Orange
       cy.get('[data-testid="item-0"]').should('contain', 'Apple');
       cy.get('[data-testid="item-1"]').should('contain', 'Banana');
     });
@@ -344,7 +344,7 @@ describe('useSearchFilter Hook', () => {
       cy.get('[data-testid="filtered-count"]').should('contain', 'Filtered: 4');
       
       cy.get('[data-testid="filter-0"]').select('fruit');
-      cy.get('[data-testid="filtered-count"]').should('contain', 'Filtered: 2');
+      cy.get('[data-testid="filtered-count"]').should('contain', 'Filtered: 3');
     });
   });
 

@@ -24,7 +24,6 @@ function StudentHistory() {
   const fetchStudentHistory = async () => {
     try {
       const user = JSON.parse(localStorage.getItem('user_data'));
-      console.log('User data from localStorage:', user);
       
       if (!user?.user_id) {
         setError('User not logged in');
@@ -32,24 +31,18 @@ function StudentHistory() {
         return;
       }
 
-      console.log('Fetching history for user:', user.user_id);
-
       const response = await fetch(`${config.API_BASE_URL}/api/students/${user.user_id}/history`);
-      console.log('History response status:', response.status);
       
       if (response.ok) {
         const data = await response.json();
-        console.log('History data received:', data);
         setHistoryData(data.history);
         setStudentName(data.student_name);
       } else {
         const errorText = await response.text();
-        console.error('History fetch error:', errorText);
         throw new Error(`Failed to fetch history: ${response.status}`);
       }
 
     } catch (error) {
-      console.error('Error fetching student history:', error);
       setError(`Unable to load history: ${error.message}`);
     } finally {
       setLoading(false);

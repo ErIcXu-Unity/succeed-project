@@ -10,7 +10,7 @@ describe('Task Video Upload - flows (stubbed)', () => {
         win.localStorage.setItem('user_data', JSON.stringify(teacher));
       }
     });
-    cy.wait(30);
+    cy.wait(3500);
   };
 
   beforeEach(() => {

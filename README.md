@@ -311,7 +311,7 @@ npm start  # Start frontend on http://localhost:3000
 cd backend && python app.py  # Start backend on http://localhost:5001
 
 # Step 3: Open Cypress Test Runner with GUI
-npm run cypress:open:e2e
+npm run cypress:open
 ```
 
 **What you'll see:**
@@ -328,7 +328,8 @@ This runs all tests automatically in the background without opening browser wind
 
 ```bash
 # Run all E2E tests without GUI
-npm run cypress:run:e2e
+npx cypress run --e2e
+
 ```
 
 **What you'll see:**

@@ -53,7 +53,8 @@ npm start
 npm run cypress:open:e2e
 
 # Or run headless (Electron by default)
-npm run cypress:run:e2e
+npx cypress run --e2e
+
 ```
 
 Option B — Full stack via Docker Compose (optional):
@@ -63,7 +64,8 @@ Option B — Full stack via Docker Compose (optional):
 docker-compose --profile dev up -d backend frontend-dev
 
 # Then run the Cypress commands as above
-npm run cypress:run:e2e
+npm run cypress:open
+
 ```
 
 Base URLs:

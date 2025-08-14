@@ -1,4 +1,4 @@
-// useSearchFilter.js - Generic search and filter hook
+// useSearchFilter.jsx - Generic search and filter hook
 
 import { useState, useMemo } from 'react';
 
@@ -132,4 +132,6 @@ export const useSearchFilter = (data = [], config = {}) => {
     totalCount: data.length,
     filteredCount: filteredAndSortedData.length
   };
-}; 
+};
+
+

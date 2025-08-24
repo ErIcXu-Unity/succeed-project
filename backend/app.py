@@ -51,9 +51,22 @@ def create_app():
                 }
             }
     
-    # Serve static files
+    # Serve static files (CSS, JS, etc.)
+    @app.route('/static/<path:path>')
+    def serve_static_files(path):
+        try:
+            return send_from_directory('/var/www/html/static', path)
+        except Exception as e:
+            print(f"Static file not found: /var/www/html/static/{path}")
+            return {'error': f'Static file not found: {path}'}, 404
+    
+    # Serve other assets (images, etc.)
     @app.route('/<path:path>')
-    def serve_static(path):
+    def serve_assets(path):
+        # Skip API routes
+        if path.startswith('api/'):
+            return {'error': 'API endpoint not found'}, 404
+        
         try:
             return send_from_directory('/var/www/html', path)
         except:

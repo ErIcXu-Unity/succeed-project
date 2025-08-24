@@ -60,10 +60,6 @@ def create_app():
     def health():
         return {'status': 'healthy', 'database': 'connected'}
     
-    @app.route('/health')
-    def health():
-        return 'OK'
-    
     @app.route('/favicon.ico')
     def favicon():
         return '', 204

@@ -18,93 +18,42 @@ def create_app():
     """Application factory pattern"""
     app = Flask(__name__)
     
-    # Configuration - Debug database connection
-    print("=== DEBUG DATABASE CONNECTION ===")
+    # Configuration
     database_url = os.getenv('DATABASE_URL')
-    print(f"DATABASE_URL from environment: {database_url}")
-
-    # 列出所有相关环境变量
-    print("All DATABASE/POSTGRES related environment variables:")
-    for key, value in os.environ.items():
-        if any(keyword in key.upper() for keyword in ['DATABASE', 'POSTGRES', 'DB']):
-            print(f"  {key}: {value}")
-
-    if not database_url:
-        print("ERROR: DATABASE_URL is None or empty!")
-        # 尝试其他可能的环境变量名
-        alternatives = ['POSTGRES_URL', 'DATABASE_PRIVATE_URL', 'POSTGRES_DATABASE_URL']
-        for alt in alternatives:
-            alt_value = os.getenv(alt)
-            if alt_value:
-                print(f"Found alternative: {alt} = {alt_value}")
-                database_url = alt_value
-                break
-
-    print(f"Final DATABASE_URL to use: {database_url}")
-    print("=== END DEBUG ===")
+    print(f"Using DATABASE_URL: {database_url[:20]}..." if database_url else "No DATABASE_URL found")
 
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads', 'questions')
     app.config['VIDEO_UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads', 'videos')
     
-    # CORS configuration - Allow all origins for Railway
-    CORS(app, resources={
-        r"/*": {
-            "origins": "*",  # Allow all origins for Railway deployment
-            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            "allow_headers": ["Content-Type", "Authorization"]
-        }
-    })
+    # Simple CORS configuration
+    CORS(app)
     
     # Initialize database with app
     from models import db
     db.init_app(app)
     
-    # Add request logging for debugging
-    @app.before_request
-    def log_request_info():
-        print(f"Request: {request.method} {request.url}")
-        print(f"Headers: {dict(request.headers)}")
-    
-    @app.after_request
-    def log_response_info(response):
-        print(f"Response: {response.status_code} {response.status}")
-        return response
-    
-    # Add root route for Railway deployment
+    # Simple root route
     @app.route('/')
     def root():
-        try:
-            print("Processing root route request")
-            response_data = {
-                'status': 'success',
-                'message': 'Escape Room Educational Platform API',
-                'version': '1.0.0',
-                'endpoints': {
-                    'auth': '/login, /register',
-                    'tasks': '/tasks',
-                    'students': '/students',
-                    'submissions': '/submissions',
-                    'questions': '/questions',
-                    'uploads': '/uploads'
-                }
-            }
-            print(f"Returning response: {response_data}")
-            return response_data
-        except Exception as e:
-            print(f"Error in root route: {str(e)}")
-            return {'error': 'Internal server error'}, 500
+        return 'Hello from Escape Room Educational Platform!'
+    
+    @app.route('/api')
+    def api_info():
+        return {
+            'status': 'success',
+            'message': 'Escape Room Educational Platform API',
+            'version': '1.0.0'
+        }
     
     @app.route('/health')
     def health():
-        return {'status': 'healthy', 'database': 'connected'}
+        return 'OK'
     
     @app.route('/favicon.ico')
     def favicon():
-        # Return empty response for favicon requests
-        from flask import Response
-        return Response('', status=204)
+        return '', 204
     
     # Register blueprints
     from auth import auth_bp
@@ -286,9 +235,9 @@ if __name__ == '__main__':
     
     print('Database initialized and seeded successfully')
     
-    # Use PORT environment variable for Railway, fallback to 80
-    port = int(os.environ.get('PORT', 80))
-    print(f'Starting Flask application on port {port}')
+    # Railway ALWAYS provides PORT - use it exactly as provided
+    port = int(os.environ.get('PORT'))
+    print(f'Railway assigned port: {port}')
     
-    # Production mode for Railway
-    app.run(debug=False, host='0.0.0.0', port=port)
+    # Just run the damn thing
+    app.run(host='0.0.0.0', port=port)

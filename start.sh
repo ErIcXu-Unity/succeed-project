@@ -1,40 +1,31 @@
 #!/bin/bash
-# Don't exit on error for testing commands
-set +e
+set -e
 
-echo "Starting Railway deployment..."
+echo "Starting Railway deployment - Flask only..."
 
-# Check if frontend files exist
-echo "Checking frontend files..."
-ls -la /var/www/html/ | head -10
-
-# Test nginx configuration
-echo "Testing nginx configuration..."
-nginx -t
-if [ $? -ne 0 ]; then
-    echo "ERROR: nginx configuration test failed!"
-    exit 1
-fi
-
-# Start nginx
-echo "Starting nginx..."
-nginx
-if [ $? -ne 0 ]; then
-    echo "ERROR: Failed to start nginx!"
-    exit 1
-fi
-
-echo "Nginx started successfully!"
-sleep 2
-
-# Start Flask backend
-echo "Starting Flask backend on port 5001..."
+# Start Flask backend directly
+echo "Starting Flask backend on port 80..."
 cd /app/backend
 
 # Set production environment
 export FLASK_ENV=production
 export PYTHONUNBUFFERED=1
 
-echo "Starting Flask application..."
-# Run Flask app in foreground (no background)
-exec python app.py
+echo "Starting Flask application on port 80..."
+# Run Flask app directly on port 80
+exec python -c "
+import os
+from app import create_app
+
+app = create_app()
+from models import db
+
+with app.app_context():
+    db.create_all()
+    from seed_data import seed_all_data
+    seed_all_data()
+    print('Database initialized successfully')
+    
+print('Starting Flask on port 80')
+app.run(host='0.0.0.0', port=80, debug=False)
+"

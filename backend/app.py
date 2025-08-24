@@ -18,8 +18,32 @@ def create_app():
     """Application factory pattern"""
     app = Flask(__name__)
     
-    # Configuration
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+    # Configuration - Debug database connection
+    print("=== DEBUG DATABASE CONNECTION ===")
+    database_url = os.getenv('DATABASE_URL')
+    print(f"DATABASE_URL from environment: {database_url}")
+
+    # 列出所有相关环境变量
+    print("All DATABASE/POSTGRES related environment variables:")
+    for key, value in os.environ.items():
+        if any(keyword in key.upper() for keyword in ['DATABASE', 'POSTGRES', 'DB']):
+            print(f"  {key}: {value}")
+
+    if not database_url:
+        print("ERROR: DATABASE_URL is None or empty!")
+        # 尝试其他可能的环境变量名
+        alternatives = ['POSTGRES_URL', 'DATABASE_PRIVATE_URL', 'POSTGRES_DATABASE_URL']
+        for alt in alternatives:
+            alt_value = os.getenv(alt)
+            if alt_value:
+                print(f"Found alternative: {alt} = {alt_value}")
+                database_url = alt_value
+                break
+
+    print(f"Final DATABASE_URL to use: {database_url}")
+    print("=== END DEBUG ===")
+
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads', 'questions')
     app.config['VIDEO_UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads', 'videos')

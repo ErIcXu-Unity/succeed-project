@@ -62,6 +62,27 @@ def create_app():
     from models import db
     db.init_app(app)
     
+    # Add root route for Railway deployment
+    @app.route('/')
+    def root():
+        return {
+            'status': 'success',
+            'message': 'Escape Room Educational Platform API',
+            'version': '1.0.0',
+            'endpoints': {
+                'auth': '/api/auth/',
+                'tasks': '/api/tasks/',
+                'students': '/api/students/',
+                'submissions': '/api/submissions/',
+                'questions': '/api/questions/',
+                'uploads': '/api/uploads/'
+            }
+        }
+    
+    @app.route('/health')
+    def health():
+        return {'status': 'healthy', 'database': 'connected'}
+    
     # Register blueprints
     from auth import auth_bp
     from tasks import tasks_bp

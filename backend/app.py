@@ -5,7 +5,7 @@ Main Flask Application - Escape Room Educational Platform
 Modular architecture with organized blueprints
 """
 import os
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
@@ -48,11 +48,10 @@ def create_app():
     app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads', 'questions')
     app.config['VIDEO_UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads', 'videos')
     
-    # CORS configuration
+    # CORS configuration - Allow all origins for Railway
     CORS(app, resources={
         r"/*": {
-            "origins": ["http://localhost:3000", "http://127.0.0.1:3000", 
-                       "http://localhost:3001", "http://127.0.0.1:3001"],
+            "origins": "*",  # Allow all origins for Railway deployment
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             "allow_headers": ["Content-Type", "Authorization"]
         }
@@ -62,26 +61,50 @@ def create_app():
     from models import db
     db.init_app(app)
     
+    # Add request logging for debugging
+    @app.before_request
+    def log_request_info():
+        print(f"Request: {request.method} {request.url}")
+        print(f"Headers: {dict(request.headers)}")
+    
+    @app.after_request
+    def log_response_info(response):
+        print(f"Response: {response.status_code} {response.status}")
+        return response
+    
     # Add root route for Railway deployment
     @app.route('/')
     def root():
-        return {
-            'status': 'success',
-            'message': 'Escape Room Educational Platform API',
-            'version': '1.0.0',
-            'endpoints': {
-                'auth': '/api/auth/',
-                'tasks': '/api/tasks/',
-                'students': '/api/students/',
-                'submissions': '/api/submissions/',
-                'questions': '/api/questions/',
-                'uploads': '/api/uploads/'
+        try:
+            print("Processing root route request")
+            response_data = {
+                'status': 'success',
+                'message': 'Escape Room Educational Platform API',
+                'version': '1.0.0',
+                'endpoints': {
+                    'auth': '/login, /register',
+                    'tasks': '/tasks',
+                    'students': '/students',
+                    'submissions': '/submissions',
+                    'questions': '/questions',
+                    'uploads': '/uploads'
+                }
             }
-        }
+            print(f"Returning response: {response_data}")
+            return response_data
+        except Exception as e:
+            print(f"Error in root route: {str(e)}")
+            return {'error': 'Internal server error'}, 500
     
     @app.route('/health')
     def health():
         return {'status': 'healthy', 'database': 'connected'}
+    
+    @app.route('/favicon.ico')
+    def favicon():
+        # Return empty response for favicon requests
+        from flask import Response
+        return Response('', status=204)
     
     # Register blueprints
     from auth import auth_bp

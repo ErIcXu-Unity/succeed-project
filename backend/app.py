@@ -94,6 +94,33 @@ def create_app():
     def health():
         return {'status': 'healthy', 'database': 'connected'}
     
+    @app.route('/debug/files')
+    def debug_files():
+        import os
+        try:
+            html_files = []
+            static_files = []
+            
+            # Check /var/www/html
+            if os.path.exists('/var/www/html'):
+                html_files = os.listdir('/var/www/html')
+            
+            # Check /var/www/html/static if it exists
+            if os.path.exists('/var/www/html/static'):
+                for root, dirs, files in os.walk('/var/www/html/static'):
+                    for file in files:
+                        rel_path = os.path.relpath(os.path.join(root, file), '/var/www/html/static')
+                        static_files.append(rel_path)
+            
+            return {
+                'html_dir_exists': os.path.exists('/var/www/html'),
+                'html_files': html_files,
+                'static_dir_exists': os.path.exists('/var/www/html/static'),
+                'static_files': static_files[:20]  # Limit to first 20 files
+            }
+        except Exception as e:
+            return {'error': str(e)}
+    
     @app.route('/favicon.ico')
     def favicon():
         return '', 204

@@ -262,6 +262,10 @@ if __name__ == '__main__':
     initialize_database(app)
     
     print('Database initialized and seeded successfully')
-    print('Starting Flask application on port 5001')
     
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    # Use PORT environment variable for Railway, fallback to 80
+    port = int(os.environ.get('PORT', 80))
+    print(f'Starting Flask application on port {port}')
+    
+    # Production mode for Railway
+    app.run(debug=False, host='0.0.0.0', port=port)

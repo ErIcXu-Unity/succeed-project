@@ -34,18 +34,31 @@ def create_app():
     from models import db
     db.init_app(app)
     
-    # Simple root route
+    # Root route
     @app.route('/')
     def root():
-        return 'Hello from Escape Room Educational Platform!'
-    
-    @app.route('/api')
-    def api_info():
         return {
             'status': 'success',
             'message': 'Escape Room Educational Platform API',
-            'version': '1.0.0'
+            'version': '1.0.0',
+            'description': 'Educational escape room platform with interactive tasks',
+            'demo_accounts': {
+                'teacher': 'st1000@tea.com (password: 123456)',
+                'student': 'Register new account or use existing'
+            },
+            'available_endpoints': [
+                'GET /',
+                'GET /health', 
+                'POST /login',
+                'POST /register',
+                'GET /tasks',
+                'GET /students'
+            ]
         }
+    
+    @app.route('/health')
+    def health():
+        return {'status': 'healthy', 'database': 'connected'}
     
     @app.route('/health')
     def health():

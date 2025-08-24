@@ -1,0 +1,83 @@
+# Multi-stage build for Railway deployment
+# This combines frontend and backend in a single container
+
+# Stage 1: Build React frontend
+FROM node:18-alpine as frontend-build
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Build the React app
+ARG REACT_APP_BACKEND_URL=/api
+ENV REACT_APP_BACKEND_URL=$REACT_APP_BACKEND_URL
+RUN npm run build
+
+# Stage 2: Setup Python backend
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpq-dev \
+    nginx \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy backend requirements and install
+COPY backend/requirements.txt backend/
+RUN pip install --no-cache-dir -r backend/requirements.txt
+
+# Copy backend code
+COPY backend/ backend/
+
+# Copy built frontend from previous stage
+COPY --from=frontend-build /app/build /var/www/html
+
+# Create nginx configuration
+RUN echo 'server { \
+    listen 80; \
+    root /var/www/html; \
+    index index.html; \
+    \
+    # Serve frontend files \
+    location / { \
+        try_files $uri $uri/ /index.html; \
+    } \
+    \
+    # Proxy API requests to backend \
+    location /api { \
+        rewrite ^/api(.*)$ $1 break; \
+        proxy_pass http://127.0.0.1:5001; \
+        proxy_set_header Host $host; \
+        proxy_set_header X-Real-IP $remote_addr; \
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; \
+        proxy_set_header X-Forwarded-Proto $scheme; \
+    } \
+}' > /etc/nginx/sites-available/default
+
+# Copy startup script
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
+# Create upload directories
+RUN mkdir -p backend/uploads/questions backend/uploads/videos
+
+# Expose port
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost/ || exit 1
+
+# Start both services
+CMD ["/start.sh"]

@@ -5,7 +5,7 @@ Main Flask Application - Escape Room Educational Platform
 Modular architecture with organized blueprints
 """
 import os
-from flask import Flask, request
+from flask import Flask, request, send_from_directory, send_file
 from flask_cors import CORS
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
@@ -34,26 +34,47 @@ def create_app():
     from models import db
     db.init_app(app)
     
-    # Root route
+    # Serve React frontend
     @app.route('/')
-    def root():
+    def serve_frontend():
+        try:
+            return send_file('/var/www/html/index.html')
+        except:
+            # Fallback to API info if frontend files not found
+            return {
+                'status': 'success',
+                'message': 'Escape Room Educational Platform API',
+                'version': '1.0.0',
+                'note': 'Frontend files not found, showing API info',
+                'demo_accounts': {
+                    'teacher': 'st1000@tea.com (password: 123456)'
+                }
+            }
+    
+    # Serve static files
+    @app.route('/<path:path>')
+    def serve_static(path):
+        try:
+            return send_from_directory('/var/www/html', path)
+        except:
+            # For React router, return index.html for unknown routes
+            try:
+                return send_file('/var/www/html/index.html')
+            except:
+                return {'error': 'File not found'}, 404
+    
+    # API info endpoint
+    @app.route('/api')
+    def api_info():
         return {
             'status': 'success',
             'message': 'Escape Room Educational Platform API',
             'version': '1.0.0',
-            'description': 'Educational escape room platform with interactive tasks',
-            'demo_accounts': {
-                'teacher': 'st1000@tea.com (password: 123456)',
-                'student': 'Register new account or use existing'
-            },
-            'available_endpoints': [
-                'GET /',
-                'GET /health', 
-                'POST /login',
-                'POST /register',
-                'GET /tasks',
-                'GET /students'
-            ]
+            'endpoints': {
+                'auth': '/login, /register',
+                'tasks': '/api/tasks',
+                'students': '/api/students'
+            }
         }
     
     @app.route('/health')

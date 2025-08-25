@@ -6,8 +6,8 @@ const apiBaseFromEnv =
     : undefined;
 
 const config = {
-  // Use env when available, otherwise default for local dev/CT
-  API_BASE_URL: apiBaseFromEnv || 'http://localhost:5001',
+  // Use env when available, otherwise use relative path for production
+  API_BASE_URL: apiBaseFromEnv || '/api',
 };
 
 export default config;

@@ -7,7 +7,7 @@ const apiBaseFromEnv =
 
 const config = {
   // Use env when available, otherwise use /api prefix
-  API_BASE_URL: apiBaseFromEnv || '/api',
+  API_BASE_URL: apiBaseFromEnv || '',
 };
 
 export default config;

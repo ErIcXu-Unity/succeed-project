@@ -7,9 +7,9 @@ from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify, current_app, send_from_directory, abort
 from models import db, Task, Question, StudentTaskProcess, StudentTaskResult, Achievement, StudentAchievement, Student
 
-tasks_bp = Blueprint('tasks', __name__, url_prefix='/api/tasks')
+tasks_bp = Blueprint('tasks', __name__, url_prefix='/api')
 
-@tasks_bp.route('', methods=['GET'])
+@tasks_bp.route('/tasks', methods=['GET'])
 def get_tasks():
     role = request.args.get('role', 'stu')  # Default to student
     now = datetime.now(timezone.utc)
@@ -44,7 +44,7 @@ def get_tasks():
         result.append(task_data)
     return jsonify(result), 200
 
-@tasks_bp.route('', methods=['POST'])
+@tasks_bp.route('/tasks', methods=['POST'])
 def create_task():
     data = request.get_json()
     
@@ -94,7 +94,7 @@ def create_task():
         db.session.rollback()
         return jsonify({'error': f'Failed to create task: {str(e)}'}), 500
 
-@tasks_bp.route('/<int:task_id>', methods=['GET'])
+@tasks_bp.route('/tasks/<int:task_id>', methods=['GET'])
 def get_task_detail(task_id):
     """Get task details"""
     task = db.session.get(Task, task_id)
@@ -121,7 +121,7 @@ def get_task_detail(task_id):
     
     return jsonify(result), 200
 
-@tasks_bp.route('/<int:task_id>', methods=['PUT'])
+@tasks_bp.route('/tasks/<int:task_id>', methods=['PUT'])
 def update_task(task_id):
     """Update task information"""
     task = db.session.get(Task, task_id)
@@ -185,7 +185,7 @@ def update_task(task_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-@tasks_bp.route('/<int:task_id>', methods=['DELETE'])
+@tasks_bp.route('/tasks/<int:task_id>', methods=['DELETE'])
 def delete_task(task_id):
     """Delete task and its related data"""
     # Verify task exists
@@ -229,7 +229,7 @@ def delete_task(task_id):
         return jsonify({'error': f'Failed to delete task: {str(e)}'}), 500
 
 # Task Progress Routes
-@tasks_bp.route('/<int:task_id>/save-progress', methods=['POST'])
+@tasks_bp.route('/tasks/<int:task_id>/save-progress', methods=['POST'])
 def save_task_progress(task_id):
     data = request.get_json()
     student_id = data.get('student_id')
@@ -280,7 +280,7 @@ def save_task_progress(task_id):
         db.session.rollback()
         return jsonify({'error': f'Failed to save progress: {str(e)}'}), 500
 
-@tasks_bp.route('/<int:task_id>/progress', methods=['GET'])
+@tasks_bp.route('/tasks/<int:task_id>/progress', methods=['GET'])
 def get_task_progress(task_id):
     student_id = request.args.get('student_id')
     
@@ -307,7 +307,7 @@ def get_task_progress(task_id):
     except Exception as e:
         return jsonify({'error': f'Failed to load progress: {str(e)}'}), 500
 
-@tasks_bp.route('/<int:task_id>/progress', methods=['DELETE'])
+@tasks_bp.route('/tasks/<int:task_id>/progress', methods=['DELETE'])
 def delete_task_progress(task_id):
     student_id = request.args.get('student_id')
     
@@ -332,7 +332,7 @@ def delete_task_progress(task_id):
         return jsonify({'error': f'Failed to delete progress: {str(e)}'}), 500
 
 # Video Upload Routes
-@tasks_bp.route('/<int:task_id>/video', methods=['POST'])
+@tasks_bp.route('/tasks/<int:task_id>/video', methods=['POST'])
 def upload_task_video(task_id):
     """Upload task video file"""
     task = db.session.get(Task, task_id)
@@ -384,7 +384,7 @@ def upload_task_video(task_id):
     except Exception as e:
         return jsonify({'error': f'Failed to upload video: {str(e)}'}), 500
 
-@tasks_bp.route('/<int:task_id>/youtube', methods=['POST'])
+@tasks_bp.route('/tasks/<int:task_id>/youtube', methods=['POST'])
 def save_youtube_url(task_id):
     """Save YouTube video link"""
     task = db.session.get(Task, task_id)
@@ -416,7 +416,7 @@ def save_youtube_url(task_id):
     except Exception as e:
         return jsonify({'error': f'Failed to save YouTube URL: {str(e)}'}), 500
 
-@tasks_bp.route('/<int:task_id>/video', methods=['DELETE'])
+@tasks_bp.route('/tasks/<int:task_id>/video', methods=['DELETE'])
 def delete_task_video(task_id):
     """Delete task video"""
     task = db.session.get(Task, task_id)

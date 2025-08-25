@@ -24,7 +24,7 @@ function StudentAchievements() {
       }
 
       // Get student profile information
-              const profileResponse = await fetch(`${config.API_BASE_URL}/api/students/${user.user_id}/profile`);
+              const profileResponse = await fetch(`${config.API_BASE_URL}/students/${user.user_id}/profile`);
       
       if (profileResponse.ok) {
         const profileData = await profileResponse.json();
@@ -36,7 +36,7 @@ function StudentAchievements() {
       }
 
       // Get student achievement information
-              const achievementsResponse = await fetch(`${config.API_BASE_URL}/api/students/${user.user_id}/achievements`);
+              const achievementsResponse = await fetch(`${config.API_BASE_URL}/students/${user.user_id}/achievements`);
       
       if (achievementsResponse.ok) {
         const achievementsData = await achievementsResponse.json();

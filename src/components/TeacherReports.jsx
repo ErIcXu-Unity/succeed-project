@@ -40,7 +40,7 @@ const TeacherReports = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${config.API_BASE_URL}/api/students/dashboard-report`);
+      const response = await fetch(`${config.API_BASE_URL}/students/dashboard-report`);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
 

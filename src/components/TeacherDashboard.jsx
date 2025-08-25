@@ -172,7 +172,7 @@ const TeacherDashboard = () => {
       const role = user?.role === 'tea' ? 'tea' : 'stu';
       // Add timestamp to prevent caching issues with task status updates
       const timestamp = new Date().getTime();
-      const response = await fetch(`${config.API_BASE_URL}/api/tasks?role=${role}&_t=${timestamp}`);
+      const response = await fetch(`${config.API_BASE_URL}/tasks?role=${role}&_t=${timestamp}`);
 
       if (response.ok) {
         const data = await response.json();

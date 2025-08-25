@@ -243,7 +243,7 @@ const TaskEditor = () => {
 
       if (isCreateMode) {
         // Create mode: first create task
-        const createResponse = await fetch(`${config.API_BASE_URL}/api/tasks`, {
+        const createResponse = await fetch(`${config.API_BASE_URL}/tasks`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -298,7 +298,7 @@ const TaskEditor = () => {
           }
         }
 
-        const updateResponse = await fetch(`${config.API_BASE_URL}/api/tasks/${taskId}`, {
+        const updateResponse = await fetch(`${config.API_BASE_URL}/tasks/${taskId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -321,7 +321,7 @@ const TaskEditor = () => {
       const newQuestions = questions.filter(q => !q.id);
       if (newQuestions.length > 0 && taskIdToUse) {
         const user = JSON.parse(localStorage.getItem('user_data'));
-        const questionsResponse = await fetch(`${config.API_BASE_URL}/api/tasks/${taskIdToUse}/questions/batch`, {
+        const questionsResponse = await fetch(`${config.API_BASE_URL}/tasks/${taskIdToUse}/questions/batch`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

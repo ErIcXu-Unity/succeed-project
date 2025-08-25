@@ -94,6 +94,10 @@ def create_app():
     def health():
         return {'status': 'healthy', 'database': 'connected'}
     
+    @app.route('/favicon.ico')
+    def favicon():
+        return '', 204
+    
     @app.route('/debug/files')
     def debug_files():
         import os
@@ -120,10 +124,6 @@ def create_app():
             }
         except Exception as e:
             return {'error': str(e)}
-    
-    @app.route('/favicon.ico')
-    def favicon():
-        return '', 204
     
     # Register blueprints
     from auth import auth_bp

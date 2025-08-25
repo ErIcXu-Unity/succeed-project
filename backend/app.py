@@ -16,7 +16,7 @@ load_dotenv('.env')
 
 def create_app():
     """Application factory pattern"""
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder='/var/www/html', static_url_path='')
     
     # Configuration
     database_url = os.getenv('DATABASE_URL')
@@ -51,17 +51,7 @@ def create_app():
                 }
             }
     
-    # Serve static files - SIMPLE AND DIRECT
-    @app.route('/static/<path:path>')
-    def serve_static_files(path):
-        print(f"Requesting static file: {path}")
-        try:
-            result = send_from_directory('/var/www/html/static', path)
-            print(f"Successfully served: /var/www/html/static/{path}")
-            return result
-        except Exception as e:
-            print(f"ERROR serving static file {path}: {str(e)}")
-            return f'Static file error: {str(e)}', 404
+    # Static files handled by Flask's built-in static_folder
     
     # Serve other assets (images, etc.)
     @app.route('/<path:path>')

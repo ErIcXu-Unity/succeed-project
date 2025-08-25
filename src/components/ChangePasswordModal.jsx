@@ -72,7 +72,7 @@ const ChangePasswordModal = ({ isOpen, onClose, user }) => {
     setError('');
 
     try {
-      const response = await fetch(`${config.API_BASE_URL}/change-password`, {
+      const response = await fetch(`${config.API_BASE_URL}/api/change-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

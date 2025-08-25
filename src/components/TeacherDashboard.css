@@ -395,7 +395,7 @@
 /* Tasks Grid - Improved Card Design */
 .tasks-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 2rem;
   width: 100%;
 }

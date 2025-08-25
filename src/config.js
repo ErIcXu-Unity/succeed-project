@@ -6,8 +6,8 @@ const apiBaseFromEnv =
     : undefined;
 
 const config = {
-  // Use env when available, otherwise use relative path for production
-  API_BASE_URL: apiBaseFromEnv || '/api',
+  // Use env when available, otherwise use empty string (APIs already have /api prefix)
+  API_BASE_URL: apiBaseFromEnv || '',
 };
 
 export default config;

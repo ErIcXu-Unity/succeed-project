@@ -51,14 +51,32 @@ def create_app():
                 }
             }
     
-    # Serve static files (CSS, JS, etc.)
+    # Serve static files (CSS, JS, etc.) - TRY MULTIPLE PATHS
     @app.route('/static/<path:path>')
     def serve_static_files(path):
-        try:
-            return send_from_directory('/var/www/html/static', path)
-        except Exception as e:
-            print(f"Static file not found: /var/www/html/static/{path}")
-            return {'error': f'Static file not found: {path}'}, 404
+        import os
+        # Try multiple possible locations
+        possible_paths = [
+            f'/var/www/html/static/{path}',
+            f'/var/www/html/{path}',
+            f'/app/build/static/{path}',
+            f'/app/static/{path}'
+        ]
+        
+        for full_path in possible_paths:
+            if os.path.exists(full_path):
+                try:
+                    directory = os.path.dirname(full_path)
+                    filename = os.path.basename(full_path)
+                    print(f"Serving static file from: {directory}/{filename}")
+                    return send_from_directory(directory, filename)
+                except Exception as e:
+                    print(f"Error serving from {full_path}: {e}")
+                    continue
+        
+        print(f"Static file not found in any location: {path}")
+        print(f"Tried paths: {possible_paths}")
+        return {'error': f'Static file not found: {path}', 'tried_paths': possible_paths}, 404
     
     # Serve other assets (images, etc.)
     @app.route('/<path:path>')

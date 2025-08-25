@@ -118,6 +118,26 @@ def create_app():
         except Exception as e:
             return {'error': str(e)}
     
+    @app.route('/debug/database')
+    def debug_database():
+        try:
+            from models import Task, Student, Teacher
+            
+            tasks = Task.query.all()
+            students = Student.query.all()
+            teachers = Teacher.query.all()
+            
+            return {
+                'tasks_count': len(tasks),
+                'students_count': len(students),
+                'teachers_count': len(teachers),
+                'tasks': [{'id': t.id, 'name': t.name} for t in tasks],
+                'students': [{'id': s.id, 'real_name': s.real_name, 'id_number': s.id_number} for s in students],
+                'teachers': [{'id': t.id, 'real_name': t.real_name, 'teacher_id': t.teacher_id} for t in teachers]
+            }
+        except Exception as e:
+            return {'error': str(e), 'type': type(e).__name__}
+    
     # Register blueprints
     from auth import auth_bp
     from tasks import tasks_bp
